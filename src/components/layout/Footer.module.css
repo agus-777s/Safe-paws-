@@ -1,0 +1,30 @@
+.pie {
+  margin-top: var(--espaciado-7);
+  padding: var(--espaciado-5) 0;
+  border-top: 1px solid var(--color-borde);
+  background-color: var(--color-superficie);
+}
+
+.contenido {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaciado-3);
+}
+
+.marca {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaciado-2);
+  color: var(--color-texto-suave);
+}
+
+.marca svg {
+  color: var(--color-primario);
+}
+
+.texto {
+  color: var(--color-texto-suave);
+  font-size: 0.9rem;
+}

@@ -1,0 +1,9 @@
+.estructura {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+
+.principal {
+  flex: 1;
+}

@@ -1,0 +1,35 @@
+:root {
+  --color-primario: #0e9f6e;
+  --color-primario-oscuro: #0a7c56;
+  --color-primario-claro: #e0f5ed;
+  --color-secundario: #f59f00;
+  --color-secundario-claro: #fff4e0;
+  --color-texto: #17261f;
+  --color-texto-suave: #5f6f68;
+  --color-fondo: #f6faf8;
+  --color-superficie: #ffffff;
+  --color-borde: #dce8e2;
+  --color-error: #d92d20;
+  --color-exito: #16a34a;
+  --color-informacion: #2563eb;
+
+  --fuente-principal: 'Nunito Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --fuente-titulos: 'Nunito Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --radio-boton: 999px;
+  --radio-pequeno: 10px;
+  --radio-mediano: 16px;
+  --radio-grande: 24px;
+
+  --espaciado-1: 4px;
+  --espaciado-2: 8px;
+  --espaciado-3: 12px;
+  --espaciado-4: 16px;
+  --espaciado-5: 24px;
+  --espaciado-6: 32px;
+  --espaciado-7: 48px;
+  --espaciado-8: 64px;
+
+  --sombra-suave: 0 1px 2px rgb(0 0 0 / 0.04), 0 4px 12px rgb(0 0 0 / 0.06);
+  --max-ancho: 1120px;
+}

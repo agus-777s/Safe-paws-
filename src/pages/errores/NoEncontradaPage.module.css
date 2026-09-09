@@ -1,0 +1,27 @@
+.pagina {
+  min-height: 60svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espaciado-3);
+  text-align: center;
+  padding: var(--espaciado-5);
+}
+
+.codigo {
+  font-size: 4rem;
+  font-weight: 800;
+  color: var(--color-primario-claro);
+  line-height: 1;
+}
+
+.titulo {
+  font-size: 1.75rem;
+  font-weight: 800;
+}
+
+.texto {
+  color: var(--color-texto-suave);
+  margin-bottom: var(--espaciado-2);
+}

@@ -1,0 +1,52 @@
+.pagina {
+  min-height: 70svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--espaciado-5);
+}
+
+.tarjeta {
+  width: 100%;
+  max-width: 460px;
+}
+
+.encabezado {
+  margin-bottom: var(--espaciado-5);
+}
+
+.titulo {
+  font-size: 1.75rem;
+  font-weight: 800;
+}
+
+.subtitulo {
+  margin-top: var(--espaciado-1);
+  color: var(--color-texto-suave);
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-4);
+}
+
+.error {
+  padding: var(--espaciado-3);
+  border-radius: var(--radio-pequeno);
+  background-color: rgb(217 45 32 / 0.1);
+  color: var(--color-error);
+  font-size: 0.9rem;
+}
+
+.boton {
+  width: 100%;
+  margin-top: var(--espaciado-2);
+}
+
+.pies {
+  margin-top: var(--espaciado-5);
+  text-align: center;
+  color: var(--color-texto-suave);
+  font-size: 0.95rem;
+}

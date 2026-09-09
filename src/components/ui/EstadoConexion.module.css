@@ -1,0 +1,31 @@
+.estado {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaciado-2);
+  margin-top: var(--espaciado-4);
+  padding: 6px 12px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-boton);
+  background-color: var(--color-superficie);
+  color: var(--color-texto-suave);
+  font-size: 0.85rem;
+}
+
+.punto {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-texto-suave);
+}
+
+.punto--conectado {
+  background-color: var(--color-exito);
+}
+
+.punto--error {
+  background-color: var(--color-error);
+}
+
+.punto--no-configurado {
+  background-color: var(--color-secundario);
+}

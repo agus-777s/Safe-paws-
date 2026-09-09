@@ -1,0 +1,22 @@
+.envuelve {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espaciado-2);
+  color: var(--color-texto-suave);
+}
+
+.rueda {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid var(--color-primario-claro);
+  border-top-color: var(--color-primario);
+  animation: girar 0.8s linear infinite;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
