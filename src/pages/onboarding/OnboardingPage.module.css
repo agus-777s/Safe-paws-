@@ -1,0 +1,474 @@
+/* ===== Base móvil: composición vertical, ocupa todo el viewport =====
+   Ilustraciones nativas: 512×512 (pantalla 1) y 286×512 (pantallas 2 y 3).
+   La etapa fija la ALTURA (nunca más de 512 px) y la imagen usa
+   height:100% + width:auto + object-fit:contain: misma escala en las 3,
+   sin upscale, sin recorte y sin deformación. */
+.pagina {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  overflow: clip;
+  background:
+    radial-gradient(circle at 85% 6%, rgb(161 212 148 / 0.35) 0, transparent 42%),
+    radial-gradient(circle at 10% 92%, rgb(252 138 64 / 0.18) 0, transparent 40%),
+    #f5f5dc;
+  color: #1b1c1c;
+}
+
+.marca {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: clamp(1.25rem, 5vw, 2rem) clamp(1.25rem, 5vw, 2rem) 0.5rem;
+}
+
+.nombre {
+  font-size: clamp(1.6rem, 7vw, 2rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #154212;
+  margin: 0;
+}
+
+/* Etapa de ilustración: altura controlada, ancho libre centrado */
+.ilustracion {
+  position: relative;
+  z-index: 10;
+  margin: 0;
+  width: 100%;
+  height: clamp(13.75rem, 36vh, 21.25rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+}
+
+.ilusImg {
+  display: block;
+  height: 100%;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: 1.25rem;
+  box-shadow: 0 4px 20px rgb(45 90 39 / 0.12);
+  animation: entrada 0.45s ease;
+}
+
+/* Pin flotante diapositiva 2 (naranja + pulso), anclado a la figura */
+.pinFlotante {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  width: clamp(3.5rem, 16vw, 4rem);
+  height: clamp(3.5rem, 16vw, 4rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: flotar 4s ease-in-out infinite;
+}
+
+.pin {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: #fc8a40;
+  border: 4px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(1.5rem, 7vw, 1.8rem);
+  box-shadow: 0 4px 20px rgb(45 90 39 / 0.2);
+  position: relative;
+  z-index: 2;
+}
+
+.pinOnda {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid #fc8a40;
+  opacity: 0.5;
+  animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+@keyframes ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+@keyframes flotar {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Escudo diapositiva 3, anclado a la figura */
+.escudo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  translate: -50% -50%;
+  width: clamp(4rem, 20vw, 5rem);
+  height: clamp(4rem, 20vw, 5rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(1.9rem, 9vw, 2.5rem);
+  border-radius: 50%;
+  background-color: rgb(255 255 255 / 0.94);
+  border: 4px solid rgb(45 90 39 / 0.2);
+  box-shadow: 0 4px 20px rgb(45 90 39 / 0.12);
+}
+
+.contenido {
+  position: relative;
+  z-index: 10;
+  flex: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 0.5rem clamp(1.25rem, 5vw, 2rem);
+}
+
+.diapositiva {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  animation: entrada 0.35s ease;
+}
+
+@keyframes entrada {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.titulo {
+  font-size: clamp(1.4rem, 6.4vw, 1.7rem);
+  line-height: 1.2;
+  font-weight: 800;
+  color: #154212;
+  max-width: 22rem;
+  margin: 0;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.texto {
+  color: #42493e;
+  font-size: clamp(0.95rem, 4.2vw, 1.05rem);
+  line-height: 1.6;
+  max-width: 24rem;
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.pie {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.9rem, 4vw, 1.25rem);
+  padding: clamp(1rem, 4vw, 1.25rem) clamp(1.25rem, 5vw, 2rem) clamp(1.5rem, 6vw, 2rem);
+}
+
+.puntos {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.punto {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  border: none;
+  padding: 0;
+  background-color: #c2c9bb;
+  cursor: pointer;
+  transition:
+    width 0.3s ease,
+    background-color 0.3s ease;
+}
+
+.puntoActivo {
+  width: 1.5rem;
+  background-color: #154212;
+}
+
+.boton {
+  width: 100%;
+  max-width: 22rem;
+  background-color: #154212;
+  color: #fff;
+  border: none;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgb(45 90 39 / 0.14);
+  transition:
+    transform 0.15s ease,
+    opacity 0.2s ease;
+}
+
+.boton:hover {
+  opacity: 0.92;
+}
+
+.boton:active {
+  transform: scale(0.98);
+}
+
+.boton:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.omitir {
+  background: none;
+  border: none;
+  padding: 0.5rem 1rem;
+  color: #42493e;
+  font-weight: 500;
+  font-size: 0.85rem;
+  cursor: pointer;
+  border-radius: 999px;
+  min-height: 2.75rem;
+}
+
+.omitir:hover {
+  color: #154212;
+}
+
+/* ===== Teléfonos pequeños (≤380px): etapa más baja, sin cortes ===== */
+@media (max-width: 23.75rem) {
+  .ilustracion {
+    height: clamp(11rem, 32vh, 15rem);
+  }
+
+  .titulo {
+    font-size: 1.35rem;
+  }
+
+  .texto {
+    font-size: 0.92rem;
+  }
+
+  .pie {
+    gap: 0.75rem;
+  }
+}
+
+/* ===== Tablet (768px–1023px): etapa mayor, misma escala, más aire ===== */
+@media (min-width: 48rem) and (max-width: 63.99rem) {
+  .ilustracion {
+    height: clamp(18.75rem, 44vh, 28.75rem);
+  }
+
+  .marca {
+    padding-top: clamp(2rem, 5vh, 3rem);
+  }
+
+  .nombre {
+    font-size: clamp(2rem, 4.5vw, 2.5rem);
+  }
+
+  .pinFlotante {
+    width: 5rem;
+    height: 5rem;
+  }
+
+  .escudo {
+    width: 6rem;
+    height: 6rem;
+    font-size: 3rem;
+  }
+
+  .titulo {
+    font-size: clamp(1.9rem, 4vw, 2.4rem);
+    max-width: 34rem;
+  }
+
+  .texto {
+    font-size: clamp(1.05rem, 2.2vw, 1.25rem);
+    max-width: 36rem;
+  }
+
+  .pie {
+    gap: 1.5rem;
+    padding-bottom: clamp(2.5rem, 6vh, 3.5rem);
+  }
+
+  .puntoActivo {
+    width: 2rem;
+  }
+
+  .boton {
+    max-width: 26rem;
+    padding: 1.1rem;
+    font-size: 1.05rem;
+  }
+}
+
+/* ===== Escritorio (≥1024px): hero horizontal, imagen contenida y nítida =====
+   La etapa llega como máximo a 512 px = altura nativa: las 3 imágenes se
+   muestran a su resolución real, sin upscale. */
+@media (min-width: 64rem) {
+  .pagina {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas:
+      'ilustracion marca'
+      'ilustracion contenido'
+      'ilustracion pie';
+    align-items: stretch;
+    overflow: hidden;
+  }
+
+  .marca {
+    grid-area: marca;
+    justify-content: flex-start;
+    background-color: #fbf9f8;
+    padding: clamp(1.5rem, 4vh, 2.5rem) clamp(2rem, 4vw, 4rem) 0;
+  }
+
+  .nombre {
+    font-size: clamp(1.8rem, 2.4vw, 2.3rem);
+  }
+
+  .ilustracion {
+    grid-area: ilustracion;
+    height: auto;
+    min-height: 100vh;
+    min-height: 100svh;
+    min-height: 100dvh;
+    max-height: 100vh;
+    max-height: 100svh;
+    max-height: 100dvh;
+    padding: clamp(2rem, 5vh, 3.5rem);
+    background: linear-gradient(135deg, #efe9d2 0%, #e4e4cc 100%);
+  }
+
+  .ilusImg {
+    max-height: min(62vh, 32rem);
+  }
+
+  .pinFlotante {
+    width: clamp(4rem, 6vw, 5rem);
+    height: clamp(4rem, 6vw, 5rem);
+  }
+
+  .pinFlotante .pin {
+    font-size: clamp(1.6rem, 2.6vw, 2rem);
+  }
+
+  .escudo {
+    width: clamp(5rem, 7vw, 6rem);
+    height: clamp(5rem, 7vw, 6rem);
+    font-size: clamp(2.4rem, 4vw, 3rem);
+  }
+
+  .contenido {
+    grid-area: contenido;
+    justify-content: center;
+    align-items: flex-start;
+    text-align: left;
+    background-color: #fbf9f8;
+    padding: clamp(1rem, 3vh, 2rem) clamp(2rem, 4vw, 4rem);
+  }
+
+  .diapositiva {
+    align-items: flex-start;
+  }
+
+  .titulo {
+    font-size: clamp(2rem, 3.2vw, 3rem);
+    max-width: 32rem;
+  }
+
+  .texto {
+    font-size: clamp(1.05rem, 1.4vw, 1.25rem);
+    max-width: 30rem;
+  }
+
+  .pie {
+    grid-area: pie;
+    align-items: flex-start;
+    background: #fbf9f8;
+    padding: 0 clamp(2rem, 4vw, 4rem) clamp(2rem, 5vh, 3rem);
+  }
+
+  .boton {
+    max-width: 24rem;
+  }
+}
+
+/* ===== Monitores grandes (≥1440px): más aire, misma nitidez ===== */
+@media (min-width: 90rem) {
+  .marca,
+  .contenido,
+  .pie {
+    padding-inline: clamp(3rem, 6vw, 6rem);
+  }
+
+  .titulo {
+    font-size: clamp(2.4rem, 3vw, 3.4rem);
+    max-width: 36rem;
+  }
+
+  .texto {
+    font-size: 1.3rem;
+    max-width: 32rem;
+  }
+
+  .boton {
+    max-width: 26rem;
+    padding: 1.15rem;
+    font-size: 1.05rem;
+  }
+}
+
+/* Movimiento reducido: respeta accesibilidad sin quitar contenido */
+@media (prefers-reduced-motion: reduce) {
+  .pinFlotante,
+  .pinOnda,
+  .diapositiva,
+  .ilusImg {
+    animation: none;
+    transition: none;
+  }
+}

@@ -1,0 +1,708 @@
+<!DOCTYPE html><html lang="es" style="width: 390px; height: 1758px; overflow: hidden; position: relative;"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Registro - Configurar Servicios</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<link crossorigin="" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" rel="stylesheet">
+<script crossorigin="" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container": "#efeded",
+                      "secondary-container": "#fc8a40",
+                      "primary": "#154212",
+                      "on-surface-variant": "#42493e",
+                      "primary-fixed-dim": "#a1d494",
+                      "outline": "#72796e",
+                      "on-tertiary-container": "#c3c4ac",
+                      "error-container": "#ffdad6",
+                      "surface-tint": "#3b6934",
+                      "on-error-container": "#93000a",
+                      "inverse-on-surface": "#f2f0f0",
+                      "surface": "#fbf9f8",
+                      "surface-container-high": "#eae8e7",
+                      "primary-fixed": "#bcf0ae",
+                      "secondary": "#9b4500",
+                      "secondary-fixed": "#ffdbc9",
+                      "on-primary-fixed": "#002201",
+                      "surface-container-low": "#f5f3f3",
+                      "inverse-primary": "#a1d494",
+                      "error": "#ba1a1a",
+                      "tertiary-container": "#50513f",
+                      "surface-dim": "#dbd9d9",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary-fixed-variant": "#23501e",
+                      "surface-bright": "#fbf9f8",
+                      "on-primary": "#ffffff",
+                      "secondary-fixed-dim": "#ffb68d",
+                      "on-secondary-container": "#672c00",
+                      "surface-variant": "#e4e2e2",
+                      "background": "#fbf9f8",
+                      "outline-variant": "#c2c9bb",
+                      "on-surface": "#1b1c1c",
+                      "on-error": "#ffffff",
+                      "on-background": "#1b1c1c",
+                      "on-tertiary": "#ffffff",
+                      "primary-container": "#2d5a27",
+                      "tertiary-fixed": "#e4e4cc",
+                      "on-primary-container": "#9dd090",
+                      "surface-container-highest": "#e4e2e2",
+                      "on-secondary-fixed": "#331200",
+                      "inverse-surface": "#303030",
+                      "on-secondary": "#ffffff",
+                      "on-secondary-fixed-variant": "#763300",
+                      "on-tertiary-fixed-variant": "#474836",
+                      "tertiary": "#393a29",
+                      "tertiary-fixed-dim": "#c8c8b0",
+                      "on-tertiary-fixed": "#1b1d0e"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "lg": "24px",
+                      "xl": "32px",
+                      "base": "4px",
+                      "xs": "4px",
+                      "md": "16px",
+                      "margin-mobile": "20px",
+                      "gutter-mobile": "12px",
+                      "sm": "8px"
+              },
+              "fontFamily": {
+                      "headline-xl-mobile": [
+                              "Montserrat"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "label-lg": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "headline-xl": [
+                              "Montserrat"
+                      ],
+                      "headline-md": [
+                              "Montserrat"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Montserrat"
+                      ]
+              },
+              "fontSize": {
+                      "headline-xl-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "34px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-lg": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "letterSpacing": "0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-xl": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .ambient-shadow {
+            box-shadow: 0px 4px 20px 0px rgba(45, 90, 39, 0.08);
+        }
+        
+        /* Floating label inputs */
+        .input-group {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        .input-field {
+            width: 100%;
+            padding: 1.25rem 1rem 0.5rem;
+            background-color: theme('colors.surface-container-lowest');
+            border: 1px solid theme('colors.outline-variant');
+            border-radius: theme('borderRadius.xl');
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+        .input-field:focus {
+            border: 2px solid theme('colors.primary');
+            padding: 1.25rem calc(1rem - 1px) calc(0.5rem - 1px);
+        }
+        .floating-label {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: theme('colors.outline');
+            font-family: 'Inter', sans-serif;
+            font-size: 16px;
+            pointer-events: none;
+            transition: 0.2s ease all;
+        }
+        .input-field:focus ~ .floating-label,
+        .input-field:not(:placeholder-shown) ~ .floating-label {
+            top: 0.5rem;
+            font-size: 12px;
+            transform: translateY(0);
+            color: theme('colors.primary');
+        }
+
+        /* Range slider customization */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: theme('colors.primary');
+            cursor: pointer;
+            margin-top: -10px;
+            box-shadow: 0 2px 6px rgba(21, 66, 18, 0.3);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: theme('colors.primary-fixed');
+            border-radius: 4px;
+        }
+        
+        /* Custom file upload dotted line */
+        .upload-dashed {
+            background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='12' ry='12' stroke='%2372796e' stroke-width='2' stroke-dasharray='8%2c 8' stroke-dashoffset='0' stroke-linecap='square'/%3e%3c/svg%3e");
+            border-radius: 12px;
+        }
+        
+        /* Leaflet overrides */
+        .leaflet-control-attribution {
+            display: none !important;
+        }
+        
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .animate-spin-fast {
+            animation: spin 0.8s linear infinite;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen pb-[120px] antialiased">
+<!-- Transactional Top Header (No Nav Shell) -->
+<header class="flex items-center gap-4 px-margin-mobile pt-[48px] pb-md sticky top-0 bg-surface/90 backdrop-blur-md z-40">
+<button aria-label="Volver" class="w-10 h-10 flex items-center justify-center rounded-full bg-surface-container hover:bg-surface-variant transition-colors" onclick="window.location.href='{{DATA:SCREEN:SCREEN_68}}'">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<span class="font-headline-md text-headline-md text-primary">Registro</span>
+</header>
+<!-- Progress Indicator -->
+<section class="px-margin-mobile mt-2">
+<div class="flex justify-between items-end mb-sm">
+<span class="font-label-sm text-label-sm text-outline">Paso 3 de 4</span>
+<span class="font-label-sm text-label-sm text-primary font-semibold">Servicios</span>
+</div>
+<div class="w-full h-[8px] bg-[#F5F5DC] rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all duration-500" style="width: 75%;"></div>
+</div>
+</section>
+<!-- Main Content -->
+<main class="px-margin-mobile mt-xl flex flex-col gap-xl">
+<!-- Header text -->
+<div>
+<h1 class="font-headline-xl-mobile text-headline-xl-mobile text-primary mb-2">Configura tus servicios</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Define qué servicios ofreces, tu disponibilidad y tu zona de cobertura para encontrar a los clientes ideales.</p>
+</div>
+<!-- Section 1: Servicios -->
+<section class="bg-surface-container-lowest p-md rounded-[24px] ambient-shadow flex flex-col gap-md">
+<h2 class="font-label-lg text-label-lg text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">pets</span>
+                Servicios que ofreces
+            </h2>
+<div class="flex flex-wrap gap-sm" id="service-chips">
+<!-- Active Chip -->
+<button class="service-chip font-label-sm text-label-sm px-4 py-3 rounded-full flex items-center gap-2 transition-transform active:scale-95 bg-surface-container text-on-surface-variant border border-outline-variant" onclick="toggleService(this)">
+<span class="material-symbols-outlined text-[18px]">directions_walk</span>
+                    Paseo
+                </button>
+<!-- Active Chip -->
+<button class="service-chip font-label-sm text-label-sm px-4 py-3 rounded-full flex items-center gap-2 transition-transform active:scale-95 bg-surface-container text-on-surface-variant border border-outline-variant" onclick="toggleService(this)">
+<span class="material-symbols-outlined text-[18px]">home_work</span>
+                    Hospedaje
+                </button>
+<!-- Inactive Chip -->
+<button class="service-chip font-label-sm text-label-sm px-4 py-3 rounded-full flex items-center gap-2 transition-transform active:scale-95 bg-primary text-on-primary shadow-sm" onclick="toggleService(this)">
+<span class="material-symbols-outlined text-[18px]">wb_sunny</span>
+                    Guardería
+                </button>
+<!-- Inactive Chip -->
+<button class="service-chip font-label-sm text-label-sm px-4 py-3 rounded-full flex items-center gap-2 transition-transform active:scale-95 bg-surface-container text-on-surface-variant border border-outline-variant" onclick="toggleService(this)">
+<span class="material-symbols-outlined text-[18px]">door_front</span>
+                    Visita a domicilio
+                </button>
+<!-- Inactive Chip -->
+<button class="service-chip bg-surface-container text-on-surface-variant font-label-sm text-label-sm px-4 py-3 rounded-full flex items-center gap-2 border border-outline-variant transition-transform active:scale-95" onclick="toggleService(this)">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+                    Otros
+                </button>
+</div>
+</section>
+<!-- Section 2: Disponibilidad -->
+<section class="bg-surface-container-lowest p-md rounded-[24px] ambient-shadow flex flex-col gap-md">
+<h2 class="font-label-lg text-label-lg text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">calendar_month</span>
+                Disponibilidad semanal
+            </h2>
+<div class="flex justify-between items-center px-2">
+<button class="day-btn w-10 h-10 rounded-full flex items-center justify-center font-label-lg text-label-lg bg-surface-container text-on-surface-variant" onclick="toggleDay(this)">D</button>
+<button class="day-btn w-10 h-10 rounded-full flex items-center justify-center font-label-lg text-label-lg bg-surface-container text-on-surface-variant" onclick="toggleDay(this)">L</button>
+<button class="day-btn w-10 h-10 rounded-full flex items-center justify-center font-label-lg text-label-lg bg-primary text-on-primary shadow-md" onclick="toggleDay(this)">M</button>
+<button class="day-btn w-10 h-10 rounded-full flex items-center justify-center font-label-lg text-label-lg bg-surface-container text-on-surface-variant" onclick="toggleDay(this)">X</button>
+<button class="day-btn w-10 h-10 rounded-full flex items-center justify-center font-label-lg text-label-lg bg-surface-container text-on-surface-variant" onclick="toggleDay(this)">J</button>
+<button class="day-btn w-10 h-10 rounded-full flex items-center justify-center font-label-lg text-label-lg bg-surface-container text-on-surface-variant" onclick="toggleDay(this)">V</button>
+<button class="day-btn w-10 h-10 rounded-full flex items-center justify-center font-label-lg text-label-lg bg-surface-container text-on-surface-variant" onclick="toggleDay(this)">S</button>
+</div>
+<div class="grid grid-cols-2 gap-sm mt-2"><div class="input-group">
+<input class="input-field font-body-md text-on-surface pt-6 pb-2" id="start-time" placeholder=" " type="time" value="08:00">
+<label class="floating-label top-2 text-xs text-primary" for="start-time">Hora inicio</label>
+</div>
+<div class="input-group">
+<input class="input-field font-body-md text-on-surface pt-6 pb-2" id="end-time" placeholder=" " type="time" value="19:00">
+<label class="floating-label top-2 text-xs text-primary" for="end-time">Hora fin</label>
+</div></div>
+</section>
+<!-- Section 3: Zona de Cobertura -->
+<section class="bg-surface-container-lowest p-md rounded-[24px] ambient-shadow flex flex-col gap-md">
+<h2 class="font-label-lg text-label-lg text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">location_on</span>
+                Zona de cobertura
+            </h2>
+<div class="relative w-full h-[300px] rounded-xl overflow-hidden bg-surface-container-low mb-4"><div class="absolute top-4 left-4 right-16 z-20 transition-all duration-300" id="address-search-container">
+<div class="relative">
+<input autocomplete="off" class="w-full h-10 pl-10 pr-10 rounded-full border-none bg-surface-container-lowest shadow-md font-body-sm text-on-surface focus:ring-2 focus:ring-primary" data-coords="[-33.4489, -70.6693]" id="address-search-input" placeholder="Buscar comuna o ciudad (ej. Providencia)" type="text" value="">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px] transition-opacity duration-200" id="search-icon">search</span>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-primary text-[20px] animate-spin-fast transition-opacity duration-200 opacity-0 hidden" id="search-spinner">progress_activity</span>
+<div class="absolute top-12 left-0 right-0 bg-surface-container-lowest rounded-xl shadow-lg overflow-hidden border border-outline-variant hidden" id="search-results"><div class="p-3 font-body-sm text-outline text-center">No se encontraron resultados</div></div>
+</div>
+</div>
+<div class="w-full h-full block absolute inset-0 z-0 leaflet-container leaflet-touch leaflet-fade-anim leaflet-grab leaflet-touch-drag leaflet-touch-zoom" id="coverage-map" style="outline-style: none;" tabindex="0"><div class="leaflet-pane leaflet-map-pane" style="transform: translate3d(0px, 0px, 0px);"><div class="leaflet-pane leaflet-tile-pane"><div class="leaflet-layer" style="z-index: 1; opacity: 1;"><div class="leaflet-tile-container leaflet-zoom-animated" style="z-index: 18; transform: translate3d(-158px, -150px, 0px) scale(2);"></div><div class="leaflet-tile-container leaflet-zoom-animated" style="z-index: 19; transform: translate3d(-158px, -150px, 0px) scale(1);"><img alt="" class="leaflet-tile leaflet-tile-loaded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBf6VlkrUqFLNVgBlB2YacGZSSReXL3lI7Ic1hB8nPyNhpiD0fn8EzMoRjxJ-2bmLUEctLOl8g3jEMjoPTk1_iCKTrXEhl9RcvhIPA0b3e030BzmOdClNQr8b8t-A7GM8VkQkC97cyvk8t5B8_DotPPkKg3Y1HJSvdJjmEzbYOirbsqRobqk6LjyOlqJ-1bL1nyGVJ5apwPxG3xQRP9xI3atqHPOZZCBnhCGAMLuNL3_xE4u8SNyF2U" style="width: 256px; height: 256px; transform: translate3d(92px, 178px, 0px); opacity: 1;"><img alt="" class="leaflet-tile leaflet-tile-loaded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBU1U58BNZGHBXP22R5AW9BHuw8jzAHCraeodK6rVrfnvsffVhnDnVrsNW9x2kcXMKpQHbIQSamxm6IOdeHkKa1HxQYzCw0bIuP7LRms2dK2jXwdFRqiGtpzjSbS4AWrDqS2cwJF-cwynnsaf_94p4RiP0k6i6ivcoPkMNYz9OhLLPBpKe9P8jRMj2SMyJqM4CTZsPcD8gm_SsP2k9PGIr4JWNWJVRfu0ZHmtXSVEpE-xPbX8c1ApsP" style="width: 256px; height: 256px; transform: translate3d(348px, 178px, 0px); opacity: 1;"><img alt="" class="leaflet-tile leaflet-tile-loaded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtRPKUmNUHL-4NMQGqNoHLHtBBH3qex_F1L0oF1wMQcs5EO5Ezc2MxX46xWNXlDDnSEXTbtIPYP3XipIPGciMYuhSRw81L6a5h-XpsZRLs8Q41mnjjipgtkY9l2NbETDhEWYlBgnuhAJxMjYffEXkidengbXhOxXHkCNWTaiJWjD9qr5tdGNxsAwZabTVFdNjeJaZBkGFkfV6QX4Ru0tpH-dkBx2ikeQiYHVDhjUXrx_7tWfbz-Ys4" style="width: 256px; height: 256px; transform: translate3d(92px, -78px, 0px); opacity: 1;"><img alt="" class="leaflet-tile leaflet-tile-loaded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCy_1CFk_Ej3BvrF_Sg8kSANHClTUavrSNfDKRrXhO4-hlTgslKeWukEGMRlrNn9sDSJup70t2bXjOb4ksp3K_fawmaqyxGxE2rG8Qn63V27s0FPJkw-j_kp1GRWHWp0C2vTuXBc5AAU-75WlguLVzkD08OUMytc81Fy7XBnIMONxCERUIQZ9jJGbDAulGVmGPcsCv8JEJllIv8TB1OwKPsTZeauyKD9Gatj_p6Odsv3y9lrGbkz3Ut" style="width: 256px; height: 256px; transform: translate3d(348px, -78px, 0px); opacity: 1;"><img alt="" class="leaflet-tile leaflet-tile-loaded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTGrUHcCG-tK-QAZCV6V8-wn3ct45F5GZYtfuswjHU4Tmd6u2aKaPQWGTf-4Yxx-JSqIvnQJWWzBYnOJwi9lpy5glorgBLijdC-IE2SCAreYubpIqAPGSihAeg79PNu7ie9h8Lvj-fdPIva3AfbetG0Ehx_Blz081XRhq0rF8k9aORfjwVtPKO0deUqznR7lWsG1PlMfu7lpHrtRtlxmW5TZEpWK_QACaCGOKibu24BBG5uQZKCZFg" style="width: 256px; height: 256px; transform: translate3d(92px, 434px, 0px); opacity: 1;"><img alt="" class="leaflet-tile leaflet-tile-loaded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDlKkakUv7aG7xto4sTB9mFoGgAclmdvnz6yrmTzceaC-mOy86tule8TAqDUfSRGYNiPGw8qFh6Ro-fKu0LZpwf-YYrkHeEhZ1H2AmqwwZIMMUxjNGgMcBVt_XhTig2yQnK2vJ3R0kev5eg2a3T7HDejlN4DPVnhpw7GhD0uPvHDvJ06AK4fLgDrXEGn-aY81udT3PkldgBJOb0YRtPrhDB_IBrzwuNe4mJcb6iPvmX-9yD3fI7s2PK" style="width: 256px; height: 256px; transform: translate3d(348px, 434px, 0px); opacity: 1;"></div></div></div><div class="leaflet-pane leaflet-overlay-pane"><svg class="leaflet-zoom-animated" height="360" pointer-events="none" style="transform: translate3d(-32px, -30px, 0px);" viewBox="-32 -30 382 360" width="382"><g><path class="leaflet-interactive" d="M-154.51064888888504,149.96126025123522a314,314 0 1,0 628,0 a314,314 0 1,0 -628,0 " fill="#bcf0ae" fill-opacity="0.3" fill-rule="evenodd" stroke="#2d5a27" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="1" stroke-width="2"></path></g></svg></div><div class="leaflet-pane leaflet-shadow-pane"><img alt="" class="leaflet-marker-shadow leaflet-zoom-animated" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5vsRbK2bOsJzby6oiyYLmXg9Dn8uetsB_bOizCRyT_YRKnNoRrn5YLbFfVkxQKvQRHRR1BuqvzW7_7HOE1m0EoDgfOpUs5Ya4o7p4Jq1L-RmL4XCwpZDaIfYHZZnFg5inm9smaR5JtNlFDeAIhr1RUHPTsCvunPJpxj-do2BK-cC2532Z01hkA8YyBO3qu8Z3epRkKknyAC_nCJmVez1qaWghte0pJWxuL_B2Y9Q9Jj0wjO6LQne3" style="margin-left: -12px; margin-top: -41px; width: 41px; height: 41px; transform: translate3d(159px, 150px, 0px);"></div><div class="leaflet-pane leaflet-marker-pane"><img alt="Marker" class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2CUrKtQe3oKx6PnoL2flbiBuAyOvpsXoy-bduBcA-mP92yLkxl8-ImvxTPiElgSbQD0YzTvPOt7PqxcIj-JmWCgf12I7mgjCJEgRpMx5-R9KjEm8tH8WzXLJILfwMVHZ4YcRsfWyB9Xg9rQV9r_s6Msp6gQgLKVMNru74fD3lwdKQT8t2iUjZzySN6WTOtM4hOxLEMtWlonqSM56CB1yBkpP89vS6tIpcaR4NP_UzxEdvqUMBdiNY" style="margin-left: -12px; margin-top: -41px; width: 25px; height: 41px; transform: translate3d(159px, 150px, 0px); z-index: 150;"></div><div class="leaflet-pane leaflet-tooltip-pane"></div><div class="leaflet-pane leaflet-popup-pane"></div><div class="leaflet-proxy leaflet-zoom-animated" style="transform: translate3d(636897px, 1.25555e+06px, 0px) scale(4096);"></div></div><div class="leaflet-control-container"><div class="leaflet-top leaflet-left"></div><div class="leaflet-top leaflet-right"></div><div class="leaflet-bottom leaflet-left"></div><div class="leaflet-bottom leaflet-right"></div></div><div class="leaflet-pane leaflet-map-pane" style="transform: translate3d(0px, 0px, 0px);"><div class="leaflet-pane leaflet-tile-pane"><div class="leaflet-layer" style="z-index: 1; opacity: 1;"><div class="leaflet-tile-container leaflet-zoom-animated" style="z-index: 19; transform: translate3d(0px, 0px, 0px) scale(1);"><img alt="" class="leaflet-tile leaflet-tile-loaded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAf1UZy7y7ZJwwWjDtEhJuULCBOoAY5ZANKWDIRG7TkDkR9a5U_cQgHPTb13F_WrphxhzFZorV5O530MI6lm7gWnYTwrZTWAzKl6GTGtCaEx51Y6IHJd6kAxW4xc3u-iRzRHZQWiW8sCvRY50t0x-Npd43Rf86VW6TbGVEeMxyB9vQVM6H9sdSKUggUK1CFXPRVysTQz-u6UXES3QzXXV68Tj_Zm6V0_GUEqzt2YWfH9I0WX9c7JMyz" style="width: 256px; height: 256px; transform: translate3d(-82px, -167px, 0px); opacity: 1;"><img alt="" class="leaflet-tile leaflet-tile-loaded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBo1v_ioCyccf9ZTMtLIzz6FDSoNmnMvmSLqY4fWFvL0geqIYAhqnHo6YTkGl5aPRw6wtfcocm23Jub-_-RHfu0cQ0aQapKwwHI4t11C--aTCLpw4fbM7FLmDJJ-Fc1VtUtmQGoXdnXRlS9CJqN26e4YiCYZzyTX-46AwJHAS5Wur1--icr8xQEkKU0N1bQV8lqJQ5vgNZUrGjmsBq_7zsSXmx93XBDKQ-JPjkvek5Dj6zoQrwRHiq9" style="width: 256px; height: 256px; transform: translate3d(174px, -167px, 0px); opacity: 1;"><img alt="" class="leaflet-tile leaflet-tile-loaded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCNuhrLAyHtPBUofyb52jSKMGEr5c8C-Xx_VbydBB8qtAqP_7KMiz8kbQh6pJQgUF8fqH5G0GJ7dzEIFSzyucrDCD7Lyd6wNoh1UF3NPygiWaxexr25bgPrFHFqTO-iyYkibeeumfx9OHNPxYz9BhlLf4tz6kcXPn4qpz3Qyc8EaWOAgtG2VTnnjmwMgJ3qXGsVOrbffnvcTIHrBD5FaTyt5C2ZyLiMhCex3s9fUUBSbPhLb4BjRZZ0" style="width: 256px; height: 256px; transform: translate3d(-82px, 89px, 0px); opacity: 1;"><img alt="" class="leaflet-tile leaflet-tile-loaded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwQ03Kl2Wtx8b5KNjs9iv6-KqQVDnjELJkt4Xm1ya5W3n9iGmL5v1P8CIGhVBkuWdFpdhVfVTb8476rr3FG3Q8iXRzyeVuaD5O3_kdN-LDDbEb8q1HOR4CeqmIUEyIVc269WTyu8NIlN5s6QNAAMUh0UuVJfPfVFfbGZerKRqL9x0hQl-vU3UC0NIfivcrLWlHfXXynXbo9233Win1GNt4KAIKZVTs7sGz4BTWf9Y5aOYl0Q7LRfBn" style="width: 256px; height: 256px; transform: translate3d(174px, 89px, 0px); opacity: 1;"></div></div></div><div class="leaflet-pane leaflet-overlay-pane"><svg class="leaflet-zoom-animated" height="360" pointer-events="none" style="transform: translate3d(-32px, -30px, 0px);" viewBox="-32 -30 382 360" width="382"><g><path class="leaflet-interactive" d="M1.7446755555574782,149.9806301256176a157,157 0 1,0 314,0 a157,157 0 1,0 -314,0 " fill="#bcf0ae" fill-opacity="0.3" fill-rule="evenodd" stroke="#2d5a27" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="1" stroke-width="2"></path></g></svg></div><div class="leaflet-pane leaflet-shadow-pane"><img alt="" class="leaflet-marker-shadow leaflet-zoom-animated" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAo9CuLqO52N6MtdYqGxT20hxjaLXrNqVHpqB8IbXI8mhbKIt98n3TDPbIyFMrcHXZQ7LS70RgwNlM0-_wtj4_E4n3VeWnIzVtLMEVFdIgCI07E6c3RJNia7lEj-1-nfj8UjbCAppAxCM2nGgSxz3VyhKVe1mDDSQtAM9ubuobC5N05IrvnK-V6O1h9Q3qXJ8PJtmxhtfvaH6By6Gt2S0y0bJkqmHf6IX82wlqA8CZMoJdU77MGX3go" style="margin-left: -12px; margin-top: -41px; width: 41px; height: 41px; transform: translate3d(159px, 150px, 0px);"></div><div class="leaflet-pane leaflet-marker-pane"><img alt="Marker" class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNCX7vCIFsEFBA-h4-lz0PBoosXREmskC5D9Yg-AbJ0hsJV5aRyCxXQPrTafRm18rPo4ab8-n42YA79XeoNxKK7lFDK_RrR2mW6GyhZQuLRUtT20UyhRL9wTZ55kKdhv_ROQPuqDsmqv21vn5R7CGGT6wWT2IOSPf570KIGDzO6gKBuFElI7nnsnqOjFbEf5lvyOrXBKzbX7nyKGQclyEZrNSG_LMJ1sJnyDVTjL3hJ9ebJWFXQTUN" style="margin-left: -12px; margin-top: -41px; width: 25px; height: 41px; transform: translate3d(159px, 150px, 0px); z-index: 150;"></div><div class="leaflet-pane leaflet-tooltip-pane"></div><div class="leaflet-pane leaflet-popup-pane"></div><div class="leaflet-proxy leaflet-zoom-animated" style="transform: translate3d(318449px, 627773px, 0px) scale(2048);"></div></div><div class="leaflet-control-container"><div class="leaflet-top leaflet-left"></div><div class="leaflet-top leaflet-right"></div><div class="leaflet-bottom leaflet-left"></div><div class="leaflet-bottom leaflet-right"></div></div><div class="leaflet-pane leaflet-map-pane" style="transform: translate3d(-128px, 49px, 0px);"><div class="leaflet-pane leaflet-tile-pane"><div class="leaflet-layer" style="z-index: 1; opacity: 1;"><div class="leaflet-tile-container leaflet-zoom-animated" style="z-index: 19; transform: translate3d(183px, 32px, 0px) scale(1);"><img alt="" class="leaflet-tile leaflet-tile-loaded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuABHdtRcDuRjDwOhimgfig5tsINFFwAjBb7Bgg6kZbVyw1PCzr3FWYK9Zp18q1t0vVlpiANvkNAs3t-OZnT54QE8ZcB7fzsm4NImyXPbnqxpRWh9l-hNP1Aa7CrohFNziIhZx-C_yg1VwvDyMMQLR3ido3f7_LqQBgMbZ8r0n3PThlBf3kIBRVNIYu_aJZGqLGpxOu3TcGrfQrkLnsLCZcT-NRSDsgQvvc5nSEemFa43xUuJYnJZK37" style="width: 256px; height: 256px; transform: translate3d(-303px, -61px, 0px); opacity: 1;"><img alt="" class="leaflet-tile leaflet-tile-loaded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3qMl5Hixk-AGHXaXh6VvnbiN8GHSuPNAzHYoFZRDJltFQjVlu8fZZg0qsgWgHAVpMtO_d7hRCOq8FiQygavJGRyHHFvjwLUUAUsZfMCY_f1fUTYgyfS12oYV0U7yiwUyDAEwGjMhONE1LKkYFKTZOaGWImF1L3i3rIaQP03BKgxhfyzq6FnSa8R-e8h6MCMX91qvmJP3GchY4GQoLoTtQuu2gQSzu15_Dq1VhTWXXGoQ77QPG1s7u" style="width: 256px; height: 256px; transform: translate3d(-47px, -61px, 0px); opacity: 1;"><img alt="" class="leaflet-tile leaflet-tile-loaded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlZmrvExiKcn2uBIfwmKzlRf7wGFv6ymoqDHChQgmqggqD0197KGQkF7Zvw05XQLWbwSNZwpruaFHGyfQkzH0BX0AV0w_5TlZdtjm3gpTfrApDRQwLIQHSNsxe0ZeTdi2ukRQT2ksm99dVivf7AKSjXdeZ1sTXXmhuBmh5sZfLiy1ezv1se6TEDB4RbQI8ffjUnb8soQHP4hGqrGtvrenHZ0fwpqBRxP_gjL-Lwb9SgeN7C2ob0skZ" style="width: 256px; height: 256px; transform: translate3d(-303px, 195px, 0px); opacity: 1;"><img alt="" class="leaflet-tile leaflet-tile-loaded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuClZfN-boNBrDBZ27HXaHnQu95ukoGtFj8XF97ZFcwATOtH1pQcBwCgRHAmvqZX67imvXDBAoH4wsYF5Oe8hVx_sMFDCvNdg92r66zw7VwNPwfYvKvStbHgIlob9U_N2oK8t2lXycvwNjMSNO7vdSUDDMLswRODcQRTCYGhRaBQDe5qqR-LxmgRzkcFlkhUd57F4HshlUscK8m8PYizccIwu9feSLiONHtPou8hYqUguGaQeN3Yib1H" style="width: 256px; height: 256px; transform: translate3d(-47px, 195px, 0px); opacity: 1;"><img alt="" class="leaflet-tile leaflet-tile-loaded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKc78FtTSnaqEIkUfu1f4L8y6lKJujPXydVPZcZcoBLw0rXunydid5_R-JZyTwWLPTS0BIuwwsxbvFVDgNzjn0CWcRiTROtiqEDqWUyA12mHiRBE7ig5bY1mcAS7bZ8wZbdbogYrI2MHVtzGMvkzfjNZASEBuj-ZIva4Nu2sTWzK-GPQhtF3IOkrkKL3k-fzfbG0anxxG5oUBbjS4A6U76uPjJAOd8o9IFhswpPMX-V3f-RqiniRt8" style="width: 256px; height: 256px; transform: translate3d(209px, -61px, 0px); opacity: 1;"><img alt="" class="leaflet-tile leaflet-tile-loaded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0Yyji1UDQ-na6m0LALSpWgo8JJS1jniQxlPZH8_GgyFnE0H0KSkUGqAuk9LUOn0ecvw3ueeyDS43zemEPtJK_JUVQn8gylBPRVls-BjFbvmO_djFh1Qsy4QK5KJyZR87iE66GunonJi4lHQQsHgis8z0sDz5LteTGq25oSXhPt624f7BkhUKe4Xqc3ux_UoR-v0WT7tS2mtVWTCHQ8_80_EHSUASw5kPRgeHneLOx4zn_sKjxy8qY" style="width: 256px; height: 256px; transform: translate3d(209px, 195px, 0px); opacity: 1;"><img alt="" class="leaflet-tile leaflet-tile-loaded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0CEtWWj7JTDaaefqQ1VyEbmRbXbl4OB82JZxv4kb0nSsx9LpX6n1pVwD0EvcbG2w64tz3_JNUrk59o8UTohMADi1lHPPACYulDb1PT9822GUXYku1yLfF7sJ-EAzc2Qf_GXMiychsg6eIo8sCF0H5kD2BRw-3d6M2LvMwL0aCJK7xtRFvp8lEkhKYEtyy_94eZiKemU-jwVGPUu3VSDxQHwlNbL6n-c-tum3QmePr7pSMdlZT0Aje" style="width: 256px; height: 256px; transform: translate3d(-47px, -317px, 0px); opacity: 1;"><img alt="" class="leaflet-tile leaflet-tile-loaded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4mHlJSxQ3WttLMLRqXAGkhIgsk5_8SB8byAk6KFpHpEfWnNSo1rCZHyLqhpKkBRwTtXGIVMM9EtbU3YIi4BE7r90iRnmXw98daRgu18o7gE2wogJ_m4Mp2GCBO5qK1vRiHgjbcTJLDwf3uB9a6X0RVQ-uDb7X2CiB4ThIQi6Tg44N8u0UyALylpcnnOMFxiBklUWucqPMDopm8TbS9vZyF0o8jCqrGeQsHr01oPkjsbLkbFU2v9BD" style="width: 256px; height: 256px; transform: translate3d(-303px, -317px, 0px); opacity: 1;"><img alt="" class="leaflet-tile leaflet-tile-loaded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHoppzAOIn4FMk2gYtBVOnzRu7jpTne_ENBvF1vyQ0kY-pM-zJSw2Q21PTlGN71lLAX6FO4VWPmieP6v1eygScO-7dHUA-4Yuofbqg4QHL6s0Tee51I-AniXXtvzAccCTnn9N04q31b0B4h3fDCmo8j-_tszyybn11DbtvCcw5CDeYsEjBorMeUtMA1JYyDmTUjNimeen9zXWpcQ6gCgVk6bmupyisiQs4a2TWq1sDjHzgZCaAcbS0" style="width: 256px; height: 256px; transform: translate3d(209px, -317px, 0px); opacity: 1;"></div><div class="leaflet-tile-container leaflet-zoom-animated" style="z-index: 18; transform: translate3d(104px, -43px, 0px) scale(2);"></div></div></div><div class="leaflet-pane leaflet-overlay-pane"><svg class="leaflet-zoom-animated" height="360" pointer-events="none" style="transform: translate3d(96px, -79px, 0px);" viewBox="96 -79 382 360" width="382"><g><path class="leaflet-interactive" d="M66.09308444444468,107.12614374861005a196,196 0 1,0 392,0 a196,196 0 1,0 -392,0 " fill="#bcf0ae" fill-opacity="0.3" fill-rule="evenodd" stroke="#2d5a27" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="1" stroke-width="2"></path></g></svg></div><div class="leaflet-pane leaflet-shadow-pane"><img alt="" class="leaflet-marker-shadow leaflet-zoom-animated" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwytNM8tJ-pPQh0QOP6xuUHMgH8fTouxMVxTeFTBYopIG8h_TRh-jgyxUXNxR5HEBK21t4wUBjvTNuPivTP54fLqd3aPhYs-jBXOJfdxJTuYlHE5JQDDtwqztd_05FJGrQhoHInJVlw-uv1MeLC3YrotAmsVW33E3QUDEoITtYw8ULrKZrZSHbnYqZTcO8XGSKXlLLihefVcBKS7h0U_iFtTmRzmMQcD4T2rMKI9I1oqnofCKYEjLY" style="margin-left: -12px; margin-top: -41px; width: 41px; height: 41px; transform: translate3d(262px, 107px, 0px);"></div><div class="leaflet-pane leaflet-marker-pane"><img alt="Marker" class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgmBtze4UBtQ_jiV-AllBsnyz0MkUh_r2n00rEl00jOZMGbBmeWVNlxUpPf4_R5ggronqiuDRF8SuA-bqZeN6w6CHqoHWBhuF0AQV7UNqpwnF6-vquiK51mbSw0-0dcJsbT3WW8-Pb1WBifZua6TMH8KqHW9XwO2S0cC5BYutpCiWPxIx1nryDi9g-luTbXMu3pbmYKBKFy9tQmqUHJxKo3oYl1N9yuMz51zJw7sRfgV35BaoUjFiR" style="margin-left: -12px; margin-top: -41px; width: 25px; height: 41px; transform: translate3d(262px, 107px, 0px); z-index: 107;"></div><div class="leaflet-pane leaflet-tooltip-pane"></div><div class="leaflet-pane leaflet-popup-pane"></div><div class="leaflet-proxy leaflet-zoom-animated" style="transform: translate3d(39831px, 78466px, 0px) scale(256);"></div></div><div class="leaflet-control-container"><div class="leaflet-top leaflet-left"></div><div class="leaflet-top leaflet-right"></div><div class="leaflet-bottom leaflet-left"></div><div class="leaflet-bottom leaflet-right"></div></div><div class="leaflet-pane leaflet-map-pane" style="transform: translate3d(0px, 0px, 0px);"><div class="leaflet-pane leaflet-tile-pane"><div class="leaflet-layer " style="z-index: 1; opacity: 1;"><div class="leaflet-tile-container leaflet-zoom-animated" style="z-index: 19; transform: translate3d(0px, 0px, 0px) scale(1);"><img alt="" src="https://b.basemaps.cartocdn.com/rastertiles/voyager/12/1243/2451.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-82px, -167px, 0px); opacity: 1;"><img alt="" src="https://c.basemaps.cartocdn.com/rastertiles/voyager/12/1244/2451.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(174px, -167px, 0px); opacity: 1;"><img alt="" src="https://c.basemaps.cartocdn.com/rastertiles/voyager/12/1243/2452.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-82px, 89px, 0px); opacity: 1;"><img alt="" src="https://a.basemaps.cartocdn.com/rastertiles/voyager/12/1244/2452.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(174px, 89px, 0px); opacity: 1;"></div></div></div><div class="leaflet-pane leaflet-overlay-pane"><svg pointer-events="none" class="leaflet-zoom-animated" width="382" height="360" viewBox="-32 -30 382 360" style="transform: translate3d(-32px, -30px, 0px);"><g><path class="leaflet-interactive" stroke="#2d5a27" stroke-opacity="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="#bcf0ae" fill-opacity="0.3" fill-rule="evenodd" d="M1.7446755555574782,149.9806301256176a157,157 0 1,0 314,0 a157,157 0 1,0 -314,0 "></path></g></svg></div><div class="leaflet-pane leaflet-shadow-pane"><img src="https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png" class="leaflet-marker-shadow leaflet-zoom-animated" alt="" style="margin-left: -12px; margin-top: -41px; width: 41px; height: 41px; transform: translate3d(159px, 150px, 0px);"></div><div class="leaflet-pane leaflet-marker-pane"><img src="https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png" class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" alt="Marker" style="margin-left: -12px; margin-top: -41px; width: 25px; height: 41px; transform: translate3d(159px, 150px, 0px); z-index: 150;"></div><div class="leaflet-pane leaflet-tooltip-pane"></div><div class="leaflet-pane leaflet-popup-pane"></div><div class="leaflet-proxy leaflet-zoom-animated" style="transform: translate3d(318449px, 627773px, 0px) scale(2048);"></div></div><div class="leaflet-control-container"><div class="leaflet-top leaflet-left"></div><div class="leaflet-top leaflet-right"></div><div class="leaflet-bottom leaflet-left"></div><div class="leaflet-bottom leaflet-right"></div></div><div class="leaflet-pane leaflet-map-pane" style="transform: translate3d(0px, 0px, 0px);"><div class="leaflet-pane leaflet-tile-pane"><div class="leaflet-layer " style="z-index: 1; opacity: 1;"><div class="leaflet-tile-container leaflet-zoom-animated" style="z-index: 19; transform: translate3d(0px, 0px, 0px) scale(1);"><img alt="" src="https://b.basemaps.cartocdn.com/rastertiles/voyager/12/1243/2451.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-82px, -167px, 0px); opacity: 1;"><img alt="" src="https://c.basemaps.cartocdn.com/rastertiles/voyager/12/1244/2451.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(174px, -167px, 0px); opacity: 1;"><img alt="" src="https://c.basemaps.cartocdn.com/rastertiles/voyager/12/1243/2452.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(-82px, 89px, 0px); opacity: 1;"><img alt="" src="https://a.basemaps.cartocdn.com/rastertiles/voyager/12/1244/2452.png" class="leaflet-tile leaflet-tile-loaded" style="width: 256px; height: 256px; transform: translate3d(174px, 89px, 0px); opacity: 1;"></div></div></div><div class="leaflet-pane leaflet-overlay-pane"><svg pointer-events="none" class="leaflet-zoom-animated" width="382" height="360" viewBox="-32 -30 382 360" style="transform: translate3d(-32px, -30px, 0px);"><g><path class="leaflet-interactive" stroke="#2d5a27" stroke-opacity="1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="#bcf0ae" fill-opacity="0.3" fill-rule="evenodd" d="M1.7446755555574782,149.9806301256176a157,157 0 1,0 314,0 a157,157 0 1,0 -314,0 "></path></g></svg></div><div class="leaflet-pane leaflet-shadow-pane"><img src="https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png" class="leaflet-marker-shadow leaflet-zoom-animated" alt="" style="margin-left: -12px; margin-top: -41px; width: 41px; height: 41px; transform: translate3d(159px, 150px, 0px);"></div><div class="leaflet-pane leaflet-marker-pane"><img src="https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png" class="leaflet-marker-icon leaflet-zoom-animated leaflet-interactive" alt="Marker" style="margin-left: -12px; margin-top: -41px; width: 25px; height: 41px; transform: translate3d(159px, 150px, 0px); z-index: 150;"></div><div class="leaflet-pane leaflet-tooltip-pane"></div><div class="leaflet-pane leaflet-popup-pane"></div><div class="leaflet-proxy leaflet-zoom-animated" style="transform: translate3d(318449px, 627773px, 0px) scale(2048);"></div></div><div class="leaflet-control-container"><div class="leaflet-top leaflet-left"></div><div class="leaflet-top leaflet-right"></div><div class="leaflet-bottom leaflet-left"></div><div class="leaflet-bottom leaflet-right"></div></div></div>
+<button class="absolute top-4 right-4 w-10 h-10 bg-surface-container-lowest text-primary rounded-full shadow-md flex items-center justify-center hover:bg-surface transition-colors z-20" onclick="centerOnMyLocation()">
+<span class="material-symbols-outlined text-[20px]">my_location</span>
+</button>
+<div class="absolute bottom-4 left-4 right-4 bg-surface-container-lowest/90 backdrop-blur-sm px-3 py-2 rounded-lg text-center shadow-sm z-10 pointer-events-none">
+<span class="font-label-sm text-label-sm text-on-surface-variant" id="location-text">Santiago de Chile</span>
+</div>
+</div>
+<div class="mt-2 flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Radio de servicio</span>
+<span class="font-label-lg text-label-lg text-primary" id="radius-display">50 km</span>
+</div>
+<div class="flex flex-wrap gap-2 mt-2">
+<button class="radius-btn px-4 py-2 rounded-full font-label-sm text-label-sm border transition-colors bg-surface-container text-on-surface-variant border-outline-variant" onclick="selectRadius(this, 5)">5 km</button>
+<button class="radius-btn px-4 py-2 rounded-full font-label-sm text-label-sm border transition-colors bg-surface-container text-on-surface-variant border-outline-variant" onclick="selectRadius(this, 10)">10 km</button>
+<button class="radius-btn px-4 py-2 rounded-full font-label-sm text-label-sm border transition-colors bg-surface-container text-on-surface-variant border-outline-variant" onclick="selectRadius(this, 15)">15 km</button>
+<button class="radius-btn px-4 py-2 rounded-full font-label-sm text-label-sm border transition-colors bg-surface-container text-on-surface-variant border-outline-variant" onclick="selectRadius(this, 20)">20 km</button>
+<button class="radius-btn px-4 py-2 rounded-full font-label-sm text-label-sm border transition-colors bg-surface-container text-on-surface-variant border-outline-variant" onclick="selectRadius(this, 30)">30 km</button>
+<button class="radius-btn px-4 py-2 rounded-full font-label-sm text-label-sm border transition-colors bg-primary text-on-primary border-primary" onclick="selectRadius(this, 50)">50 km</button>
+</div>
+</div>
+</section>
+<!-- Section 4: Tarifas -->
+<section class="bg-surface-container-lowest p-md rounded-[24px] ambient-shadow flex flex-col gap-sm">
+<h2 class="font-label-lg text-label-lg text-primary flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-[20px]">payments</span>
+                Tarifas base
+            </h2>
+<div class="input-group">
+<input class="input-field font-body-md text-on-surface pt-6 pb-2" id="precio-paseo" placeholder="14995" type="number" value="15000">
+<label class="floating-label top-2 text-xs text-primary" for="precio-paseo">Precio por paseo (CLP)</label>
+</div>
+<p class="font-label-sm text-label-sm text-outline mt--2 mb-2 ml-2">Sugerido en tu zona: $5.000 - $10.000 CLP</p>
+<div class="input-group relative" id="precio-noche-group">
+<input class="input-field font-body-md text-on-surface pt-6 pb-2" id="precio-noche" onblur="hideNocheSuggestions()" onfocus="showNocheSuggestions()" placeholder="10500" type="number" value="10500">
+<label class="floating-label top-2 text-xs text-primary" for="precio-noche">Precio por noche (Hospedaje)</label>
+<!-- Sugerencias Dropdown -->
+<div class="absolute top-full left-0 right-0 mt-1 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg z-30 transition-all duration-200 transform opacity-0 invisible translate-y-[-10px]" id="noche-suggestions">
+<div class="py-2">
+<button class="w-full text-left px-4 py-3 hover:bg-surface-container font-body-md text-on-surface transition-colors" onmousedown="selectNochePrice(10000, event)">$10.000 CLP</button>
+<button class="w-full text-left px-4 py-3 hover:bg-surface-container font-body-md text-on-surface transition-colors border-t border-outline-variant/30" onmousedown="selectNochePrice(20000, event)">$20.000 CLP</button>
+<button class="w-full text-left px-4 py-3 hover:bg-surface-container font-body-md text-on-surface transition-colors border-t border-outline-variant/30" onmousedown="selectNochePrice(30000, event)">$30.000 CLP</button>
+<button class="w-full text-left px-4 py-3 hover:bg-surface-container font-body-md text-on-surface transition-colors border-t border-outline-variant/30" onmousedown="selectNochePrice(40000, event)">$40.000 CLP</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 5: Verificación -->
+<section class="bg-surface-container-lowest p-md rounded-[24px] ambient-shadow flex flex-col gap-md">
+<h2 class="font-label-lg text-label-lg text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">verified_user</span>
+                Verificación de identidad
+            </h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Sube una foto de tu identificación oficial (INE, Pasaporte) para generar confianza en la comunidad.</p>
+<button class="upload-dashed w-full h-[120px] bg-surface flex flex-col items-center justify-center gap-2 text-outline hover:bg-surface-container transition-colors" onclick="openUploadModal()">
+<span class="material-symbols-outlined text-[32px]">upload_file</span>
+<span class="font-label-sm text-label-sm">Toca para subir documento</span>
+<span class="font-body-sm text-body-sm text-[10px]">Formatos: JPG, PNG, PDF (Max. 5MB)</span>
+</button>
+</section>
+</main>
+<!-- Fixed Bottom Action -->
+<div class="fixed bottom-0 left-0 w-full p-margin-mobile bg-surface/95 backdrop-blur-md border-t border-surface-variant z-50">
+<button class="w-full bg-primary text-on-primary py-[16px] rounded-full font-label-lg text-label-lg text-center flex items-center justify-center gap-2 shadow-lg hover:opacity-90 transition-opacity active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed" id="continue-button" onclick="window.location.href='{{DATA:SCREEN:SCREEN_11}}'">
+            Continuar al último paso
+            <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+<script>
+function toggleService(button) {
+  const isSelected = button.classList.contains('bg-primary');
+  
+  if (isSelected) {
+    button.classList.remove('bg-primary', 'text-on-primary', 'shadow-sm');
+    button.classList.add('bg-surface-container', 'text-on-surface-variant', 'border', 'border-outline-variant');
+  } else {
+    button.classList.add('bg-primary', 'text-on-primary', 'shadow-sm');
+    button.classList.remove('bg-surface-container', 'text-on-surface-variant', 'border', 'border-outline-variant');
+  }
+  
+  validateSelection();
+}
+
+function validateSelection() {
+    const selectedChips = document.querySelectorAll('.service-chip.bg-primary');
+    const continueBtn = document.getElementById('continue-button');
+    
+    if (selectedChips.length === 0) {
+        continueBtn.disabled = true;
+    } else {
+        continueBtn.disabled = false;
+    }
+}
+
+function toggleDay(button) {
+    const isSelected = button.classList.contains('bg-primary');
+    const allDays = document.querySelectorAll('.day-btn');
+    
+    if (isSelected) {
+        let selectedCount = 0;
+        allDays.forEach(btn => {
+            if (btn.classList.contains('bg-primary')) selectedCount++;
+        });
+        
+        // Prevent deselecting if it's the last active day
+        if (selectedCount > 1) {
+            button.classList.remove('bg-primary', 'text-on-primary', 'shadow-md');
+            button.classList.add('bg-surface-container', 'text-on-surface-variant');
+        }
+    } else {
+        button.classList.add('bg-primary', 'text-on-primary', 'shadow-md');
+        button.classList.remove('bg-surface-container', 'text-on-surface-variant');
+    }
+}
+
+function selectRadius(button, km) {
+    const allBtns = document.querySelectorAll('.radius-btn');
+    allBtns.forEach(btn => {
+        btn.classList.remove('bg-primary', 'text-on-primary', 'border-primary');
+        btn.classList.add('bg-surface-container', 'text-on-surface-variant', 'border-outline-variant');
+    });
+    
+    button.classList.remove('bg-surface-container', 'text-on-surface-variant', 'border-outline-variant');
+    button.classList.add('bg-primary', 'text-on-primary', 'border-primary');
+    
+    document.getElementById('radius-display').innerText = km + ' km';
+    window.dispatchEvent(new CustomEvent('updateCoverageRadius', { detail: { km: km } }));
+}
+
+// Initial validation on load
+validateSelection();
+
+function showNocheSuggestions() {
+    const dropdown = document.getElementById('noche-suggestions');
+    dropdown.classList.remove('opacity-0', 'invisible', 'translate-y-[-10px]');
+    dropdown.classList.add('opacity-100', 'visible', 'translate-y-0');
+}
+
+function hideNocheSuggestions() {
+    const dropdown = document.getElementById('noche-suggestions');
+    dropdown.classList.remove('opacity-100', 'visible', 'translate-y-0');
+    dropdown.classList.add('opacity-0', 'invisible', 'translate-y-[-10px]');
+}
+
+function selectNochePrice(value, event) {
+    event.preventDefault(); // Prevent input blur
+    const input = document.getElementById('precio-noche');
+    input.value = value;
+    hideNocheSuggestions();
+}
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const defaultCoords = [-33.4489, -70.6693];
+    
+    const map = L.map('coverage-map', {
+        zoomControl: false,
+        attributionControl: false
+    }).setView(defaultCoords, 12);
+    
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19
+    }).addTo(map);
+
+    let coverageCircle = L.circle(defaultCoords, {
+        color: '#2d5a27', // primary-container
+        fillColor: '#bcf0ae', // primary-fixed
+        fillOpacity: 0.3,
+        weight: 2,
+        radius: 5000 // 5km
+    }).addTo(map);
+
+    let marker = L.marker(defaultCoords).addTo(map);
+
+    window.addEventListener('updateCoverageRadius', function(e) {
+        const km = e.detail.km;
+        coverageCircle.setRadius(km * 1000);
+        map.fitBounds(coverageCircle.getBounds(), { padding: [20, 20] });
+    });
+    
+    window.addEventListener('setNewLocation', function(e) {
+        let newCoords = defaultCoords;
+        if (e && e.detail && e.detail.coords) {
+            newCoords = e.detail.coords;
+        }
+        
+        map.setView(newCoords, 13, {animate: true, duration: 1});
+        coverageCircle.setLatLng(newCoords);
+        marker.setLatLng(newCoords);
+    });
+});
+</script>
+<script>
+const SANTIAGO_LOCATIONS = [
+    { name: 'Providencia, Santiago', coords: [-33.4312, -70.6092] },
+    { name: 'Las Condes, Santiago', coords: [-33.4127, -70.5665] },
+    { name: 'Santiago Centro, Santiago', coords: [-33.4402, -70.6534] },
+    { name: 'Ñuñoa, Santiago', coords: [-33.4549, -70.6009] },
+    { name: 'Vitacura, Santiago', coords: [-33.3888, -70.5752] },
+    { name: 'La Reina, Santiago', coords: [-33.4468, -70.5369] },
+    { name: 'Macul, Santiago', coords: [-33.4833, -70.5983] },
+    { name: 'Peñalolén, Santiago', coords: [-33.4891, -70.5562] },
+    { name: 'San Miguel, Santiago', coords: [-33.4907, -70.6508] }
+];
+
+const input = document.getElementById('address-search-input');
+const resultsContainer = document.getElementById('search-results');
+const spinner = document.getElementById('search-spinner');
+const searchIcon = document.getElementById('search-icon');
+let searchTimeout;
+
+function showSpinner() {
+    searchIcon.classList.add('hidden', 'opacity-0');
+    spinner.classList.remove('hidden');
+    // slight delay for opacity to allow display:block to apply
+    setTimeout(() => spinner.classList.remove('opacity-0'), 10);
+}
+
+function hideSpinner() {
+    spinner.classList.add('opacity-0');
+    setTimeout(() => {
+        spinner.classList.add('hidden');
+        searchIcon.classList.remove('hidden');
+        setTimeout(() => searchIcon.classList.remove('opacity-0'), 10);
+    }, 200);
+}
+
+input.addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase().trim();
+    
+    clearTimeout(searchTimeout);
+    
+    if (query.length < 2) {
+        resultsContainer.classList.add('hidden');
+        hideSpinner();
+        return;
+    }
+
+    showSpinner();
+    
+    // Simulate network delay
+    searchTimeout = setTimeout(() => {
+        const matches = SANTIAGO_LOCATIONS.filter(loc => 
+            loc.name.toLowerCase().includes(query)
+        );
+        
+        renderResults(matches);
+        hideSpinner();
+    }, 600);
+});
+
+input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        const firstResult = resultsContainer.querySelector('div');
+        if (firstResult && !resultsContainer.classList.contains('hidden')) {
+            firstResult.click();
+        }
+    }
+});
+
+function renderResults(matches) {
+    resultsContainer.innerHTML = '';
+    
+    if (matches.length === 0) {
+        resultsContainer.innerHTML = `<div class="p-3 font-body-sm text-outline text-center">No se encontraron resultados</div>`;
+    } else {
+        matches.forEach((match, index) => {
+            const div = document.createElement('div');
+            div.className = `p-3 hover:bg-surface-container cursor-pointer font-body-sm ${index < matches.length - 1 ? 'border-b border-outline-variant' : ''}`;
+            div.innerText = match.name;
+            div.onclick = () => selectAddress(match.name, match.coords);
+            resultsContainer.appendChild(div);
+        });
+    }
+    
+    resultsContainer.classList.remove('hidden');
+}
+
+function selectAddress(address, coords) {
+    document.getElementById('location-text').innerText = address;
+    input.value = address;
+    resultsContainer.classList.add('hidden');
+    input.blur();
+    
+    if (coords) {
+        window.dispatchEvent(new CustomEvent('setNewLocation', { detail: { coords: coords } }));
+    }
+}
+
+function centerOnMyLocation() {
+    const defaultCoords = [-33.4489, -70.6693]; // Santiago Default
+    document.getElementById('location-text').innerText = 'Ubicación detectada';
+    input.value = '';
+    window.dispatchEvent(new CustomEvent('setNewLocation', { detail: { coords: defaultCoords } }));
+}
+
+// Close results when clicking outside
+document.addEventListener('click', (e) => {
+    const container = document.getElementById('address-search-container');
+    if (!container.contains(e.target)) {
+        resultsContainer.classList.add('hidden');
+    }
+});
+
+// Show results on focus if there's text
+input.addEventListener('focus', () => {
+    if (input.value.length >= 2 && resultsContainer.innerHTML !== '') {
+        resultsContainer.classList.remove('hidden');
+    }
+});
+</script>
+<div class="fixed inset-0 z-[60] invisible opacity-0 transition-all duration-300" id="upload-modal">
+<div class="absolute inset-0 bg-on-surface/40 backdrop-blur-sm" onclick="closeUploadModal()"></div>
+<div class="absolute bottom-0 left-0 w-full bg-surface rounded-t-[24px] p-margin-mobile flex flex-col gap-2 transform translate-y-full transition-transform duration-300" id="upload-modal-content"><div class="w-12 h-1 bg-outline-variant/30 rounded-full mx-auto mb-4"></div><button class="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-surface-container active:scale-95 transition-all text-on-surface" onclick="closeUploadModal()"><span class="material-symbols-outlined text-primary">photo_camera</span><span class="font-label-lg">Cámara</span></button><button class="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-surface-container active:scale-95 transition-all text-on-surface" onclick="closeUploadModal()"><span class="material-symbols-outlined text-primary">image</span><span class="font-label-lg">Galería</span></button><button class="w-full flex items-center gap-4 p-4 rounded-xl hover:bg-surface-container active:scale-95 transition-all text-on-surface" onclick="closeUploadModal()"><span class="material-symbols-outlined text-primary">folder_open</span><span class="font-label-lg">Archivos</span></button><div class="h-[1px] bg-outline-variant/20 my-2"></div><button class="w-full p-4 rounded-xl text-error font-label-lg text-center active:scale-95 transition-all" onclick="closeUploadModal()">Cancelar</button></div>
+</div>
+<script class="">
+function openUploadModal() {
+  const modal = document.getElementById('upload-modal');
+  const content = document.getElementById('upload-modal-content');
+  modal.classList.remove('invisible', 'opacity-0');
+  modal.classList.add('opacity-100');
+  content.classList.remove('translate-y-full');
+}
+function closeUploadModal() {
+  const modal = document.getElementById('upload-modal');
+  const content = document.getElementById('upload-modal-content');
+  modal.classList.add('opacity-0');
+  content.classList.add('translate-y-full');
+  setTimeout(() => modal.classList.add('invisible'), 300);
+}
+</script>
+
+
+
+</body></html>

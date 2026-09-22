@@ -1,0 +1,884 @@
+<!DOCTYPE html><html class="light" lang="es" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Safe Paws - Registro de Mascota</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#efeded",
+                        "secondary-container": "#fc8a40",
+                        "primary": "#2d5a27",
+                        "on-surface-variant": "#42493e",
+                        "primary-fixed-dim": "#a1d494",
+                        "outline": "#72796e",
+                        "on-tertiary-container": "#c3c4ac",
+                        "error-container": "#ffdad6",
+                        "surface-tint": "#3b6934",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#f2f0f0",
+                        "surface": "#fbf9f8",
+                        "surface-container-high": "#eae8e7",
+                        "primary-fixed": "#bcf0ae",
+                        "secondary": "#9b4500",
+                        "secondary-fixed": "#ffdbc9",
+                        "on-primary-fixed": "#002201",
+                        "surface-container-low": "#f5f3f3",
+                        "inverse-primary": "#a1d494",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#50513f",
+                        "surface-dim": "#dbd9d9",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#23501e",
+                        "surface-bright": "#fbf9f8",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#ffb68d",
+                        "on-secondary-container": "#672c00",
+                        "surface-variant": "#e4e2e2",
+                        "background": "#f5f3f3",
+                        "outline-variant": "#c2c9bb",
+                        "on-surface": "#1b1c1c",
+                        "on-error": "#ffffff",
+                        "on-background": "#1b1c1c",
+                        "on-tertiary": "#ffffff",
+                        "primary-container": "#2d5a27",
+                        "tertiary-fixed": "#e4e4cc",
+                        "on-primary-container": "#9dd090",
+                        "surface-container-highest": "#e4e2e2",
+                        "on-secondary-fixed": "#331200",
+                        "inverse-surface": "#303030",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#763300",
+                        "on-tertiary-fixed-variant": "#474836",
+                        "tertiary": "#393a29",
+                        "tertiary-fixed-dim": "#c8c8b0",
+                        "on-tertiary-fixed": "#1b1d0e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "2xl": "1rem",
+                        "3xl": "1.5rem"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "xl": "32px",
+                        "base": "4px",
+                        "xs": "4px",
+                        "md": "16px",
+                        "margin-mobile": "20px",
+                        "gutter-mobile": "12px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-xl-mobile": ["Montserrat"],
+                        "body-sm": ["Inter"],
+                        "label-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-xl": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "headline-xl-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg": ["24px", { "lineHeight": "32px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #f5f3f3; }
+        .ambient-shadow { box-shadow: 0px 4px 20px rgba(45, 90, 39, 0.08); }
+        .input-floating-label:focus-within label, .input-floating-label input:not(:placeholder-shown) + label,
+        .input-floating-label select:not(:placeholder-shown) + label {
+            transform: translateY(-1.2rem) scale(0.85);
+            color: theme('colors.primary');
+        }
+        .pet-type-btn {
+            border-radius: 0.75rem;
+            transition: all 0.2s ease-in-out;
+        }
+        .pet-type-btn.selected {
+            background-color: rgba(252, 138, 64, 0.8) !important;
+            color: #ffffff !important;
+            border-color: #fc8a40 !important;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="font-body-md text-on-surface antialiased min-h-screen pb-[100px]" data-mode="connect">
+<!-- Top Navigation -->
+<header class="w-full top-0 sticky bg-surface-container-lowest z-40 px-margin-mobile py-sm flex items-center justify-between shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
+<button aria-label="Go Back" class="p-2 -ml-2 text-primary hover:bg-surface-variant rounded-full transition-colors" onclick="window.location.href = '{{DATA:SCREEN:SCREEN_68}}';">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="flex-1 flex justify-center items-center">
+<span class="font-headline-md text-primary text-center">Registrar Mascota</span>
+</div>
+<div class="w-10"></div>
+</header>
+<main class="max-w-md mx-auto px-margin-mobile pt-lg pb-xl">
+<!-- Progress Bar -->
+<div class="mb-xl">
+<div class="flex justify-between items-end mb-sm">
+<span class="font-label-sm text-label-sm text-outline">Paso 3 de 4</span>
+<span class="font-label-sm text-label-sm font-semibold text-primary">Detalles de Mascota</span>
+</div>
+<div class="h-2 w-full bg-tertiary-fixed rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all duration-500 ease-out" style="width: 75%;"></div>
+</div>
+</div>
+<div class="mb-lg">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-sm">Añade a tu compañero</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Sube sus mejores fotos y cuéntanos sobre él para brindarle el mejor cuidado.</p>
+</div>
+<!-- Global Tabs -->
+<div class="flex p-1 bg-surface-container-low rounded-xl mb-lg">
+<button class="flex-1 py-2 rounded-lg font-label-lg transition-colors bg-surface-container-lowest shadow-sm text-primary" id="tab-individual" onclick="switchTab('individual'); document.getElementById('group-description').classList.add('hidden');">
+        Mascotas Individuales
+    </button>
+<button class="flex-1 py-2 rounded-lg font-label-lg transition-colors text-on-surface-variant hover:bg-surface-variant" id="tab-group" onclick="switchTab('group'); document.getElementById('group-description').classList.remove('hidden');">
+        Grupos de animales
+    </button>
+</div>
+<div id="group-description" class="mb-lg px-1 hidden"><p class="font-body-md text-body-md text-on-surface-variant">¿Tienes muchas mascotas de una misma especie? Sácale foto a uno de tus animalitos y pon la cantidad que tienes.</p></div><div class="space-y-lg" id="petsContainer"><div class="bg-surface-container-lowest rounded-[24px] ambient-shadow p-md relative" id="card_pet_0">
+            <div class="flex justify-between items-center mb-md">
+                <h3 class="font-headline-md text-primary">Mascota 1</h3>
+                
+            </div>
+        
+            <div class="mb-lg">
+                <label class="block font-label-lg text-label-lg text-on-surface mb-xs">Fotos de tu mascota (Máx 3)</label>
+                <div class="flex gap-sm overflow-x-auto pb-2 snap-x p-1 rounded-xl transition-all" id="pet_0_photoWrapper">
+                    
+                    <div class="flex-none w-32 h-32 bg-surface-variant rounded-xl flex flex-col items-center justify-center text-primary cursor-pointer hover:bg-surface-container transition-colors snap-center border-2 border-dashed border-outline-variant relative overflow-hidden group" onclick="addMockPhoto('pet_0')">
+                        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDq0KtW1JJYThDiAfFrDrVcG3hwMHr6SFhniaEJgW28Dmc5oeWkC3RPaQx7fJVdKRwJHKFlJhis3nXTgFbVEmoicbIyDiK27Nlnjsr7iMZ-JJFXZbvl9OgRz9dEfpfvBHhc_WCr9CWrIqx2hZ6WJO322t2QAT4x8v1-jZvspME--EogY_W3ZE6BAfRL0e_0F1BYKjKRhiYKKOO_PD-km7dd1U8K1FHD_iJzgEoXsp1wh_EyBesy0PzN" class="w-12 h-12 mb-1 object-contain" alt="Subir Foto">
+                        <span class="font-label-sm text-label-sm">Subir Foto</span>
+                    </div>
+                    
+                    
+                </div>
+                <p class="hidden text-error font-body-sm mt-1" id="pet_0_photoError">Agrega al menos una foto</p>
+            </div>
+        
+            <div class="mb-lg">
+                <label class="block font-label-lg text-label-lg text-on-surface mb-sm">Tipo de Mascota</label>
+                <div class="grid grid-cols-3 gap-md p-1 rounded-xl transition-all border-outline-variant focus-within:border-primary focus-within:border-2" id="pet_0_typeContainer">
+                    
+                    <button class="pet-type-btn flex flex-col items-center justify-center hover:border-primary/50 transition-all active:scale-95 p-2 border-2 border-transparent bg-surface-container-low selected text-primary" onclick="selectPetType('pet_0', 'Perro')" type="button">
+                        <img alt="Perro" class="w-full h-24 mb-1 object-contain mix-blend-multiply" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDq0KtW1JJYThDiAfFrDrVcG3hwMHr6SFhniaEJgW28Dmc5oeWkC3RPaQx7fJVdKRwJHKFlJhis3nXTgFbVEmoicbIyDiK27Nlnjsr7iMZ-JJFXZbvl9OgRz9dEfpfvBHhc_WCr9CWrIqx2hZ6WJO322t2QAT4x8v1-jZvspME--EogY_W3ZE6BAfRL0e_0F1BYKjKRhiYKKOO_PD-km7dd1U8K1FHD_iJzgEoXsp1wh_EyBesy0PzN">
+                        <span class="font-label-sm text-label-sm">Perro</span>
+                    </button>
+                    
+                    <button class="pet-type-btn flex flex-col items-center justify-center hover:border-primary/50 transition-all active:scale-95 p-2 border-2 border-transparent bg-surface-container-low text-on-surface-variant" onclick="selectPetType('pet_0', 'Gato')" type="button">
+                        <img alt="Gato" class="w-full h-24 mb-1 object-contain mix-blend-multiply" src="https://lh3.googleusercontent.com/aida/AEtjO1WJ5WAQNuMQhSOeqHks2ghsSiHnzaC168IHVJdEcGJK7HKsY7vNjp-Wqgr37WJd5DyqgRaM8DwnWvYHRLKRISIN2ZBCrVx9QiCi4OffrXsUl8McN20wELC-CgSddWAiPXODEI83jd0Puy6aJCx5sGfgvO1jQ7HpryhO1PRCnztKURjogfQZC3TrgXHHM_uwD0ZkX-h6UHm0MDbh8ilGCZzW_Ec0nMNs1cd60JliWU51S3iAVg7r-llVgQ4">
+                        <span class="font-label-sm text-label-sm">Gato</span>
+                    </button>
+                    
+                    <button class="pet-type-btn flex flex-col items-center justify-center hover:border-primary/50 transition-all active:scale-95 p-2 border-2 border-transparent bg-surface-container-low text-on-surface-variant" onclick="selectPetType('pet_0', 'Ave')" type="button">
+                        <img alt="Ave" class="w-full h-24 mb-1 object-contain mix-blend-multiply" src="https://lh3.googleusercontent.com/aida/AEtjO1X5khOc717k0K7jTPrjx2PkeJd2wxCXxu9N_C15IBQYm2IzExcEFfdBgjfLVaHrNkCXipx-zw44_Qh4jcPsioOzl1izDZmzsQPGRA_3BlbnvOWv_dBZd3UV3R8wAzfpN_XPYsRUOAVkH0_shWxIUmm33sf3c8dORQoCeP43QswItEoawf571hEpFabVuiQ8grCvacqAr4N1Tr-VTEi-m99cjb12DUIFaC4JUWFhOEuC2s3UIiiXHn1Ovw">
+                        <span class="font-label-sm text-label-sm">Ave</span>
+                    </button>
+                    
+                    <button class="pet-type-btn flex flex-col items-center justify-center hover:border-primary/50 transition-all active:scale-95 p-2 border-2 border-transparent bg-surface-container-low text-on-surface-variant" onclick="selectPetType('pet_0', 'Reptil')" type="button">
+                        <img alt="Reptil" class="w-full h-24 mb-1 object-contain mix-blend-multiply" src="https://lh3.googleusercontent.com/aida/AEtjO1UPeuuoZrme8e8bEifkHss23_AsvJ_zBDS2pmwGq0p8zS4Rte0jhlR1v9sOpw_BA-gHCIyEjRnm7a6DeogZjWBfKo7qYF6CHIBOf4S9TAx-IEckQ6veZsKryJmxFHPF_jBhfUBUIBRBxf8Hj04cSFZHY5mDAxKdCTvLjoVvncud3JtgA5JiHS-Ja8PsHWOEuGN2BO7Aarj54iztE-cRzwHL3-R8ULrFZQmzczBU8OQtveMOVe8KR5C12Ug">
+                        <span class="font-label-sm text-label-sm">Reptil</span>
+                    </button>
+                    
+                    <button class="pet-type-btn flex flex-col items-center justify-center hover:border-primary/50 transition-all active:scale-95 p-2 border-2 border-transparent bg-surface-container-low text-on-surface-variant" onclick="selectPetType('pet_0', 'Acuáticas')" type="button">
+                        <img alt="Acuáticas" class="w-full h-24 mb-1 object-contain mix-blend-multiply" src="https://lh3.googleusercontent.com/aida/AEtjO1UyYoPKM7z9u4WfuBEgkl28BpoO182_KUTmx0lAWuSk9E5FAcntYKVoW9zgj28cJdGuUlLQWet2Yelwul-PzZBQj4X5weKhgbDVCnOmwFsuYQPYaN4rnrj2L4wA9cq5n-7F-n9zpqQckc_fawLZ3YE1slFwk5ZC1GO8eAJukyL1FKIZ0jKk7NwLaEMVhjF9Z8EXHSGCc53GQiwopQEZnU77wOFOKfbIs1kVTjcF_NDkI1qLjfuUmBBQ4sQ">
+                        <span class="font-label-sm text-label-sm">Acuáticas</span>
+                    </button>
+                    
+                    <button class="pet-type-btn flex flex-col items-center justify-center hover:border-primary/50 transition-all active:scale-95 p-2 border-2 border-transparent bg-surface-container-low text-on-surface-variant" onclick="selectPetType('pet_0', 'Ganadería')" type="button">
+                        <img alt="Ganadería" class="w-full h-24 mb-1 object-contain mix-blend-multiply" src="https://lh3.googleusercontent.com/aida/AEtjO1UvClQNAsHFEZmzndSmTD32zwXZ6J7ytwX0ORA1gdXv4QAiUzzJlwa_FgwGVJEwBp5f4icBPPVVunuq6YGyxFR85XxRa0znApCdVDLCeyde5dVVYm-44nAE7UKvrjPQraEgyRhfH4VcLno8YHRILYX4IVQwyc8ZFIOAn6VZAjowXx6i3cx8m-tR6BDWOt4i9JpGIlOP1_Q2azg0gFzsz_MQgePJN8Vcd9y5l517eBWEk8mfDSQ-6QiUNCY">
+                        <span class="font-label-sm text-label-sm">Ganadería</span>
+                    </button>
+                    
+                </div>
+                <p class="hidden text-error font-body-sm mt-1" id="pet_0_typeError">Selecciona un tipo</p>
+            </div>
+        <div class="space-y-md">
+                <div>
+                    <div class="relative input-floating-label bg-surface-container-lowest rounded-xl border border-outline-variant focus-within:border-primary focus-within:border-2 transition-all" id="pet_0_nameWrapper">
+                        <input class="block w-full px-md pt-6 pb-2 bg-transparent border-none text-on-surface font-body-md focus:ring-0 peer" id="pet_0_name" oninput="updatePetData('pet_0', 'name', this.value)" value="" placeholder=" " type="text">
+                        <label class="absolute left-md top-4 text-on-surface-variant font-body-md transition-all duration-200 pointer-events-none origin-left">Nombre de la mascota</label>
+                    </div>
+                    <p class="hidden text-error font-body-sm mt-1" id="pet_0_nameError">Este campo es obligatorio</p>
+                </div>
+            
+            <div>
+                <div class="relative input-floating-label bg-surface-container-lowest rounded-xl border border-outline-variant focus-within:border-primary focus-within:border-2 transition-all cursor-pointer" id="pet_0_breedWrapper" onclick="openBreedModal('pet_0')">
+                    <input class="block w-full px-md pt-6 pb-2 pr-10 bg-transparent border-none text-on-surface font-body-md focus:ring-0 peer cursor-pointer" id="pet_0_breedDisplay" value="" placeholder=" " readonly="" type="text">
+                    <label class="absolute left-md top-4 text-on-surface-variant font-body-md transition-all duration-200 pointer-events-none origin-left">Raza / Especie</label>
+                    <span class="material-symbols-outlined absolute right-3 top-4 text-outline pointer-events-none">search</span>
+                </div>
+                <p class="hidden text-error font-body-sm mt-1" id="pet_0_breedError">Selecciona una raza o especie</p>
+            </div>
+            
+            <div class="hidden" id="pet_0_customBreedContainer">
+                <div class="relative input-floating-label bg-surface-container-lowest rounded-xl border border-outline-variant focus-within:border-primary focus-within:border-2 transition-all" id="pet_0_customBreedWrapper">
+                    <input class="block w-full px-md pt-6 pb-2 bg-transparent border-none text-on-surface font-body-md focus:ring-0 peer" id="pet_0_customBreed" oninput="updatePetData('pet_0', 'customBreed', this.value)" value="" placeholder=" ">
+                    <label class="absolute left-md top-4 text-on-surface-variant font-body-md transition-all duration-200 pointer-events-none origin-left">Especificar otra raza/especie</label>
+                </div>
+                <p class="hidden text-error font-body-sm mt-1" id="pet_0_customBreedError">Este campo es obligatorio</p>
+            </div>
+        
+            <div class="grid grid-cols-2 gap-md">
+                <div>
+                    <div class="relative input-floating-label bg-surface-container-lowest rounded-xl border border-outline-variant focus-within:border-primary focus-within:border-2 transition-all" id="pet_0_ageWrapper">
+                        <input class="block w-full px-md pt-6 pb-2 pr-12 bg-transparent border-none text-on-surface font-body-md focus:ring-0 peer" id="pet_0_age" oninput="updatePetData('pet_0', 'age', this.value)" value="" placeholder=" " type="number">
+                        <label class="absolute left-md top-4 text-on-surface-variant font-body-md transition-all duration-200 pointer-events-none origin-left">Edad</label>
+                        <span class="absolute right-md top-4 text-outline font-body-sm pointer-events-none">Años</span>
+                    </div>
+                    <p class="hidden text-error font-body-sm mt-1" id="pet_0_ageError">Este campo es obligatorio</p>
+                </div>
+                <div>
+                    <div class="relative input-floating-label bg-surface-container-lowest rounded-xl border border-outline-variant focus-within:border-primary focus-within:border-2 transition-all" id="pet_0_weightWrapper">
+                        <input class="block w-full px-md pt-6 pb-2 pr-10 bg-transparent border-none text-on-surface font-body-md focus:ring-0 peer" id="pet_0_weight" oninput="updatePetData('pet_0', 'weight', this.value)" value="" placeholder=" " type="number">
+                        <label class="absolute left-md top-4 text-on-surface-variant font-body-md transition-all duration-200 pointer-events-none origin-left">Peso </label>
+                        <span class="absolute right-md top-4 text-outline font-body-sm pointer-events-none">kg</span>
+                    </div>
+                    <p class="hidden text-error font-body-sm mt-1" id="pet_0_weightError">Este campo es obligatorio</p>
+                </div>
+            </div>
+        </div></div></div>
+<!-- Tertiary CTA -->
+<div class="mt-lg flex justify-center">
+<button class="flex items-center gap-2 font-label-lg text-label-lg text-primary bg-transparent border border-primary rounded-full px-md py-2 hover:bg-primary/5 transition-colors active:scale-95" id="add-pet-btn" onclick="addPet()" type="button">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                    Añadir otra mascota
+                </button>
+</div>
+</main>
+<!-- Bottom Actions -->
+<div class="fixed bottom-0 left-0 w-full p-margin-mobile bg-surface-container-lowest border-t border-surface-variant shadow-[0px_-4px_20px_0px_rgba(0,0,0,0.05)] z-50">
+<div class="max-w-md mx-auto flex gap-md">
+<button class="flex-[2] font-label-lg text-label-lg bg-primary text-on-primary rounded-full py-md hover:bg-surface-tint transition-colors active:scale-95 text-center" onclick="window.location.href = '{{DATA:SCREEN:SCREEN_137}}';">
+                Continuar
+            </button>
+</div>
+</div>
+<!-- Delete Confirmation Modal -->
+<div class="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 transition-opacity duration-300 opacity-0 pointer-events-none" id="delete-modal">
+<div class="w-[90%] max-w-sm bg-surface-container-lowest rounded-3xl p-lg shadow-xl transform transition-transform duration-300 scale-95">
+<h3 class="font-headline-md text-primary mb-sm">Eliminar mascota</h3>
+<p class="font-body-md text-on-surface-variant mb-lg">¿Estás seguro que deseas eliminar esta mascota?</p>
+<div class="flex justify-end gap-sm">
+<button class="px-md py-2 font-label-lg text-primary rounded-full hover:bg-primary/5 transition-colors" onclick="closeDeleteModal()">Cancelar</button>
+<button class="px-md py-2 font-label-lg text-error bg-error/10 rounded-full hover:bg-error/20 transition-colors" id="confirmDeleteBtn">Eliminar</button>
+</div>
+</div>
+</div>
+<!-- Photo Upload Bottom Sheet -->
+<div class="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 transition-opacity duration-300 opacity-0 pointer-events-none" id="photo-upload-modal"><div class="w-full max-w-md bg-surface-container-lowest rounded-t-[32px] p-margin-mobile pb-xl transform transition-transform duration-300 ease-out shadow-lg translate-y-full">
+    <div class="w-12 h-1.5 bg-outline-variant rounded-full mx-auto mb-lg"></div>
+    <h3 class="font-headline-md text-primary mb-lg text-center">Seleccionar foto</h3>
+    <div class="space-y-md">
+        <button class="w-full flex items-center gap-md p-lg rounded-2xl border border-outline-variant bg-surface-container-low hover:bg-primary/5 transition-colors group" onclick="triggerFileInput('camera')">
+            <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                <span class="material-symbols-outlined text-3xl">photo_camera</span>
+            </div>
+            <span class="font-label-lg text-on-surface">Cámara</span>
+        </button>
+        <button class="w-full flex items-center gap-md p-lg rounded-2xl border border-outline-variant bg-surface-container-low hover:bg-primary/5 transition-colors group" onclick="triggerFileInput('gallery')">
+            <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-on-primary transition-colors">
+                <span class="material-symbols-outlined text-3xl">image</span>
+            </div>
+            <span class="font-label-lg text-on-surface">Galería</span>
+        </button>
+        <button class="w-full py-md font-label-lg text-primary bg-transparent border border-primary rounded-full hover:bg-primary/5 transition-colors" onclick="closePhotoModal()">Cancelar</button>
+    </div>
+</div></div>
+<!-- Breed Search Bottom Sheet -->
+<div class="fixed inset-0 z-[60] flex items-end justify-center bg-black/40 transition-opacity duration-300 opacity-0 pointer-events-none" id="breed-search-modal">
+<div class="w-full max-w-md bg-surface-container-lowest rounded-t-[32px] h-[80vh] flex flex-col transform transition-transform duration-300 ease-out shadow-lg translate-y-full">
+<div class="p-margin-mobile border-b border-surface-variant flex-shrink-0">
+<div class="w-12 h-1.5 bg-outline-variant rounded-full mx-auto mb-4"></div>
+<h3 class="font-headline-md text-primary mb-sm text-center">Buscar Raza/Especie</h3>
+<div class="relative bg-surface-container-low rounded-xl">
+<span class="material-symbols-outlined absolute left-3 top-3 text-outline">search</span>
+<input class="w-full bg-transparent border-none px-10 py-3 text-on-surface font-body-md focus:ring-0" id="breedSearchInput" onkeyup="filterBreeds()" placeholder="Ej. Golden Retriever" type="text">
+</div>
+</div>
+<div class="flex-1 overflow-y-auto p-margin-mobile">
+<ul class="space-y-1" id="breedListContainer"></ul>
+</div>
+<div class="p-margin-mobile border-t border-surface-variant flex-shrink-0 bg-surface-container-lowest">
+<button class="w-full py-md font-label-lg text-primary bg-transparent border border-primary rounded-full hover:bg-primary/5 transition-colors" onclick="closeBreedModal()">
+                Cerrar
+            </button>
+</div>
+</div>
+</div>
+<script>
+    const breedsData = {
+        'Perro': ['Golden Retriever', 'Labrador Retriever', 'Pastor Alemán', 'Border Collie', 'Poodle', 'Yorkshire Terrier', 'Chihuahua', 'Bulldog Francés', 'Bulldog Inglés', 'Rottweiler', 'Dachshund', 'Beagle', 'Husky Siberiano', 'Pomerania', 'Shih Tzu', 'Maltés', 'Schnauzer', 'Boxer', 'Gran Danés', 'Doberman', 'Akita', 'Samoyedo', 'Cocker Spaniel', 'Galgo', 'Quiltro (Mestizo)'],
+        'Gato': ['Siamés', 'Persa', 'Maine Coon', 'Bengalí', 'Ragdoll', 'Sphynx', 'Azul Ruso', 'Mestizo'],
+        'Ave': ['Canario', 'Periquito', 'Cacatúa Ninfa', 'Agapornis', 'Diamante de Gould', 'Loro', 'Diamante Mandarín', 'Periquito Australiano'],
+        'Reptil': ['Escinco', 'Cocodrilo', 'Iguana', 'Gecko', 'Tortuga', 'Serpiente de maíz', 'Pitón real', 'Tortuga de orejas rojas (Trachemys scripta elegans)', 'Iguana verde', 'Dragón barbudo'],
+        'Acuáticas': ['Pez Goldfish', 'Betta', 'Guppy', 'Mollys', 'Tetras', 'Escalares', 'Coridoras', 'Goldfish', 'Molly', 'Neón'],
+        'Ganadería': ['Gallina', 'Gallo', 'Pato', 'Ganso', 'Pavo', 'Vaca', 'Toro', 'Ternero', 'Caballo', 'Yegua', 'Burro', 'Mula', 'Cabra', 'Oveja', 'Cerdo']
+    };
+
+    let individualPets = [];
+    let animalGroups = [];
+    let currentTab = 'individual';
+    
+    let petCounter = 0;
+    let activePetIdForBreed = null;
+    let petToDeleteId = null;
+
+    function generateId() {
+        return 'pet_' + petCounter++;
+    }
+
+    function createPetObject(mode) {
+        return {
+            id: generateId(),
+            mode: mode,
+            photos: [],
+            type: mode === 'individual' ? 'Perro' : 'Ganadería',
+            breed: '',
+            customBreed: '',
+            name: '',
+            quantity: '',
+            age: '',
+            weight: ''
+        };
+    }
+    
+    function switchTab(tab) {
+        currentTab = tab;
+        
+        const tabInd = document.getElementById('tab-individual');
+        const tabGrp = document.getElementById('tab-group');
+        
+        if(tab === 'individual') {
+            tabInd.className = 'flex-1 py-2 rounded-lg font-label-lg transition-colors bg-surface-container-lowest shadow-sm text-primary';
+            tabGrp.className = 'flex-1 py-2 rounded-lg font-label-lg transition-colors text-on-surface-variant hover:bg-surface-variant';
+        } else {
+            tabGrp.className = 'flex-1 py-2 rounded-lg font-label-lg transition-colors bg-surface-container-lowest shadow-sm text-primary';
+            tabInd.className = 'flex-1 py-2 rounded-lg font-label-lg transition-colors text-on-surface-variant hover:bg-surface-variant';
+        }
+        
+        // Ensure there is at least one form in the active tab if it's empty
+        const activeArray = currentTab === 'individual' ? individualPets : animalGroups;
+        if(activeArray.length === 0) {
+            activeArray.push(createPetObject(currentTab));
+        }
+        
+        renderPets();
+    }
+
+    function getActiveArray() {
+        return currentTab === 'individual' ? individualPets : animalGroups;
+    }
+
+    function findPet(id) {
+        let pet = individualPets.find(p => p.id === id);
+        if(!pet) pet = animalGroups.find(p => p.id === id);
+        return pet;
+    }
+
+    function addPet() {
+        const activeArray = getActiveArray();
+        const newPet = createPetObject(currentTab);
+        activeArray.push(newPet);
+        renderPets();
+    }
+
+    function removePet(id) {
+        if(currentTab === 'individual') {
+            individualPets = individualPets.filter(p => p.id !== id);
+        } else {
+            animalGroups = animalGroups.filter(p => p.id !== id);
+        }
+        renderPets();
+    }
+
+    function openDeleteModal(id) {
+        petToDeleteId = id;
+        const modal = document.getElementById('delete-modal');
+        modal.classList.remove('opacity-0', 'pointer-events-none');
+        modal.querySelector('div').classList.remove('scale-95');
+        
+        document.getElementById('confirmDeleteBtn').onclick = function() {
+            if (petToDeleteId) {
+                removePet(petToDeleteId);
+                closeDeleteModal();
+            }
+        };
+    }
+
+    function closeDeleteModal() {
+        petToDeleteId = null;
+        const modal = document.getElementById('delete-modal');
+        modal.classList.add('opacity-0', 'pointer-events-none');
+        modal.querySelector('div').classList.add('scale-95');
+    }
+
+    function updatePetData(id, field, value) {
+        const pet = findPet(id);
+        if (pet) {
+            pet[field] = value;
+            clearError(`${id}_${field}Wrapper`, `${id}_${field}Error`);
+        }
+    }
+
+    function selectPetType(id, type) {
+        const pet = findPet(id);
+        if (pet) {
+            pet.type = type;
+            pet.breed = '';
+            pet.customBreed = '';
+            clearError(`${id}_typeContainer`, `${id}_typeError`);
+            renderPets();
+        }
+    }
+
+    function removePhoto(id, index) {
+        const pet = findPet(id);
+        if (pet && pet.photos) {
+            pet.photos.splice(index, 1);
+            renderPets();
+        }
+    }
+
+    // Mock photo addition for demo
+    function addMockPhoto(id) {
+        const pet = findPet(id);
+        if (pet && (!pet.photos || pet.photos.length < 3)) {
+            pet.photos = pet.photos || [];
+            pet.photos.push("https://lh3.googleusercontent.com/aida-public/AB6AXuAGSlIph7nm6Op5YwkOCE8M7UuVkfehLGRgHSTMKjx5-a9LLJt8WJ1bUOZo4fYPTMcwzhA7O398yRCgZPdwtecV94XkpWa95MYR4p_rgJecng8OBXZ_nR8bwAOopUffGeFdsQnQyN5khGWN7Ru_04LCvKXCPtVE3CcNHpup0yWoG2oo1jKs58hvJXUYekYOoGJXGHUAGPFRzA2hWH3CoT5ochr0WyfScvOCRL_gwkA74DqDUDxvA83j");
+            clearError(`${id}_photoWrapper`, `${id}_photoError`);
+            renderPets();
+        }
+    }
+
+    function renderPets() {
+        const container = document.getElementById('petsContainer');
+        container.innerHTML = '';
+        
+        const activeArray = getActiveArray();
+        
+        activeArray.forEach((pet, index) => {
+            container.appendChild(createPetCard(pet, index, activeArray.length));
+        });
+    }
+
+    function createPetCard(pet, index, totalPetsInArray) {
+        const div = document.createElement('div');
+        div.className = 'bg-surface-container-lowest rounded-[24px] ambient-shadow p-md relative';
+        div.id = `card_${pet.id}`;
+        
+        const cardTitle = pet.mode === 'individual' ? `Mascota ${index + 1}` : `Grupo ${index + 1}`;
+
+        // Header & Delete Button
+        let headerHtml = `
+            <div class="flex justify-between items-center mb-md">
+                <h3 class="font-headline-md text-primary">${cardTitle}</h3>
+                ${totalPetsInArray > 1 ? `
+                <button onclick="openDeleteModal('${pet.id}')" class="text-error hover:bg-error-container p-2 rounded-full transition-colors flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[20px]">delete</span>
+                </button>
+                ` : ''}
+            </div>
+        `;
+
+        // Photos
+        let photosHtml = `
+            <div class="mb-lg">
+                <label class="block font-label-lg text-label-lg text-on-surface mb-xs">${pet.mode === 'individual' ? 'Fotos de tu mascota (Máx 3)' : 'Foto representativa (Máx 3)'}</label>
+                <div class="flex gap-sm overflow-x-auto pb-2 snap-x p-1 rounded-xl transition-all" id="${pet.id}_photoWrapper">
+                    ${(!pet.photos || pet.photos.length < 3) ? `
+                    <div class="flex-none w-32 h-32 bg-surface-variant rounded-xl flex flex-col items-center justify-center text-primary cursor-pointer hover:bg-surface-container transition-colors snap-center border-2 border-dashed border-outline-variant relative overflow-hidden group" onclick="addMockPhoto('${pet.id}')">
+                        <span class="material-symbols-outlined mb-1 text-3xl">add_a_photo</span>
+                        <span class="font-label-sm text-label-sm">Subir Foto</span>
+                    </div>
+                    ` : ''}
+                    ${(pet.photos || []).map((photo, i) => `
+                    <div class="flex-none w-32 h-32 rounded-xl bg-surface-variant relative snap-center overflow-hidden ambient-shadow photo-item">
+                        <img class="w-full h-full object-cover" src="${photo}" />
+                        <button aria-label="Remove photo" class="absolute top-1 right-1 bg-surface-container-lowest/80 rounded-full p-1 text-error hover:bg-error-container transition-colors" onclick="removePhoto('${pet.id}', ${i})">
+                            <span class="material-symbols-outlined text-[18px]">close</span>
+                        </button>
+                    </div>
+                    `).join('')}
+                </div>
+                <p class="hidden text-error font-body-sm mt-1" id="${pet.id}_photoError">Agrega al menos una foto</p>
+            </div>
+        `;
+
+        // Type
+        const types = [
+            { id: 'Perro', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD-X28ft5zJFheKC9yn3aTE_PtKPaWjGOD1PUwMviuIUJmBDq_vCNct1KEKlZF-2pyvv0V9y54wD1WdlKe8_wwqTCcJXAJFjCxC49mrECPwYc1WGdmXixctRfqhoJl8uPVDEihr5JdOwf7zbz4w01kmW14mrgNS3kiMGLtuyLJ8gun4HBjRLCZYFbQiuBTPe68ZLBSkGTd2a5f4bTO5WDCJb9iXbeMIpRVq2Zo6eewmB-nn0unRHBT7' },
+            { id: 'Gato', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAhjAunFwO3NA6Fpo6fSm6oLBEc6TubMicn7yhkDcf8ePWC7kY4eoagrOqGSii_KP6P6PNEUDV5NwWGLw5CDiF8W85BGKVvs0xKY1vSJHIUNqLak_IYwIg97VOvfDhSITMaFjLIG-uKAu-crw9H5pk4lWxYJYGi9SnFynD5TS_jp3OesZDinDgzgYhZTE5KL0UyThD916enGsz6INU4f7wkO-B8CNjqPzHgldASi_EI2tqmSa-nXOdL' },
+            { id: 'Ave', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBQynoTRt_5I2b4XCFuAZc_ea8BsSVmBIfF6CTel05zGdYI9NwKM-3bz1ARUQZp_sFBOK0c68oynwPEWmNynOwnMv9BKHugUUHjQ8vbFKNeRWPqrpYUTOZGOMl_JG2-ViI4QLKmx3B_Z0pcsdbPJ_RU1G4N-ypcKcxOnJz8ONYHtcdJWzVxBGWp4AzTXFVn07BDepADwaBOVgWzifmluc6GkT5z41HqiKWTX03pzmeJhknOZM0gPytt' },
+            { id: 'Reptil', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAQ_m5_1JOZiJct53R8CMt7FDyLhXnXy1hsMHbw-lsmpI7JwO4fz2nmRy8LlV3D-UFcFMh0XiPCqKk89w19CWkU1Ww0FVRcigxHFc4ZpI1hE28jo32v8A8Xf48BO5yLiT-k8SOZOVJE9N8KTLCv4zVN_qO8fEB1r6IF_QlPuBdzCsQIEAcvRNWD8dFkNqvL9RWOycolKBgZ-D3r4CLG4sS2C5CHExbe4APuDmAgroXLFXlaq8B0voEn' },
+            { id: 'Acuáticas', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCewoIKvCrelvnh1K0OzUFKP_Y38shFjAfrQYbLCh70je60oXWnKEM4G-E28BvYgtYZbY1_eN-fRkjT3tS5612RQpnZT75FeW6zVuPkyWpIUnQiHYi37aICVd2mUoQlUblME8MlEz8SKavOx2aOe5Z14FhVIhRUFRTOKvITpdBpdevnO6cymoVw0VXJ9c8LpS0pB_64gOPajnrdvI8w6h-k2JObWlouC42Zm0sv3mQA6HJWbwJSIiFd' },
+            { id: 'Ganadería', img: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAr9t8A47Z0ThX7U3AwcVt21tjlXw6tisAGNrdrz95VZw2a_opIZG433RRBssyq8WiwEmveXBwEnztquH5rQW8kgDt9WjKuKutTRBVtyvffO_KD7Qqq90ZaWmPQSglc2ATKHkQEggOz4tFQMQBEgGHqXtQNNie3pnpeI9vzhP5ejEz2A3ZDmBBjTjkJkyPxSgPBR28RkGDtoUmIsuATBHxlFhNyzEESVOzXljwIobdWc-8rswrUbVpH' }
+        ];
+
+        let typeHtml = `
+            <div class="mb-lg">
+                <label class="block font-label-lg text-label-lg text-on-surface mb-sm">${pet.mode === 'individual' ? 'Tipo de Mascota' : 'Tipo de Animal'}</label>
+                <div class="grid grid-cols-3 gap-md p-1 rounded-xl transition-all border-outline-variant focus-within:border-primary focus-within:border-2" id="${pet.id}_typeContainer">
+                    ${types.map(t => `
+                    <button class="pet-type-btn flex flex-col items-center justify-center hover:border-primary/50 transition-all active:scale-95 p-2 border-2 border-transparent bg-surface-container-low ${pet.type === t.id ? 'selected text-primary' : 'text-on-surface-variant'}" onclick="selectPetType('${pet.id}', '${t.id}')" type="button">
+                        <img alt="${t.id}" class="w-full h-24 mb-1 object-contain mix-blend-multiply" src="${t.img}"/>
+                        <span class="font-label-sm text-label-sm">${t.id}</span>
+                    </button>
+                    `).join('')}
+                </div>
+                <p class="hidden text-error font-body-sm mt-1" id="${pet.id}_typeError">Selecciona un tipo</p>
+            </div>
+        `;
+
+        // Inputs depending on mode
+        let inputsHtml = `<div class="space-y-md">`;
+        
+        if (pet.mode === 'individual') {
+            inputsHtml += `
+                <div>
+                    <div class="relative input-floating-label bg-surface-container-lowest rounded-xl border border-outline-variant focus-within:border-primary focus-within:border-2 transition-all" id="${pet.id}_nameWrapper">
+                        <input class="block w-full px-md pt-6 pb-2 bg-transparent border-none text-on-surface font-body-md focus:ring-0 peer" id="${pet.id}_name" oninput="updatePetData('${pet.id}', 'name', this.value)" value="${pet.name}" placeholder=" " type="text"/>
+                        <label class="absolute left-md top-4 text-on-surface-variant font-body-md transition-all duration-200 pointer-events-none origin-left">Nombre de la mascota</label>
+                    </div>
+                    <p class="hidden text-error font-body-sm mt-1" id="${pet.id}_nameError">Este campo es obligatorio</p>
+                </div>
+            `;
+        } else {
+            inputsHtml += `
+                <div>
+                    <div class="relative input-floating-label bg-surface-container-lowest rounded-xl border border-outline-variant focus-within:border-primary focus-within:border-2 transition-all" id="${pet.id}_quantityWrapper">
+                        <input class="block w-full px-md pt-6 pb-2 bg-transparent border-none text-on-surface font-body-md focus:ring-0 peer" id="${pet.id}_quantity" oninput="updatePetData('${pet.id}', 'quantity', this.value)" value="${pet.quantity}" placeholder=" " type="number" min="1"/>
+                        <label class="absolute left-md top-4 text-on-surface-variant font-body-md transition-all duration-200 pointer-events-none origin-left">Cantidad aproximada</label>
+                    </div>
+                    <p class="hidden text-error font-body-sm mt-1" id="${pet.id}_quantityError">Este campo es obligatorio</p>
+                </div>
+            `;
+        }
+
+        inputsHtml += `
+            <div>
+                <div class="relative input-floating-label bg-surface-container-lowest rounded-xl border border-outline-variant focus-within:border-primary focus-within:border-2 transition-all cursor-pointer" id="${pet.id}_breedWrapper" onclick="openBreedModal('${pet.id}')">
+                    <input class="block w-full px-md pt-6 pb-2 pr-10 bg-transparent border-none text-on-surface font-body-md focus:ring-0 peer cursor-pointer" id="${pet.id}_breedDisplay" value="${pet.breed}" placeholder=" " readonly="" type="text"/>
+                    <label class="absolute left-md top-4 text-on-surface-variant font-body-md transition-all duration-200 pointer-events-none origin-left">Raza / Especie</label>
+                    <span class="material-symbols-outlined absolute right-3 top-4 text-outline pointer-events-none">search</span>
+                </div>
+                <p class="hidden text-error font-body-sm mt-1" id="${pet.id}_breedError">Selecciona una raza o especie</p>
+            </div>
+            
+            <div class="${pet.breed === 'Otro' ? '' : 'hidden'}" id="${pet.id}_customBreedContainer">
+                <div class="relative input-floating-label bg-surface-container-lowest rounded-xl border border-outline-variant focus-within:border-primary focus-within:border-2 transition-all" id="${pet.id}_customBreedWrapper">
+                    <input class="block w-full px-md pt-6 pb-2 bg-transparent border-none text-on-surface font-body-md focus:ring-0 peer" id="${pet.id}_customBreed" oninput="updatePetData('${pet.id}', 'customBreed', this.value)" value="${pet.customBreed}" placeholder=" "/>
+                    <label class="absolute left-md top-4 text-on-surface-variant font-body-md transition-all duration-200 pointer-events-none origin-left">Especificar otra raza/especie</label>
+                </div>
+                <p class="hidden text-error font-body-sm mt-1" id="${pet.id}_customBreedError">Este campo es obligatorio</p>
+            </div>
+        `;
+
+        inputsHtml += `
+            <div class="grid grid-cols-2 gap-md">
+                <div>
+                    <div class="relative input-floating-label bg-surface-container-lowest rounded-xl border border-outline-variant focus-within:border-primary focus-within:border-2 transition-all" id="${pet.id}_ageWrapper">
+                        <input class="block w-full px-md pt-6 pb-2 pr-12 bg-transparent border-none text-on-surface font-body-md focus:ring-0 peer" id="${pet.id}_age" oninput="updatePetData('${pet.id}', 'age', this.value)" value="${pet.age}" placeholder=" " type="${pet.mode === 'individual' ? 'number' : 'text'}"/>
+                        <label class="absolute left-md top-4 text-on-surface-variant font-body-md transition-all duration-200 pointer-events-none origin-left">Edad</label>
+                        ${pet.mode === 'individual' ? '<span class="absolute right-md top-4 text-outline font-body-sm pointer-events-none">Años</span>' : ''}
+                    </div>
+                    <p class="hidden text-error font-body-sm mt-1" id="${pet.id}_ageError">Este campo es obligatorio</p>
+                </div>
+                <div>
+                    <div class="relative input-floating-label bg-surface-container-lowest rounded-xl border border-outline-variant focus-within:border-primary focus-within:border-2 transition-all" id="${pet.id}_weightWrapper">
+                        <input class="block w-full px-md pt-6 pb-2 pr-10 bg-transparent border-none text-on-surface font-body-md focus:ring-0 peer" id="${pet.id}_weight" oninput="updatePetData('${pet.id}', 'weight', this.value)" value="${pet.weight}" placeholder=" " type="number"/>
+                        <label class="absolute left-md top-4 text-on-surface-variant font-body-md transition-all duration-200 pointer-events-none origin-left">Peso ${pet.mode === 'group' ? '(Opcional)' : ''}</label>
+                        <span class="absolute right-md top-4 text-outline font-body-sm pointer-events-none">kg</span>
+                    </div>
+                    <p class="hidden text-error font-body-sm mt-1" id="${pet.id}_weightError">Este campo es obligatorio</p>
+                </div>
+            </div>
+        </div>`;
+
+        div.innerHTML = headerHtml + photosHtml + typeHtml + inputsHtml;
+        return div;
+    }
+
+    function normalizeString(str) {
+        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    }
+
+    function showError(wrapperId, errorId) {
+        const wrapper = document.getElementById(wrapperId);
+        const error = document.getElementById(errorId);
+        if(wrapper) {
+            wrapper.classList.add('border-error');
+            wrapper.classList.remove('border-outline-variant');
+            wrapper.classList.remove('focus-within:border-primary', 'focus-within:border-2');
+        }
+        if(error) error.classList.remove('hidden');
+    }
+
+    function clearError(wrapperId, errorId) {
+        const wrapper = document.getElementById(wrapperId);
+        const error = document.getElementById(errorId);
+        if(wrapper) {
+            wrapper.classList.remove('border-error');
+            wrapper.classList.add('border-outline-variant');
+            wrapper.classList.add('focus-within:border-primary', 'focus-within:border-2');
+        }
+        if(error) error.classList.add('hidden');
+    }
+
+    function openBreedModal(petId) {
+        activePetIdForBreed = petId;
+        const pet = findPet(petId);
+        
+        if (!pet || !pet.type) {
+            showError(`${petId}_typeContainer`, `${petId}_typeError`);
+            return;
+        }
+        
+        document.getElementById('breedSearchInput').value = '';
+        const currentBreeds = [...new Set(breedsData[pet.type] || [])].sort();
+        renderBreedList(currentBreeds);
+        
+        const modal = document.getElementById('breed-search-modal');
+        const content = modal.querySelector('div');
+        modal.classList.remove('opacity-0', 'pointer-events-none');
+        content.classList.remove('translate-y-full');
+        document.getElementById('breedSearchInput').focus();
+    }
+
+    function renderBreedList(breeds) {
+        const container = document.getElementById('breedListContainer');
+        container.innerHTML = '';
+        
+        breeds.forEach(breed => {
+            const li = document.createElement('li');
+            li.className = 'py-3 px-4 rounded-xl hover:bg-surface-container cursor-pointer text-on-surface font-body-md transition-colors';
+            li.textContent = breed;
+            li.onclick = () => selectBreed(breed);
+            container.appendChild(li);
+        });
+        
+        const divider = document.createElement('div');
+        divider.className = 'h-px w-full bg-outline-variant my-2';
+        container.appendChild(divider);
+        
+        const unknownLi = document.createElement('li');
+        unknownLi.className = 'py-3 px-4 rounded-xl hover:bg-surface-container cursor-pointer text-on-surface font-body-md transition-colors';
+        unknownLi.textContent = 'Desconozco su raza/especie';
+        unknownLi.onclick = () => selectBreed('Desconozco');
+        container.appendChild(unknownLi);
+        
+        const otherLi = document.createElement('li');
+        otherLi.className = 'py-3 px-4 rounded-xl hover:bg-surface-container cursor-pointer text-on-surface font-body-md transition-colors';
+        otherLi.textContent = 'Otro...';
+        otherLi.onclick = () => selectBreed('Otro');
+        container.appendChild(otherLi);
+    }
+
+    function filterBreeds() {
+        if (!activePetIdForBreed) return;
+        const pet = findPet(activePetIdForBreed);
+        const currentBreeds = [...new Set(breedsData[pet.type] || [])].sort();
+        
+        const searchTerm = normalizeString(document.getElementById('breedSearchInput').value);
+        const filtered = currentBreeds.filter(breed => normalizeString(breed).includes(searchTerm));
+        renderBreedList(filtered);
+    }
+
+    function selectBreed(breed) {
+        if (activePetIdForBreed) {
+            updatePetData(activePetIdForBreed, 'breed', breed);
+            if (breed !== 'Otro') {
+                updatePetData(activePetIdForBreed, 'customBreed', '');
+            }
+            renderPets(); // Update UI to show/hide custom breed input
+        }
+        closeBreedModal();
+    }
+
+    function closeBreedModal() {
+        const modal = document.getElementById('breed-search-modal');
+        const content = modal.querySelector('div');
+        modal.classList.add('opacity-0', 'pointer-events-none');
+        content.classList.add('translate-y-full');
+        activePetIdForBreed = null;
+    }
+
+    function validateAndContinue() {
+        let isValid = true;
+        
+        // We validate only the currently active array or both?
+        // Let's validate the active array as per typical flow, or both if needed. 
+        // For strict separation, we can validate both or just the ones that have items.
+        const allPets = [...individualPets, ...animalGroups];
+        
+        if (allPets.length === 0) {
+            alert("Debes agregar al menos una mascota o grupo.");
+            return;
+        }
+
+        allPets.forEach(pet => {
+            // Photos
+            if (!pet.photos || pet.photos.length === 0) {
+                showError(`${pet.id}_photoWrapper`, `${pet.id}_photoError`);
+                isValid = false;
+            }
+
+            // Type
+            if (!pet.type) {
+                showError(`${pet.id}_typeContainer`, `${pet.id}_typeError`);
+                isValid = false;
+            }
+
+            // Name or Quantity
+            if (pet.mode === 'individual') {
+                if (!pet.name || pet.name.trim() === '') {
+                    showError(`${pet.id}_nameWrapper`, `${pet.id}_nameError`);
+                    isValid = false;
+                }
+            } else {
+                if (!pet.quantity || pet.quantity.trim() === '') {
+                    showError(`${pet.id}_quantityWrapper`, `${pet.id}_quantityError`);
+                    isValid = false;
+                }
+            }
+
+            // Breed
+            if (!pet.breed) {
+                showError(`${pet.id}_breedWrapper`, `${pet.id}_breedError`);
+                isValid = false;
+            } else if (pet.breed === 'Otro') {
+                if (!pet.customBreed || pet.customBreed.trim() === '') {
+                    showError(`${pet.id}_customBreedWrapper`, `${pet.id}_customBreedError`);
+                    isValid = false;
+                }
+            }
+
+            // Age
+            if (!pet.age || pet.age.trim() === '') {
+                showError(`${pet.id}_ageWrapper`, `${pet.id}_ageError`);
+                isValid = false;
+            }
+
+            // Weight (Optional for group, required for individual)
+            if (pet.mode === 'individual') {
+                if (!pet.weight || pet.weight.trim() === '') {
+                    showError(`${pet.id}_weightWrapper`, `${pet.id}_weightError`);
+                    isValid = false;
+                }
+            }
+        });
+
+        if (isValid) {
+            console.log('Proceeding with data:', { individualPets, animalGroups });
+            alert("Validación exitosa. Continuando...");
+        } else {
+            // Check if there are errors in the non-active tab
+            const activeErrors = document.querySelectorAll('.border-error');
+            if (activeErrors.length === 0) {
+                alert("Hay errores en la otra pestaña. Por favor revisa.");
+            } else {
+                const firstError = document.querySelector('.border-error');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+    }
+
+    // Initialize with one empty pet in the default tab
+    document.addEventListener('DOMContentLoaded', () => {
+        individualPets.push(createPetObject('individual'));
+        renderPets();
+    });
+</script>
+
+
+
+
+<input type="file" id="global-pet-file-input" accept="image/*" class="hidden" onchange="handleFileSelection(event)"><script class="">
+    let activePetIdForPhoto = null;
+
+    function openPhotoModal(petId) {
+        activePetIdForPhoto = petId;
+        const modal = document.getElementById('photo-upload-modal');
+        const content = modal.querySelector('div');
+        modal.classList.remove('opacity-0', 'pointer-events-none');
+        content.classList.remove('translate-y-full');
+    }
+
+    function closePhotoModal() {
+        const modal = document.getElementById('photo-upload-modal');
+        const content = modal.querySelector('div');
+        modal.classList.add('opacity-0', 'pointer-events-none');
+        content.classList.add('translate-y-full');
+        activePetIdForPhoto = null;
+    }
+
+    function triggerFileInput(source) {
+        const input = document.getElementById('global-pet-file-input');
+        if (source === 'camera') {
+            input.setAttribute('capture', 'environment');
+        } else {
+            input.removeAttribute('capture');
+        }
+        input.click();
+    }
+
+    function handleFileSelection(event) {
+        const file = event.target.files[0];
+        if (file && activePetIdForPhoto) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const pet = findPet(activePetIdForPhoto);
+                if (pet && (!pet.photos || pet.photos.length < 3)) {
+                    pet.photos = pet.photos || [];
+                    pet.photos.push(e.target.result);
+                    clearError(`${activePetIdForPhoto}_photoWrapper`, `${activePetIdForPhoto}_photoError`);
+                    renderPets();
+                }
+                closePhotoModal();
+            };
+            reader.readAsDataURL(file);
+        }
+        event.target.value = ''; // Reset input
+    }
+
+    // Override the existing addMockPhoto to use the modal instead
+    window.addMockPhoto = function(id) {
+        openPhotoModal(id);
+    };
+</script>
+
+
+
+
+
+
+
+</body></html>

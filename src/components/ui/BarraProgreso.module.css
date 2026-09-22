@@ -1,0 +1,39 @@
+.contenedor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-2);
+}
+
+.fila {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--espaciado-2);
+}
+
+.etiqueta {
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: var(--color-bosque);
+}
+
+.porcentaje {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-texto-suave);
+}
+
+.pista {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background-color: var(--color-bosque-fondo);
+  overflow: hidden;
+}
+
+.relleno {
+  height: 100%;
+  border-radius: 999px;
+  background-color: var(--color-bosque);
+  transition: width 0.35s ease;
+}

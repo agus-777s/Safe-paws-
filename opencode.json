@@ -5,6 +5,16 @@
       "type": "remote",
       "url": "https://mcp.supabase.com/mcp",
       "enabled": true
+    },
+    "stitch": {
+      "type": "remote",
+      "url": "https://stitch.googleapis.com/mcp",
+      "enabled": true,
+      "oauth": false,
+      "headers": {
+        "Accept": "application/json",
+        "X-Goog-Api-Key": "{env:GOOGLE_API_KEY}"
+      }
     }
   }
 }

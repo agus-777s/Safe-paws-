@@ -1,32 +1,72 @@
 .pagina {
-  min-height: 70svh;
+  min-height: 100svh;
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-beige);
   padding: var(--espaciado-5);
 }
 
-.tarjeta {
-  width: 100%;
-  max-width: 440px;
+.decoracion {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 90% 5%, rgb(161 212 148 / 0.5) 0, transparent 45%),
+    radial-gradient(circle at 5% 95%, rgb(252 138 64 / 0.28) 0, transparent 42%);
 }
 
-.encabezado {
-  margin-bottom: var(--espaciado-5);
+.contenedor {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-4);
+  animation: entrada 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+}
+
+@keyframes entrada {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.marca {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espaciado-2);
+  margin-bottom: var(--espaciado-3);
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--color-bosque);
+  color: var(--color-superficie);
+  box-shadow: var(--sombra-suave);
 }
 
 .titulo {
-  font-size: 1.75rem;
+  font-size: 2rem;
   font-weight: 800;
-}
-
-.subtitulo {
-  margin-top: var(--espaciado-1);
-  color: var(--color-texto-suave);
+  color: var(--color-bosque);
+  letter-spacing: 0.01em;
 }
 
 .aviso {
-  margin-bottom: var(--espaciado-4);
   padding: var(--espaciado-3);
   border-radius: var(--radio-pequeno);
   background-color: var(--color-primario-claro);
@@ -40,6 +80,117 @@
   gap: var(--espaciado-4);
 }
 
+.flotante {
+  position: relative;
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-linea-suave);
+  border-radius: var(--radio-mediano);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.flotante:focus-within {
+  border-color: var(--color-bosque-suave);
+  box-shadow: 0 0 0 3px rgb(45 90 39 / 0.12);
+}
+
+.flotanteError {
+  border-color: var(--color-error);
+}
+
+.entrada,
+.entradaConBoton {
+  display: block;
+  width: 100%;
+  padding: 22px 16px 8px;
+  background: transparent;
+  border: none;
+  font-size: 1rem;
+  color: var(--color-texto);
+}
+
+.entradaConBoton {
+  padding-right: 52px;
+}
+
+.entrada:focus,
+.entradaConBoton:focus {
+  outline: none;
+}
+
+.etiqueta {
+  position: absolute;
+  left: 16px;
+  top: 15px;
+  color: var(--color-texto-suave);
+  font-size: 1rem;
+  pointer-events: none;
+  transition:
+    transform 0.18s ease,
+    font-size 0.18s ease,
+    color 0.18s ease;
+}
+
+.flotante:focus-within .etiqueta,
+.entrada:not(:placeholder-shown) ~ .etiqueta,
+.entradaConBoton:not(:placeholder-shown) ~ .etiqueta {
+  transform: translateY(-12px);
+  font-size: 0.75rem;
+  color: var(--color-bosque-suave);
+}
+
+.estado {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 800;
+  color: var(--color-exito);
+}
+
+.flotanteError .estado {
+  color: var(--color-error);
+}
+
+.ver {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  line-height: 1;
+}
+
+.ver:hover {
+  background-color: var(--color-superficie-baja);
+}
+
+.filaAyuda {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.enlaceBoton {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-bosque-suave);
+  cursor: pointer;
+}
+
+.enlaceBoton:hover {
+  color: var(--color-bosque);
+  text-decoration: underline;
+}
+
 .error {
   padding: var(--espaciado-3);
   border-radius: var(--radio-pequeno);
@@ -51,11 +202,20 @@
 .boton {
   width: 100%;
   margin-top: var(--espaciado-2);
+  background-color: var(--color-bosque-suave);
+}
+
+.boton:hover:not(:disabled) {
+  background-color: var(--color-bosque);
 }
 
 .pies {
-  margin-top: var(--espaciado-5);
   text-align: center;
   color: var(--color-texto-suave);
   font-size: 0.95rem;
+}
+
+.pies a {
+  color: var(--color-naranja-oscuro);
+  font-weight: 800;
 }

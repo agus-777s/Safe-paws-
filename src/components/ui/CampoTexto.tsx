@@ -7,7 +7,7 @@ interface CampoTextoProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, 'id' | 'type' | 'value' | 'onChange'> {
   id?: string
   etiqueta: string
-  tipo?: 'text' | 'email' | 'password'
+  tipo?: 'text' | 'email' | 'password' | 'number' | 'time' | 'tel'
   valor: string
   alCambiar: (valor: string) => void
   error?: string

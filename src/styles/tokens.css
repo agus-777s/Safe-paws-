@@ -13,6 +13,19 @@
   --color-exito: #16a34a;
   --color-informacion: #2563eb;
 
+  /* Paleta Safe Paws (diseño Stitch): verde bosque + naranja + beige */
+  --color-bosque: #154212;
+  --color-bosque-suave: #2d5a27;
+  --color-bosque-claro: #a1d494;
+  --color-bosque-fondo: #e4e4cc;
+  --color-naranja: #fc8a40;
+  --color-naranja-oscuro: #b14d08;
+  --color-beige: #f5f5dc;
+  --color-crema: #fbf9f8;
+  --color-superficie-baja: #f5f3f3;
+  --color-linea-suave: #e4e2e2;
+  --color-gris-verde: #72796e;
+
   --fuente-principal: 'Nunito Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --fuente-titulos: 'Nunito Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 

@@ -27,6 +27,7 @@ export async function registrarse(datos: DatosRegistro) {
   return {
     sesionIniciada: Boolean(data.session),
     requiereConfirmacion: Boolean(data.user && !data.session),
+    idUsuario: data.user?.id,
   }
 }
 

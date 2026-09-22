@@ -7,3 +7,13 @@
 .principal {
   flex: 1;
 }
+
+.completo {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+.completo > * {
+  flex: 1;
+}

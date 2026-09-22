@@ -1,0 +1,262 @@
+<!DOCTYPE html><html lang="es" style="width: 390px; height: 884px; overflow: hidden; position: relative;"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Seguimiento en tiempo real - Onboarding</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Google Fonts: Montserrat and Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config from Guidelines -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-on-surface": "#f2f0f0",
+                    "secondary-fixed": "#ffdbc9",
+                    "on-error-container": "#93000a",
+                    "surface-container": "#efeded",
+                    "on-secondary-fixed": "#331200",
+                    "tertiary-fixed": "#e4e4cc",
+                    "primary-fixed-dim": "#a1d494",
+                    "surface-tint": "#3b6934",
+                    "on-secondary-container": "#672c00",
+                    "tertiary-container": "#50513f",
+                    "surface-container-high": "#eae8e7",
+                    "on-primary-fixed-variant": "#23501e",
+                    "on-background": "#1b1c1c",
+                    "inverse-surface": "#303030",
+                    "on-tertiary-fixed-variant": "#474836",
+                    "on-tertiary-container": "#c3c4ac",
+                    "surface-dim": "#dbd9d9",
+                    "outline-variant": "#c2c9bb",
+                    "outline": "#72796e",
+                    "inverse-primary": "#a1d494",
+                    "background": "#fbf9f8",
+                    "tertiary": "#393a29",
+                    "secondary": "#9b4500",
+                    "primary": "#154212",
+                    "primary-fixed": "#bcf0ae",
+                    "on-surface-variant": "#42493e",
+                    "on-primary-container": "#9dd090",
+                    "secondary-container": "#fc8a40",
+                    "on-tertiary-fixed": "#1b1d0e",
+                    "on-secondary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "surface-container-highest": "#e4e2e2",
+                    "surface-variant": "#e4e2e2",
+                    "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "surface-container-low": "#f5f3f3",
+                    "surface-bright": "#fbf9f8",
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed": "#002201",
+                    "on-secondary-fixed-variant": "#763300",
+                    "surface": "#fbf9f8",
+                    "tertiary-fixed-dim": "#c8c8b0",
+                    "secondary-fixed-dim": "#ffb68d",
+                    "primary-container": "#2d5a27",
+                    "on-surface": "#1b1c1c",
+                    "on-error": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "xl": "32px",
+                    "margin-mobile": "20px",
+                    "md": "16px",
+                    "gutter-mobile": "12px",
+                    "base": "4px",
+                    "sm": "8px",
+                    "lg": "24px",
+                    "xs": "4px"
+            },
+            "fontFamily": {
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "label-sm": [
+                            "Inter"
+                    ],
+                    "headline-xl-mobile": [
+                            "Montserrat"
+                    ],
+                    "body-sm": [
+                            "Inter"
+                    ],
+                    "label-lg": [
+                            "Inter"
+                    ],
+                    "headline-md": [
+                            "Montserrat"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "headline-xl": [
+                            "Montserrat"
+                    ],
+                    "headline-lg": [
+                            "Montserrat"
+                    ]
+            },
+            "fontSize": {
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "headline-xl-mobile": [
+                            "28px",
+                            {
+                                    "lineHeight": "34px",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "body-sm": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-lg": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "letterSpacing": "0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-md": [
+                            "20px",
+                            {
+                                    "lineHeight": "28px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "headline-xl": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-lg": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        .pulse-animation {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: .7;
+                transform: scale(1.05);
+            }
+        }
+        
+        .floating-animation {
+            animation: float 4s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        /* Glassmorphism gradient overlay for legibility */
+        .glass-gradient-bottom {
+            background: linear-gradient(to top, rgba(251, 249, 248, 1) 0%, rgba(251, 249, 248, 0.9) 30%, rgba(251, 249, 248, 0) 100%);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background h-screen w-full overflow-hidden flex flex-col font-body-md antialiased">
+<!-- Full Screen Background Image -->
+<div class="absolute inset-0 w-full h-full z-0">
+<img class="w-full h-full object-cover object-center" data-alt="A soft, beautifully illustrated vector landscape showing a winding path through green fields and stylized trees in autumn and summer colors, warm sunny sky, with a friendly brown paw-print map pin resting on the path. Professional, warm, and loving aesthetic, pastel color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8X_rAfv59qVq-TK08ryiQg3f-0GIittE_tfcjxe_Sy3PjGjx46_l-JX5X1s6c8wnFVHxrsd8w-DGeBbiAAYfHTzCZhPvK_VIdPR61Z8aPgTjqqyNtO9jLBP0ZJZo8nTKOhx6lSzc6rFj68aLfpKu3FrAP2qy0Xw-MJ0mvEy5iCGFUNJSVElpR-496sjnb5oUHlrqy449sK34rl6XYv4p5THoQ3urVaX6JDwe3Oq5bAAgGYq0nII5Y">
+</div>
+<!-- Floating Map Pin Overlay (Animated) -->
+<div class="absolute top-[40%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 floating-animation flex justify-center items-center">
+<div class="relative w-16 h-16 bg-secondary-container rounded-full flex items-center justify-center shadow-[0px_4px_20px_rgba(45,90,39,0.2)] pulse-animation border-4 border-surface-container-lowest">
+<span class="material-symbols-outlined text-on-secondary-container" style="font-size: 32px; font-variation-settings: 'FILL' 1;">pets</span>
+<!-- Glowing ring effect -->
+<div class="absolute inset-0 rounded-full border-2 border-secondary-container opacity-50 animate-ping"></div>
+</div>
+</div>
+<!-- Main Content Canvas (Bottom Aligned) -->
+<div class="relative z-20 mt-auto w-full glass-gradient-bottom pt-32 pb-xl px-margin-mobile flex flex-col items-center justify-end h-[50vh]">
+<!-- Headline and Description -->
+<div class="text-center mb-xl w-full max-w-md mx-auto">
+<h1 class="font-headline-xl-mobile text-headline-xl-mobile text-primary mb-sm tracking-tight">Seguimiento en tiempo real</h1>
+<p class="font-body-md text-body-md text-on-surface-variant px-md">
+                Observa la ruta de tu mascota en vivo. Tranquilidad y seguridad en cada paso que dan juntos.
+            </p>
+</div>
+<!-- Pagination Indicators -->
+<div class="flex space-x-2 mb-xl">
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+<div class="w-6 h-2 rounded-full bg-primary transition-all duration-300"></div>
+<div class="w-2 h-2 rounded-full bg-outline-variant"></div>
+</div>
+<!-- Call to Action Button -->
+<button class="w-full max-w-sm bg-primary-container text-on-primary font-label-lg text-label-lg py-md rounded-xl shadow-[0px_4px_20px_rgba(45,90,39,0.14)] hover:bg-primary transition-colors duration-200 flex justify-center items-center">
+            Empezar
+        </button>
+<!-- Skip Link -->
+<div class="mt-sm">
+<button class="text-on-surface-variant font-label-sm text-label-sm hover:text-primary transition-colors py-2 px-4 rounded-full">
+                Omitir
+            </button>
+</div>
+</div>
+</body></html>
