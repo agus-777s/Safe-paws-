@@ -5,6 +5,8 @@ import BarraProgreso from '@/components/ui/BarraProgreso'
 import Button from '@/components/ui/Button'
 import CampoTexto from '@/components/ui/CampoTexto'
 import Logo from '@/components/ui/Logo'
+import MapaCobertura, { SANTIAGO, geocodificarTexto } from '@/components/mapa/MapaCobertura'
+import type { UbicacionMapa } from '@/components/mapa/MapaCobertura'
 import { useAuth } from '@/hooks/useAuth'
 import { guardarPerfil, guardarPerfilPendiente } from '@/services/supabase/perfiles'
 import type { DatosCuidador, DatosMascota, ModoMascota, Perfil, RolUsuario, TipoMascota } from '@/types/perfil'
@@ -61,6 +63,11 @@ function iniciales(nombre: string, apellido: string) {
   return `${nombre.charAt(0)}${apellido.charAt(0)}`.toUpperCase() || '🐾'
 }
 
+/** Normaliza un texto para búsquedas: sin tildes, minúsculas y sin espacios extra. */
+function normalizar(texto: string) {
+  return texto.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+}
+
 export default function RegistroPage() {
   const { usuario, sesionCargando, registrarse, refrescarPerfil } = useAuth()
   const navigate = useNavigate()
@@ -84,6 +91,7 @@ export default function RegistroPage() {
   const [cuidador, setCuidador] = useState<DatosCuidador>(() => crearDatosCuidadorVacios())
   const [busquedaZona, setBusquedaZona] = useState('')
   const [zonaEnfocada, setZonaEnfocada] = useState(false)
+  const [destinoMapa, setDestinoMapa] = useState<{ lat: number; lng: number } | null>(null)
   const [sugerenciasPrecio, setSugerenciasPrecio] = useState(false)
   // Paso 4 (Stitch 05 dueño / 06 cuidador)
   const [correo, setCorreo] = useState('')
@@ -184,6 +192,27 @@ export default function RegistroPage() {
     }))
   }
 
+  function manejarUbicacionMapa(ubicacion: UbicacionMapa) {
+    setCuidador((actual) => ({
+      ...actual,
+      zona: ubicacion.direccion,
+      latitud: ubicacion.lat,
+      longitud: ubicacion.lng,
+    }))
+    setBusquedaZona('')
+  }
+
+  function elegirComuna(comuna: string) {
+    setCampoCuidador('zona', comuna)
+    setBusquedaZona('')
+    setZonaEnfocada(false)
+    void geocodificarTexto(comuna).then((punto) => {
+      if (!punto) return
+      setDestinoMapa(punto)
+      setCuidador((actual) => ({ ...actual, latitud: punto.lat, longitud: punto.lng }))
+    })
+  }
+
   /* ---------- Validación y navegación ---------- */
 
   function validarPaso(actual: number): string | null {
@@ -235,6 +264,10 @@ export default function RegistroPage() {
   }
 
   function retroceder() {
+    if (paso === 1) {
+      navigate('/iniciar-sesion')
+      return
+    }
     setError(null)
     setPaso((actual) => Math.max(1, actual - 1))
     window.scrollTo({ top: 0 })
@@ -314,7 +347,7 @@ export default function RegistroPage() {
   const mascotaRaza = mascotas.find((m) => m.id === razaModalPara)
   const razasDisponibles = mascotaRaza?.tipo
     ? RAZAS_SUGERIDAS[mascotaRaza.tipo].filter((r) =>
-        r.toLowerCase().includes(razaFiltro.trim().toLowerCase()),
+        normalizar(r).includes(normalizar(razaFiltro)),
       )
     : []
 
@@ -326,8 +359,7 @@ export default function RegistroPage() {
             type="button"
             className={estilo.atras}
             onClick={retroceder}
-            disabled={paso === 1}
-            aria-label="Volver al paso anterior"
+            aria-label={paso === 1 ? 'Volver a iniciar sesión' : 'Volver al paso anterior'}
           >
             ←
           </button>
@@ -435,6 +467,14 @@ export default function RegistroPage() {
                     onChange={() => setRol(opcion.valor)}
                     className={estilo.radioOculto}
                   />
+                  <span className={estilo.rolImagen} aria-hidden="true">
+                    <img
+                      src={opcion.imagen}
+                      alt=""
+                      className={estilo.rolImg}
+                      loading="lazy"
+                    />
+                  </span>
                   <span className={estilo.rolIcono} aria-hidden="true">
                     {opcion.icono}
                   </span>
@@ -681,11 +721,7 @@ export default function RegistroPage() {
                       role="option"
                       aria-selected={cuidador.zona === comuna}
                       className={estilo.zonaOpcion}
-                      onMouseDown={() => {
-                        setCampoCuidador('zona', comuna)
-                        setBusquedaZona('')
-                        setZonaEnfocada(false)
-                      }}
+                      onMouseDown={() => elegirComuna(comuna)}
                     >
                       {comuna}
                     </button>
@@ -700,12 +736,13 @@ export default function RegistroPage() {
                 if (!e.currentTarget.contains(e.relatedTarget as Node)) setZonaEnfocada(false)
               }}
             >
-              <svg viewBox="0 0 120 90" className={estilo.coberturaSvg} aria-hidden="true">
-                <circle cx="60" cy="45" r={10 + cuidador.radioKm} fill="rgb(188 240 174 / 0.5)" stroke="#2d5a27" strokeWidth="2" />
-                <text x="60" y="50" textAnchor="middle" fontSize="16">
-                  📍
-                </text>
-              </svg>
+              <p className={estilo.ayuda}>Toca el mapa o arrastra el pin para marcar tu ubicación real.</p>
+              <MapaCobertura
+                radioKm={cuidador.radioKm}
+                centroInicial={SANTIAGO}
+                destino={destinoMapa}
+                alCambiarUbicacion={manejarUbicacionMapa}
+              />
               <p className={estilo.coberturaTexto}>{cuidador.zona || 'Santiago de Chile'}</p>
             </div>
             <div className={estilo.infoFila}>

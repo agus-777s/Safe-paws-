@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import Logo from '@/components/ui/Logo'
 import { useAuth } from '@/hooks/useAuth'
 import { completarOnboarding } from '@/services/supabase/perfiles'
 import { clases } from '@/utils/clases'
@@ -90,7 +91,8 @@ export default function OnboardingPage() {
     >
       <header className={estilo.marca}>
         <h1 className={estilo.nombre}>
-          Safe <span aria-hidden="true">🐾</span> Paws
+          <Logo ancho={30} alto={30} />
+          <span>Safe Paws</span>
         </h1>
       </header>
 

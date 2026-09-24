@@ -60,6 +60,14 @@ export default function IniciarSesionPage() {
     <div className={estilo.pagina}>
       <div className={estilo.decoracion} aria-hidden="true" />
       <main className={estilo.contenedor}>
+        <figure className={estilo.portada} aria-hidden="true">
+          <img
+            src="/stitch/fondo-onboarding-1.jpg"
+            alt=""
+            className={estilo.portadaImg}
+            loading="eager"
+          />
+        </figure>
         <header className={estilo.marca}>
           <span className={estilo.logo}>
             <Logo ancho={30} alto={30} />

@@ -52,6 +52,9 @@ export interface DatosCuidador {
   radioKm: number
   /** Solo el nombre del archivo de verificación (el documento no se sube al perfil). */
   verificacionNombre: string | null
+  /** Ubicación real elegida en el mapa (puede ser null si aún no se elige). */
+  latitud: number | null
+  longitud: number | null
 }
 
 export interface Perfil {
@@ -66,18 +69,29 @@ export interface Perfil {
   onboardingCompleto: boolean
 }
 
-export const ROLES: Array<{ valor: RolUsuario; titulo: string; descripcion: string; icono: string }> = [
+export const ROLES: Array<{
+  valor: RolUsuario
+  titulo: string
+  descripcion: string
+  icono: string
+  imagen: string
+  imagenAlt: string
+}> = [
   {
     valor: 'dueno',
     titulo: 'Usuario (Dueño)',
     descripcion: 'Busco cuidadores, paseadores y servicios de confianza para mi mascota.',
     icono: '🐶',
+    imagen: '/stitch/fondo-onboarding-1.jpg',
+    imagenAlt: 'Dueño abrazando a su perro en un parque',
   },
   {
     valor: 'cuidador',
     titulo: 'Cuidador',
     descripcion: 'Quiero ofrecer mis servicios de paseo, alojamiento o guardería.',
     icono: '🏠',
+    imagen: '/stitch/registro/rol-cuidador.svg',
+    imagenAlt: 'Cuidadora paseando a un perro con correa en un parque',
   },
 ]
 
@@ -125,5 +139,7 @@ export function crearDatosCuidadorVacios(): DatosCuidador {
     horaFin: '19:00',
     radioKm: 5,
     verificacionNombre: null,
+    latitud: null,
+    longitud: null,
   }
 }

@@ -27,7 +27,7 @@ export default function Navbar() {
       <div className={estilo.contenido}>
         <Link to="/" className={estilo.marca} onClick={cerrarMenu}>
           <Logo ancho={26} alto={26} />
-          <span>Safe Paws</span>
+          <span className={estilo.nombre}>Safe Paws</span>
         </Link>
 
         <nav

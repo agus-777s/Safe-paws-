@@ -7,7 +7,7 @@ export default function Footer() {
       <div className={`contenedor ${estilo.contenido}`}>
         <p className={estilo.marca}>
           <Logo ancho={20} alto={20} />
-          <strong>Safe Paws</strong>
+          <strong className={estilo.nombre}>Safe Paws</strong>
         </p>
         <p className={estilo.texto}>© {new Date().getFullYear()} Safe Paws. Todos los derechos reservados.</p>
       </div>
