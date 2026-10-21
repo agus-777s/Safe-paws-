@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Safe Paws - Inicio Dueño</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-green: #2E7D32;
+      --dark-green: #1B5E20;
+      --light-green: #4CAF50;
+      --cream: #F5F5DC;
+      --text-dark: #333333;
+      --text-gray: #666666;
+      --white: #FFFFFF;
+      --alert-orange: #FF9800;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Arial, sans-serif;
+      background-color: var(--cream);
+      color: var(--text-dark);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* Header */
+    .app-header {
+      background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+      color: var(--white);
+      padding: 1rem 2rem;
+      box-shadow: var(--shadow);
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo { font-size: 1.5rem; font-weight: bold; display: flex; align-items: center; gap: 0.5rem; }
+    .logo i { color: #FFB300; }
+    .user-info { display: flex; align-items: center; gap: 1rem; }
+    .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: #FFB300; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #333; font-size: 1.2rem; }
+    .user-name { font-weight: 500; }
+    .notif-btn { background: none; border: none; color: #FFB300; font-size: 1.5rem; cursor: pointer; position: relative; }
+    .notif-badge { position: absolute; top: 5px; right: 5px; background: #FF5252; color: white; font-size: 0.7rem; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; padding: 2px; }
+    .notif-badge.off { display: none; }
+
+    /* Main */
+    .main-content { max-width: 1200px; margin: 80px auto 0; padding: 0 2rem; }
+
+    /* Tarjetas de acceso rápido */
+    .quick-access { background: var(--white); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: var(--shadow); }
+    .quick-access h3 { color: var(--primary-green); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+    .quick-access h3 i { color: #FFB300; }
+    .access-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; }
+    .access-card { padding: 1rem; border-radius: 8px; text-align: center; cursor: pointer; transition: transform 0.3s, box-shadow 0.3s; }
+    .access-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.2); }
+    .access-card.paseo { background: #E8F5E9; }
+    .access-card.hospedaje { background: #E3F2FD; }
+    .access-card.garderia { background: #FFF3E0; }
+    .access-card.visita { background: #F1F8E9; }
+    .access-card i { font-size: 2rem; color: var(--primary-green); margin-bottom: 0.5rem; }
+    .access-card span { color: var(--text-gray); font-size: 0.875rem; }
+
+    /* Carrusel de cuidadores destacados */
+    .featured-section { background: var(--white); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: var(--shadow); }
+    .featured-section h2 { color: var(--primary-green); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+    .featured-section h2 i { color: #FFB300; }
+    .caregiver-carousel { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; }
+    .caregiver-card { background: var(--cream); padding: 1rem; border-radius: 8px; transition: box-shadow 0.3s; cursor: pointer; border: 2px solid transparent; }
+    .caregiver-card:hover { box-shadow: 0 6px 12px rgba(0,0,0,0.15); border-color: var(--primary-green); }
+    .caregiver-card.active { border-color: var(--primary-green); background: var(--white); }
+    .caregiver-img { width: 80px; height: 80px; background: #ddd; border-radius: 50%; margin: 0 auto 0.8rem; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #666; }
+    .caregiver-name { text-align: center; margin: 0.3rem 0; font-weight: 500; color: var(--text-dark); }
+    .caregiver-rating { display: flex; justify-content: center; gap: 0.2rem; margin: 0.3rem 0; }
+    .rating-stars { color: #FFB300; }
+    .caregiver-price { text-align: center; color: var(--primary-green); font-weight: bold; font-size: 0.875rem; margin-top: 0.3rem; }
+    .reserve-btn { width: 100%; padding: 0.5rem; background: var(--primary-green); color: white; border: none; border-radius: 5px; font-size: 0.875rem; cursor: pointer; margin-top: 0.5rem; }
+
+    /* Próximo servicio activo */
+    .active-service { background: var(--white); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: var(--shadow); display: none; }
+    .active-service.active { display: block; }
+    .active-service h3 { color: var(--alert-orange); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+    .active-service h3 i { color: #FF5722; }
+    .service-info { background: var(--cream); padding: 1rem; border-radius: 8; margin: 0.5rem 0; }
+    .service-trace { height: 40px; background: #eee; border-radius: 5px; margin: 0.5rem 0; overflow: hidden; }
+    .service-trace-fill { height: 100%; background: var(--primary-green); width: 70%; transition: width 0.3s; }
+    .service-actions { display: flex; gap: 0.8rem; }
+    .service-btn { flex: 1; padding: 0.5rem; border: none; border-radius: 5px; cursor: pointer; font-size: 0.875rem; }
+    .service-btn.ver { background: var(--primary-green); color: white; }
+    .service-btn.seguimiento { background: #FFB300; color: #333; }
+
+    /* Buscador y Mapa */
+    .search-map-section { background: var(--white); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: var(--shadow); }
+    .search-map-section h2 { color: var(--primary-green); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+    .filter-bar { background: var(--cream); padding: 0.8rem; border-radius: 8; margin-bottom: 1rem; display: flex; gap: 0.8rem; flex-wrap: wrap; }
+    .filter-btn { padding: 0.4rem 0.8rem; border: 1px solid #ddd; border-radius: 5px; font-size: 0.75rem; cursor: pointer; background: white; }
+    .filter-btn.active { background: var(--primary-green); color: white; border-color: var(--primary-green); }
+    #map { height: 250px; width: 100%; border-radius: 8; margin: 1rem 0; border: 1px solid #eee; }
+    .map-controls { display: flex; gap: 0.8rem; margin-top: 0.8rem; }
+    .map-btn { padding: 0.5rem 1rem; background: var(--primary-green); color: white; border: none; border-radius: 5px; font-size: 0.875rem; cursor: pointer; }
+    .map-btn.centrar { background: #FFB300; color: #333; }
+    .cuidadores-lista { margin-top: 1rem; }
+    .cuidador-item { background: var(--cream); padding: 0.8rem; border-radius: 6; margin: 0.5rem 0; display: flex; justify-content: space-between; align-items: center; font-size: 0.875rem; }
+    .cuidador-item.info { color: var(--text-dark); }
+    .cuidador-item.filters { color: var(--text-gray); border-top: 1px solid #ddd; padding-top: 0.5rem; }
+    .filter-select { padding: 0.4rem; border: 1px solid #ddd; border-radius: 4; cursor: pointer; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .app-header { padding: 1rem; flex-direction: column; gap: 1rem; }
+      .user-info { width: 100%; justify-content: space-between; }
+      .quick-access h3 { font-size: 1rem; }
+      .access-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="logo">
+      <i class="fas fa-paw"></i>
+      Safe Paws
+    </div>
+    <div class="user-info">
+      <div class="user-avatar">US</div>
+      <span class="user-name">Juan Pérez</span>
+      <button class="notif-btn" onclick="toggleNotif()" title="Notificaciones">
+        <i class="fas fa-bell notif-badge" id="notifBadge"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    
+    <!-- Sección: Servicios Rápidos -->
+    <section class="quick-access">
+      <h3><i class="fas fa-list"></i> Servicios Rápidos</h3>
+      <div class="access-grid">
+        <div class="access-card paseo" onclick="showSection('paseo')">
+          <i class="fas fa-running"></i>
+          <span>Paseo</span>
+        </div>
+        <div class="access-card hospedaje" onclick="showSection('hospedaje')">
+          <i class="fas fa-bed"></i>
+          <span>Hospedaje</span>
+        </div>
+        <div class="access-card garderia" onclick="showSection('garderia')">
+          <i class="fas fa-utensils"></i>
+          <span>Guardería</span>
+        </div>
+        <div class="access-card visita" onclick="showSection('visita')">
+          <i class="fas fa-stethoscope"></i>
+          <span>Visita Domicilio</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Carrusel de Cuidadores Destacados -->
+    <section class="featured-section">
+      <h2><i class="fas fa-user-friends"></i> Cuidadores Destacados</h2>
+      <div class="caregiver-carousel" id="caregiverCarousel">
+        <!-- Cards generadas por JS -->
+      </div>
+    </section>
+
+    <!-- Servicio Activo -->
+    <section class="active-service" id="activeService" style="display: block;">
+      <h3><i class="fas fa-exchange-alt"></i> Próximo Paseo Activo</h3>
+      <div class="service-info">
+        <strong>Mascota:</strong> Luna <span style="color: var(--primary-green)">(Asignado a Carlos R.)</span>
+      </div>
+      <div class="service-trace">
+        <div class="service-trace-fill" id="traceFill" style="width: 70%;"></div>
+      </div>
+      <div class="service-actions">
+        <button class="service-btn ver" onclick="verDetalle()">Ver Detalle</button>
+        <button class="service-btn seguimiento" onclick="iniciarSeguimiento()">Seguimiento</button>
+      </div>
+    </section>
+
+    <!-- Buscador y Mapa -->
+    <section class="search-map-section">
+      <h2><i class="fas fa-map-marked-alt"></i> Buscador y Mapa de Cuidadores</h2>
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="filtrar('todos')">Todos</button>
+        <button class="filter-btn" onclick="filtrar('perros')">Perros</button>
+        <button class="filter-btn" onclick="filtrar('gatos')">Gatos</button>
+        <button class="filter-btn" onclick="filtrar('precio')">Precio</button>
+        <select class="filter-select" onChange="filtrar(this.value)">
+          <option value="todos">Todos</option>
+          <option value="perros">Perros</option>
+          <option value="gatos">Gatos</option>
+          <option value="precio">Precio</option>
+        </select>
+      </div>
+      <div id="map"></div>
+      <div class="map-controls">
+        <button class="map-btn centrar" onclick="centrarMapa()">Centrar en Mi Ubicación</button>
+        <button class="map-btn ver-mas" onclick="verCuidadores()">Ver Todos (20)</button>
+      </div>
+      <div class="cuidadores-lista" id="cuidadoresLista">
+        <!-- Lista generada por JS -->
+      </div>
+    </section>
+
+    <!-- Flujos de Solicitud (Resumen) -->
+    <section style="background: var(--white); border-radius: 12px; padding: 1.5rem; margin: 2rem 0; box-shadow: var(--shadow); display: none;" id="formSection">
+      <h3><i class="fas fa-file-alt"></i> Solicitud de Servicio</h3>
+      <p>Funcionalidad de formulario de solicitud - en desarrollo</p>
+    </section>
+
+  </main>
+
+  <!-- JavaScript -->
+  <script>
+    // Datos de cuidadores de ejemplo (20 verificados)
+    const caregivers = [
+      {name: "Carlos R.", pets: "Perros", rating: 4.9, price: "$15/hr", image: "👨‍🦱", location: "Providencia", available: true},
+      {name: "María G.", pets: "Gatos", rating: 4.8, price: "$18/hr", image: "👩‍🦰", location: "Las Condes", available: true},
+      {name: "José L.", pets: "Perros", rating: 4.7, price: "$12/hr", image: "👨‍🦱", location: "Santiago Centro", available: true},
+      {name: "Ana M.", pets: "Perros y Gatos", rating: 4.9, price: "$20/hr", image: "👩‍🦰", location: "Vitacura", available: true},
+      {name: "Pedro K.", pets: "Perros", rating: 4.6, price: "$14/hr", image: "👨‍🦱", location: "La Reina", available: false},
+      {name: "Laura S.", pets: "Gatos", rating: 4.8, price: "$16/hr", image: "👩‍🦰", location: "Ñuñoa", available: true},
+      {name: "Roberto P.", pets: "Perros grandes", rating: 4.5, price: "$13/hr", image: "👨‍🦱", location: "Macul", available: true},
+      {name: "Carolina Q.", pets: "Todos", rating: 4.9, price: "$22/hr", image: "👩‍🦰", location: "Barrancas", available: true},
+      {name: "Diego F.", pets: "Perros", rating: 4.7, price: "$15/hr", image: "👨‍🦱", location: "Peñalolén", available: true},
+      {name: "Valentina H.", pets: "Gatos", rating: 4.8, price: "$19/hr", image: "👩‍🦰", location: "Las Condes", available: true},
+      // ... total 20 items
+    ];
+
+    // Renderizar carrusel
+    function renderCaregivers(filter = 'todos') {
+      const carousel = document.getElementById('caregiverCarousel');
+      const lista = document.getElementById('cuidadoresLista');
+      carousel.innerHTML = '';
+      lista.innerHTML = '';
+      
+      const filtrados = filter === 'todos' ? caregivers : caregivers.filter(c => c.pets.includes(filter.split('-')[0]));
+      
+      filtrados.forEach((c, i) => {
+        const card = document.createElement('div');
+        card.className = `caregiver-card${i === 0 ? ' active' : ''}`;
+        card.innerHTML = `
+          <div class="caregiver-img">${c.image}</div>
+          <div class="caregiver-name">${c.name}</div>
+          <div class="caregiver-rating">
+            ${'★'.repeat(Math.floor(c.rating))}
+            <span>${c.rating.toFixed(1)}</span>
+          </div>
+          <div class="caregiver-price">${c.price}</div>
+          <span>${c.location}${c.available ? '' : ' (No disp.)'}</span>
+        `;
+        card.addEventListener('click', () => seleccionarCuidador(c));
+        carousel.appendChild(card);
+      });
+      
+      // Lista filtrada
+      filtrados.forEach(c => {
+        const li = document.createElement('div');
+        li.className = 'cuidador-item info';
+        li.innerHTML = `<span>${c.name} - ${c.pets}</span><span>${c.location}</span>`;
+        lista.appendChild(li);
+      });
+    }
+
+    function filtrar(val) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === val));
+      renderCaregivers(val);
+    }
+
+    function seleccionarCuidador(c) {
+      // Lógica para seleccionar cuidador
+      alert(`Seleccionaste a ${c.name} para ${c.pets}`);
+    }
+
+    // Servicio activo
+    function iniciarSeguimiento() {
+      // Animación de la traza
+      const fill = document.getElementById('traceFill');
+      let width = 70;
+      const interval = setInterval(() => {
+        width++;
+        fill.style.width = width + '%';
+        if (width >= 100) clearInterval(interval);
+      }, 20);
+    }
+
+    // Notificaciones
+    function toggleNotif() {
+      const badge = document.getElementById('notifBadge');
+      badge.classList.toggle('off');
+    }
+
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', () => {
+      renderCaregivers('todos');
+    });
+  </script>
+
+</body>
+</html>

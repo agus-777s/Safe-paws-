@@ -1,0 +1,262 @@
+From 750f8604098611ba77943f07986e1ec607663267 Mon Sep 17 00:00:00 2001
+From: ramon328 <ramon@dropout.cl>
+Date: Tue, 20 Oct 2026 15:05:44 -0300
+Subject: [PATCH 4/8] feat(ui): utilidades de carga, estados de vista, geo y
+ precios con pruebas
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+---
+ src/components/ui/EstadoVista.module.css | 21 ++++++++
+ src/components/ui/EstadoVista.tsx        | 63 ++++++++++++++++++++++++
+ src/hooks/useCarga.ts                    | 46 +++++++++++++++++
+ src/utils/geo.ts                         | 36 ++++++++++++++
+ src/utils/utilidades.test.ts             | 43 ++++++++++++++++
+ 5 files changed, 209 insertions(+)
+ create mode 100644 src/components/ui/EstadoVista.module.css
+ create mode 100644 src/components/ui/EstadoVista.tsx
+ create mode 100644 src/hooks/useCarga.ts
+ create mode 100644 src/utils/geo.ts
+ create mode 100644 src/utils/utilidades.test.ts
+
+diff --git a/src/components/ui/EstadoVista.module.css b/src/components/ui/EstadoVista.module.css
+new file mode 100644
+index 0000000..48ef677
+--- /dev/null
++++ b/src/components/ui/EstadoVista.module.css
+@@ -0,0 +1,21 @@
++.centro {
++  display: flex;
++  flex-direction: column;
++  align-items: center;
++  justify-content: center;
++  gap: var(--espaciado-3);
++  min-height: 220px;
++  padding: var(--espaciado-6) var(--espaciado-4);
++  text-align: center;
++  color: var(--color-texto-suave);
++}
++
++.icono {
++  margin: 0;
++  font-size: 2rem;
++}
++
++.texto {
++  margin: 0;
++  max-width: 42ch;
++}
+diff --git a/src/components/ui/EstadoVista.tsx b/src/components/ui/EstadoVista.tsx
+new file mode 100644
+index 0000000..a871f9c
+--- /dev/null
++++ b/src/components/ui/EstadoVista.tsx
+@@ -0,0 +1,63 @@
++import type { ReactNode } from 'react'
++import Button from './Button'
++import Spinner from './Spinner'
++import estilo from './EstadoVista.module.css'
++
++interface EstadoVistaProps {
++  cargando: boolean
++  error: string | null
++  /** Si es true y no hay error ni carga, se muestra el estado vacío. */
++  vacio?: boolean
++  mensajeVacio?: ReactNode
++  accionVacio?: ReactNode
++  alReintentar?: () => void
++  etiquetaCarga?: string
++  children: ReactNode
++}
++
++/** Envuelve una vista con sus estados de carga, error y vacío. */
++export default function EstadoVista({
++  cargando,
++  error,
++  vacio = false,
++  mensajeVacio = 'No hay nada por aquí todavía.',
++  accionVacio,
++  alReintentar,
++  etiquetaCarga = 'Cargando…',
++  children,
++}: EstadoVistaProps) {
++  if (cargando) {
++    return (
++      <div className={estilo.centro}>
++        <Spinner etiqueta={etiquetaCarga} />
++      </div>
++    )
++  }
++  if (error) {
++    return (
++      <div className={estilo.centro} role="alert">
++        <p className={estilo.icono} aria-hidden="true">
++          ⚠️
++        </p>
++        <p className={estilo.texto}>{error}</p>
++        {alReintentar && (
++          <Button variante="secundario" onClick={alReintentar}>
++            Reintentar
++          </Button>
++        )}
++      </div>
++    )
++  }
++  if (vacio) {
++    return (
++      <div className={estilo.centro}>
++        <p className={estilo.icono} aria-hidden="true">
++          🐾
++        </p>
++        <p className={estilo.texto}>{mensajeVacio}</p>
++        {accionVacio}
++      </div>
++    )
++  }
++  return <>{children}</>
++}
+diff --git a/src/hooks/useCarga.ts b/src/hooks/useCarga.ts
+new file mode 100644
+index 0000000..e8911b5
+--- /dev/null
++++ b/src/hooks/useCarga.ts
+@@ -0,0 +1,46 @@
++import { useCallback, useEffect, useState } from 'react'
++import { mensajeError } from '@/utils/errores'
++
++export interface EstadoCarga<T> {
++  datos: T | null
++  cargando: boolean
++  error: string | null
++  recargar: () => void
++  /** Reemplaza los datos en memoria (p. ej. tras una mutación o un evento Realtime). */
++  establecer: (actualizar: (previo: T | null) => T | null) => void
++}
++
++/**
++ * Carga asíncrona con estados de carga/error y recarga manual.
++ * `cargar` debe ser estable (useCallback) o la carga se repetirá en cada render.
++ */
++export function useCarga<T>(cargar: () => Promise<T>): EstadoCarga<T> {
++  const [datos, setDatos] = useState<T | null>(null)
++  const [cargando, setCargando] = useState(true)
++  const [error, setError] = useState<string | null>(null)
++  const [version, setVersion] = useState(0)
++
++  useEffect(() => {
++    let vigente = true
++    setCargando(true)
++    setError(null)
++    cargar()
++      .then((resultado) => {
++        if (vigente) setDatos(resultado)
++      })
++      .catch((e: unknown) => {
++        if (vigente) setError(mensajeError(e))
++      })
++      .finally(() => {
++        if (vigente) setCargando(false)
++      })
++    return () => {
++      vigente = false
++    }
++  }, [cargar, version])
++
++  const recargar = useCallback(() => setVersion((v) => v + 1), [])
++  const establecer = useCallback((actualizar: (previo: T | null) => T | null) => setDatos(actualizar), [])
++
++  return { datos, cargando, error, recargar, establecer }
++}
+diff --git a/src/utils/geo.ts b/src/utils/geo.ts
+new file mode 100644
+index 0000000..7e9a054
+--- /dev/null
++++ b/src/utils/geo.ts
+@@ -0,0 +1,36 @@
++export interface Coordenada {
++  latitud: number
++  longitud: number
++}
++
++const RADIO_TIERRA_KM = 6371
++
++const aRadianes = (grados: number) => (grados * Math.PI) / 180
++
++/** Distancia en km entre dos puntos (fórmula del haversine). */
++export function distanciaKm(a: Coordenada, b: Coordenada): number {
++  const dLat = aRadianes(b.latitud - a.latitud)
++  const dLng = aRadianes(b.longitud - a.longitud)
++  const h =
++    Math.sin(dLat / 2) ** 2 + Math.cos(aRadianes(a.latitud)) * Math.cos(aRadianes(b.latitud)) * Math.sin(dLng / 2) ** 2
++  return 2 * RADIO_TIERRA_KM * Math.asin(Math.min(1, Math.sqrt(h)))
++}
++
++/** Largo total de una ruta en km. */
++export function largoRutaKm(puntos: Coordenada[]): number {
++  let total = 0
++  for (let i = 1; i < puntos.length; i++) total += distanciaKm(puntos[i - 1], puntos[i])
++  return total
++}
++
++export function formatearDistancia(km: number): string {
++  return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1).replace('.', ',')} km`
++}
++
++/** Duración legible: "1 h 05 min", "12 min". */
++export function formatearDuracion(milisegundos: number): string {
++  const minutos = Math.max(0, Math.round(milisegundos / 60000))
++  const horas = Math.floor(minutos / 60)
++  const resto = minutos % 60
++  return horas > 0 ? `${horas} h ${String(resto).padStart(2, '0')} min` : `${resto} min`
++}
+diff --git a/src/utils/utilidades.test.ts b/src/utils/utilidades.test.ts
+new file mode 100644
+index 0000000..1692bb6
+--- /dev/null
++++ b/src/utils/utilidades.test.ts
+@@ -0,0 +1,43 @@
++import { describe, expect, it } from 'vitest'
++import { distanciaKm, formatearDistancia, formatearDuracion, largoRutaKm } from './geo'
++import { calcularPrecio, formatearClp, unidadesCobrables } from './precios'
++
++describe('geo', () => {
++  it('calcula distancias reales en Santiago', () => {
++    const plazaDeArmas = { latitud: -33.4378, longitud: -70.6505 }
++    const costanera = { latitud: -33.4173, longitud: -70.6062 }
++    expect(distanciaKm(plazaDeArmas, costanera)).toBeCloseTo(4.67, 1)
++    expect(distanciaKm(plazaDeArmas, plazaDeArmas)).toBe(0)
++  })
++
++  it('suma el largo de una ruta', () => {
++    const a = { latitud: 0, longitud: 0 }
++    const b = { latitud: 0, longitud: 0.01 }
++    const c = { latitud: 0, longitud: 0.02 }
++    expect(largoRutaKm([a, b, c])).toBeCloseTo(distanciaKm(a, c), 6)
++    expect(largoRutaKm([a])).toBe(0)
++  })
++
++  it('formatea distancias y duraciones', () => {
++    expect(formatearDistancia(0.35)).toBe('350 m')
++    expect(formatearDistancia(2.345)).toBe('2,3 km')
++    expect(formatearDuracion(12 * 60000)).toBe('12 min')
++    expect(formatearDuracion(65 * 60000)).toBe('1 h 05 min')
++  })
++})
++
++describe('precios', () => {
++  const inicio = new Date('2026-11-01T10:00:00Z')
++  it('cobra bloques de 24 h iniciados, mínimo 1', () => {
++    expect(unidadesCobrables(inicio, new Date('2026-11-01T11:00:00Z'))).toBe(1)
++    expect(unidadesCobrables(inicio, new Date('2026-11-03T10:00:00Z'))).toBe(2)
++    expect(unidadesCobrables(inicio, new Date('2026-11-03T10:00:01Z'))).toBe(3)
++    expect(unidadesCobrables(inicio, inicio)).toBe(0)
++  })
++
++  it('calcula el total y formatea en CLP', () => {
++    expect(calcularPrecio(inicio, new Date('2026-11-03T10:00:00Z'), 25000)).toBe(50000)
++    expect(calcularPrecio(inicio, new Date('2026-11-03T10:00:00Z'), null)).toBe(0)
++    expect(formatearClp(50000).replace(/\s/g, ' ')).toMatch(/\$\s?50\.000/)
++  })
++})
+-- 
+2.54.0 (Apple Git-157)
+

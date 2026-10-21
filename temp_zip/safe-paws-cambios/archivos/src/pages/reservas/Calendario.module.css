@@ -1,0 +1,107 @@
+.calendario {
+  width: 100%;
+  max-width: 420px;
+}
+
+.navegacion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--espaciado-3);
+}
+
+.mes {
+  margin: 0;
+  font-weight: 800;
+  color: var(--color-bosque);
+  text-transform: capitalize;
+}
+
+.flecha {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--color-linea-suave);
+  background: var(--color-superficie);
+  color: var(--color-bosque);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.flecha:hover:not(:disabled) {
+  background: var(--color-bosque-fondo);
+}
+
+.flecha:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.rejilla {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px 0;
+}
+
+.cabecera {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--color-gris-verde);
+  text-decoration: none;
+  padding-bottom: 4px;
+}
+
+.dia {
+  aspect-ratio: 1;
+  min-height: 38px;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  font: inherit;
+  font-weight: 700;
+  color: var(--color-texto);
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+
+.dia:hover:not(:disabled) {
+  background: var(--color-bosque-fondo);
+}
+
+.dia:focus-visible,
+.flecha:focus-visible {
+  outline: 3px solid var(--color-naranja);
+  outline-offset: 1px;
+}
+
+.dia:disabled {
+  color: var(--color-linea-suave);
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.hoy {
+  box-shadow: inset 0 0 0 2px var(--color-naranja);
+}
+
+.enRango {
+  background: var(--color-bosque-fondo);
+  border-radius: 0;
+  color: var(--color-bosque);
+}
+
+.seleccionado,
+.seleccionado:hover:not(:disabled) {
+  background: var(--color-bosque);
+  color: #fff;
+}
+
+.bordeInicio {
+  border-radius: 50% 0 0 50%;
+}
+
+.bordeFin {
+  border-radius: 0 50% 50% 0;
+}

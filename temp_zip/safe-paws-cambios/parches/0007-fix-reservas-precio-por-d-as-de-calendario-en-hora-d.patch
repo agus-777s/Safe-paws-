@@ -1,0 +1,419 @@
+From 085d71a7ac59f0c33ebf57ad1e098e398201ea33 Mon Sep 17 00:00:00 2001
+From: ramon328 <ramon@dropout.cl>
+Date: Tue, 20 Oct 2026 15:18:10 -0300
+Subject: [PATCH 7/8] =?UTF-8?q?fix(reservas):=20precio=20por=20d=C3=ADas?=
+ =?UTF-8?q?=20de=20calendario=20en=20hora=20de=20Chile=20y=20l=C3=ADmites?=
+ =?UTF-8?q?=20de=20fechas?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Hospedaje cobra noches por fecha local; el resto, días de servicio (sin efecto del cambio de horario)
+- El servidor rechaza reservas en el pasado o de más de 60 días
+- Teléfono de la contraparte solo tras activar emergencia y sin bloqueo
+- Imagen del rol dual (los .jpg de registro del repo eran HTML)
+- Contenedor con márgenes en Explorar, Cuidador y Reservar
+- Pruebas con fechas relativas para que no caduquen
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+---
+ src/pages/explorar/CuidadorPage.tsx           |  2 +-
+ src/pages/explorar/ExplorarPage.tsx           |  2 +-
+ src/pages/reservas/ReservarPage.tsx           |  8 ++--
+ src/types/perfil.ts                           |  2 +-
+ src/utils/precios.ts                          | 30 +++++++-----
+ src/utils/utilidades.test.ts                  | 28 +++++++----
+ .../20261020120000_plataforma_safe_paws.sql   | 28 ++++++++---
+ tests/db/migraciones.test.ts                  | 48 +++++++++++++++----
+ tsconfig.json                                 | 11 ++++-
+ tsconfig.node.json                            |  2 +-
+ tsconfig.test.json                            | 23 +++++++++
+ vitest.config.ts                              |  3 ++
+ 12 files changed, 140 insertions(+), 47 deletions(-)
+ create mode 100644 tsconfig.test.json
+
+diff --git a/src/pages/explorar/CuidadorPage.tsx b/src/pages/explorar/CuidadorPage.tsx
+index e0ba581..f63b3ce 100644
+--- a/src/pages/explorar/CuidadorPage.tsx
++++ b/src/pages/explorar/CuidadorPage.tsx
+@@ -53,7 +53,7 @@ export default function CuidadorPage() {
+   }
+ 
+   return (
+-    <div className={estilo.pagina}>
++    <div className={clases('contenedor', estilo.pagina)}>
+       <Link to="/explorar" className={estilo.volver}>
+         ← Volver a explorar
+       </Link>
+diff --git a/src/pages/explorar/ExplorarPage.tsx b/src/pages/explorar/ExplorarPage.tsx
+index 1d2dc51..8950dd0 100644
+--- a/src/pages/explorar/ExplorarPage.tsx
++++ b/src/pages/explorar/ExplorarPage.tsx
+@@ -81,7 +81,7 @@ export default function ExplorarPage() {
+   ]
+ 
+   return (
+-    <div className={estilo.pagina}>
++    <div className={clases('contenedor', estilo.pagina)}>
+       <header className={estilo.cabecera}>
+         <p className={estilo.kicker}>Explorar</p>
+         <h1 className={estilo.titulo}>Cuidadores cerca de ti</h1>
+diff --git a/src/pages/reservas/ReservarPage.tsx b/src/pages/reservas/ReservarPage.tsx
+index 8bb9122..be77792 100644
+--- a/src/pages/reservas/ReservarPage.tsx
++++ b/src/pages/reservas/ReservarPage.tsx
+@@ -59,7 +59,7 @@ export default function ReservarPage() {
+ 
+   if (!idUsuario) {
+     return (
+-      <div className={estilo.pagina}>
++      <div className={clases('contenedor', estilo.pagina)}>
+         <EstadoVista
+           cargando={false}
+           error={null}
+@@ -75,7 +75,7 @@ export default function ReservarPage() {
+ 
+   const cuidador = datos?.cuidador ?? null
+   return (
+-    <div className={estilo.pagina}>
++    <div className={clases('contenedor', estilo.pagina)}>
+       <Link to={`/cuidadores/${cuidadorId}`} className={estilo.volver}>
+         ← Volver al perfil
+       </Link>
+@@ -214,8 +214,8 @@ function FormularioReserva({ cuidador, mascotas, duenoId }: FormularioReservaPro
+     )
+   }
+ 
+-  const unidades = intervalo?.ok ? unidadesCobrables(intervalo.inicio, intervalo.fin) : 0
+-  const total = intervalo?.ok ? calcularPrecio(intervalo.inicio, intervalo.fin, precioUnitario) : 0
++  const unidades = intervalo?.ok && servicio ? unidadesCobrables(servicio, intervalo.inicio, intervalo.fin) : 0
++  const total = intervalo?.ok && servicio ? calcularPrecio(servicio, intervalo.inicio, intervalo.fin, precioUnitario) : 0
+   const [singular, plural] = servicio ? ETIQUETA_UNIDAD[servicio] : ['', '']
+   const puedeEnviar = Boolean(servicio && mascotaId && intervalo?.ok) && !enviando
+ 
+diff --git a/src/types/perfil.ts b/src/types/perfil.ts
+index 5c8bf7d..c8aea2b 100644
+--- a/src/types/perfil.ts
++++ b/src/types/perfil.ts
+@@ -100,7 +100,7 @@ export const ROLES: Array<{
+     titulo: 'Perfil dual (Dueño y Cuidador)',
+     descripcion: 'Tengo mascotas y además quiero ofrecer mis servicios a otros dueños.',
+     icono: '🤝',
+-    imagen: '/stitch/registro/rol-dueno.jpg',
++    imagen: '/stitch/fondo-onboarding-3.jpg',
+     imagenAlt: 'Persona con su perro, lista para cuidar a otras mascotas',
+   },
+ ]
+diff --git a/src/utils/precios.ts b/src/utils/precios.ts
+index fbe5eb2..8c6e474 100644
+--- a/src/utils/precios.ts
++++ b/src/utils/precios.ts
+@@ -1,21 +1,27 @@
+-const MS_POR_HORA = 60 * 60 * 1000
+-const MS_POR_DIA = 24 * MS_POR_HORA
++import type { Servicio } from '@/types/dominio'
++
++const MS_POR_DIA = 24 * 60 * 60 * 1000
++
++/** Número de día de calendario en la hora local del navegador (Chile). */
++function diaLocal(fecha: Date): number {
++  return Date.UTC(fecha.getFullYear(), fecha.getMonth(), fecha.getDate()) / MS_POR_DIA
++}
+ 
+ /**
+- * Bloques de 24 h iniciados (mínimo 1), con 1 h de tolerancia para el cambio
+- * de horario (un día de 25 h no cuenta como dos). Hospedaje = noches; paseo,
+- * guardería y visita = días de servicio. Misma regla que
+- * `public.calcular_precio_reserva` en Supabase (que es la que manda).
++ * Unidades a cobrar por días de calendario (no por horas: el cambio de horario
++ * no altera el precio). Hospedaje = noches (mínimo 1); paseo, guardería y
++ * visita = días de servicio. Misma regla que `public.calcular_precio_reserva`
++ * en Supabase (America/Santiago), que es la que manda.
+  */
+-export function unidadesCobrables(inicio: Date, fin: Date): number {
+-  const duracion = fin.getTime() - inicio.getTime()
+-  if (!(duracion > 0)) return 0
+-  return Math.max(1, Math.ceil((duracion - MS_POR_HORA) / MS_POR_DIA))
++export function unidadesCobrables(servicio: Servicio, inicio: Date, fin: Date): number {
++  if (!(fin.getTime() > inicio.getTime())) return 0
++  const dias = diaLocal(fin) - diaLocal(inicio)
++  return servicio === 'hospedaje' ? Math.max(1, dias) : dias + 1
+ }
+ 
+-export function calcularPrecio(inicio: Date, fin: Date, precioUnitario: number | null): number {
++export function calcularPrecio(servicio: Servicio, inicio: Date, fin: Date, precioUnitario: number | null): number {
+   if (precioUnitario == null) return 0
+-  return unidadesCobrables(inicio, fin) * precioUnitario
++  return unidadesCobrables(servicio, inicio, fin) * precioUnitario
+ }
+ 
+ const formatoClp = new Intl.NumberFormat('es-CL', {
+diff --git a/src/utils/utilidades.test.ts b/src/utils/utilidades.test.ts
+index 639e2d1..ddaf480 100644
+--- a/src/utils/utilidades.test.ts
++++ b/src/utils/utilidades.test.ts
+@@ -27,19 +27,27 @@ describe('geo', () => {
+ })
+ 
+ describe('precios', () => {
+-  const inicio = new Date('2026-11-01T10:00:00Z')
+-  it('cobra bloques de 24 h iniciados, mínimo 1', () => {
+-    expect(unidadesCobrables(inicio, new Date('2026-11-01T11:00:00Z'))).toBe(1)
+-    expect(unidadesCobrables(inicio, new Date('2026-11-03T10:00:00Z'))).toBe(2)
+-    // Cambio de horario: 2 noches de 49 h siguen siendo 2.
+-    expect(unidadesCobrables(inicio, new Date('2026-11-03T11:00:00Z'))).toBe(2)
+-    expect(unidadesCobrables(inicio, new Date('2026-11-03T11:00:01Z'))).toBe(3)
+-    expect(unidadesCobrables(inicio, inicio)).toBe(0)
++  // Fechas locales (los tests corren en America/Santiago, ver vitest.config.ts).
++  const inicio = new Date(2026, 10, 1, 10, 0)
++  it('cobra por días de calendario: noches en hospedaje, días en el resto', () => {
++    expect(unidadesCobrables('paseo', inicio, new Date(2026, 10, 1, 11, 0))).toBe(1)
++    expect(unidadesCobrables('hospedaje', inicio, new Date(2026, 10, 1, 18, 0))).toBe(1)
++    expect(unidadesCobrables('hospedaje', inicio, new Date(2026, 10, 3, 10, 0))).toBe(2)
++    expect(unidadesCobrables('hospedaje', inicio, new Date(2026, 10, 3, 23, 0))).toBe(2)
++    expect(unidadesCobrables('guarderia', new Date(2026, 10, 2, 8, 0), new Date(2026, 10, 6, 18, 0))).toBe(5)
++    expect(unidadesCobrables('paseo', inicio, inicio)).toBe(0)
++  })
++
++  it('el cambio de horario no cambia el precio', () => {
++    // Abril 2027: el día del cambio dura 25 h; siguen siendo 2 noches.
++    expect(unidadesCobrables('hospedaje', new Date(2027, 3, 3, 12, 0), new Date(2027, 3, 5, 12, 0))).toBe(2)
++    // Septiembre 2026: el día del cambio dura 23 h; sigue siendo 1 noche.
++    expect(unidadesCobrables('hospedaje', new Date(2026, 8, 5, 12, 0), new Date(2026, 8, 6, 12, 0))).toBe(1)
+   })
+ 
+   it('calcula el total y formatea en CLP', () => {
+-    expect(calcularPrecio(inicio, new Date('2026-11-03T10:00:00Z'), 25000)).toBe(50000)
+-    expect(calcularPrecio(inicio, new Date('2026-11-03T10:00:00Z'), null)).toBe(0)
++    expect(calcularPrecio('hospedaje', inicio, new Date(2026, 10, 3, 10, 0), 25000)).toBe(50000)
++    expect(calcularPrecio('hospedaje', inicio, new Date(2026, 10, 3, 10, 0), null)).toBe(0)
+     expect(formatearClp(50000).replace(/\s/g, ' ')).toMatch(/\$\s?50\.000/)
+   })
+ })
+diff --git a/supabase/migrations/20261020120000_plataforma_safe_paws.sql b/supabase/migrations/20261020120000_plataforma_safe_paws.sql
+index 0f5a3d4..bd50f96 100644
+--- a/supabase/migrations/20261020120000_plataforma_safe_paws.sql
++++ b/supabase/migrations/20261020120000_plataforma_safe_paws.sql
+@@ -301,12 +301,16 @@ language sql
+ immutable
+ set search_path = ''
+ as $$
+-  -- Hospedaje cobra por noche; paseo, guardería y visita por día de servicio.
+-  -- En ambos casos son bloques de 24 h iniciados (mínimo 1), con 1 h de tolerancia
+-  -- para que el cambio de horario (día de 25 h) no cobre una noche extra.
++  -- Por días de calendario en hora de Chile (el cambio de horario no altera el precio).
++  -- Hospedaje: noches (mínimo 1). Paseo, guardería y visita: días de servicio.
+   select case
+     when p_precio_unitario is null or p_fin <= p_inicio or p_servicio is null then 0
+-    else greatest(1, ceil((extract(epoch from (p_fin - p_inicio)) - 3600) / 86400.0))::integer * p_precio_unitario
++    when p_servicio = 'hospedaje' then
++      greatest(1, (p_fin at time zone 'America/Santiago')::date - (p_inicio at time zone 'America/Santiago')::date)
++        * p_precio_unitario
++    else
++      ((p_fin at time zone 'America/Santiago')::date - (p_inicio at time zone 'America/Santiago')::date + 1)
++        * p_precio_unitario
+   end;
+ $$;
+ 
+@@ -377,6 +381,12 @@ begin
+   if not exists (select 1 from public.mascotas m where m.id = new.mascota_id and m.dueno_id = new.dueno_id) then
+     raise exception 'La mascota no pertenece a quien reserva.' using errcode = 'P0001';
+   end if;
++  if new.inicio < now() - interval '1 hour' then
++    raise exception 'La reserva no puede empezar en el pasado.' using errcode = 'P0001';
++  end if;
++  if new.fin - new.inicio > interval '60 days' then
++    raise exception 'La reserva no puede durar más de 60 días.' using errcode = 'P0001';
++  end if;
+   if coalesce(public.hay_bloqueo(new.dueno_id, new.cuidador_id), false) then
+     raise exception 'No es posible reservar con esta persona.' using errcode = 'P0001';
+   end if;
+@@ -585,7 +595,8 @@ as $$
+     and public.es_participante_conversacion(p_conversacion);
+ $$;
+ 
+--- Teléfono de la contraparte, solo mientras la reserva está activa (emergencias).
++-- Teléfono de la contraparte: solo en reservas activas, sin bloqueo y después
++-- de que alguien activó el botón de emergencia en ese servicio.
+ create or replace function public.telefono_contraparte(p_reserva uuid)
+ returns text
+ language sql
+@@ -599,7 +610,12 @@ as $$
+     on p.id = case when r.dueno_id = (select auth.uid()) then r.cuidador_id else r.dueno_id end
+   where r.id = p_reserva
+     and (select auth.uid()) in (r.dueno_id, r.cuidador_id)
+-    and r.estado in ('aceptada', 'en_curso');
++    and r.estado in ('aceptada', 'en_curso')
++    and not coalesce(public.hay_bloqueo(r.dueno_id, r.cuidador_id), false)
++    and exists (
++      select 1 from public.actualizaciones_servicio a
++      where a.reserva_id = r.id and a.tipo = 'emergencia'
++    );
+ $$;
+ 
+ -- Datos visibles de otras personas: cuidadores activos, o con quien
+diff --git a/tests/db/migraciones.test.ts b/tests/db/migraciones.test.ts
+index efbca36..461eb1a 100644
+--- a/tests/db/migraciones.test.ts
++++ b/tests/db/migraciones.test.ts
+@@ -121,7 +121,17 @@ describe('reglas de acceso y flujo de negocio', () => {
+     mascotaId = mascota.id
+   })
+ 
+-  async function crearReserva(servicio = 'hospedaje', inicio = '2026-11-01T10:00:00Z', fin = '2026-11-03T10:00:00Z') {
++  // Las fechas de las pruebas se escriben en noviembre de 2026 y se desplazan en días
++  // enteros para que siempre queden en el futuro (el servidor rechaza fechas pasadas).
++  const DIAS_DESPLAZAMIENTO = Math.max(
++    0,
++    Math.ceil((Date.now() + 30 * 86_400_000 - Date.parse('2026-11-01T00:00:00Z')) / 86_400_000),
++  )
++  const aFuturo = (iso: string) => new Date(Date.parse(iso) + DIAS_DESPLAZAMIENTO * 86_400_000).toISOString()
++
++  async function crearReserva(servicio = 'hospedaje', inicioBase = '2026-11-01T15:00:00Z', finBase = '2026-11-03T15:00:00Z') {
++    const inicio = aFuturo(inicioBase)
++    const fin = aFuturo(finBase)
+     const [reserva] = await comoUsuario(db, DUENO, (tx) =>
+       filas<{ id: string; precio_total: number; estado: string }>(
+         tx,
+@@ -213,6 +223,19 @@ describe('reglas de acceso y flujo de negocio', () => {
+     expect(reserva.estado).toBe('pendiente')
+   })
+ 
++  it('reservas: rechaza fechas pasadas y duraciones de más de 60 días', async () => {
++    await expect(
++      comoUsuario(db, DUENO, (tx) =>
++        tx.query(
++          `insert into public.reservas (dueno_id, cuidador_id, mascota_id, servicio, inicio, fin)
++           values ($1, $2, $3, 'paseo', now() - interval '2 days', now() - interval '2 days' + interval '1 hour')`,
++          [DUENO, CUIDADOR, mascotaId],
++        ),
++      ),
++    ).rejects.toThrow(/en el pasado/)
++    await expect(crearReserva('hospedaje', '2026-11-01T15:00:00Z', '2027-01-15T15:00:00Z')).rejects.toThrow(/60 días/)
++  })
++
+   it('reservas: rechaza servicios que el cuidador no ofrece y mascotas ajenas', async () => {
+     await expect(crearReserva('visita')).rejects.toThrow(/no ofrece este servicio/)
+     await expect(
+@@ -508,6 +531,10 @@ describe('reglas de acceso y flujo de negocio', () => {
+       ).then(([fila]) => fila.t)
+     expect(await telefono(DUENO)).toBeNull() // pendiente
+     await cambiarEstado(CUIDADOR, reserva.id, 'aceptada')
++    expect(await telefono(DUENO)).toBeNull() // sin emergencia activada
++    await comoUsuario(db, DUENO, (tx) =>
++      tx.query(`insert into public.actualizaciones_servicio (reserva_id, tipo) values ($1, 'emergencia')`, [reserva.id]),
++    )
+     expect(await telefono(DUENO)).toBe('+56911112222')
+     expect(await telefono(EXTRANO)).toBeNull()
+     await cambiarEstado(DUENO, reserva.id, 'cancelada')
+@@ -527,13 +554,16 @@ describe('reglas de acceso y flujo de negocio', () => {
+ 
+   it('el precio de SQL coincide con la regla del frontend', async () => {
+     const { calcularPrecio } = await import('../../src/utils/precios.ts')
+-    const casos: Array<[string, string, string, number]> = [
+-      ['hospedaje', '2026-11-01T10:00:00Z', '2026-11-03T10:00:00Z', 25000],
+-      ['hospedaje', '2026-11-01T10:00:00Z', '2026-11-03T12:00:00Z', 25000],
+-      ['paseo', '2026-11-01T10:00:00Z', '2026-11-01T11:00:00Z', 7000],
+-      ['guarderia', '2026-11-01T08:00:00Z', '2026-11-05T18:00:00Z', 15000],
+-      ['hospedaje', '2027-04-02T15:00:00Z', '2027-04-04T16:00:00Z', 25000],
+-      ['hospedaje', '2026-11-01T10:00:00Z', '2026-11-03T11:00:01Z', 25000],
++    const casos: Array<['paseo' | 'hospedaje' | 'guarderia' | 'visita', string, string, number]> = [
++      ['hospedaje', '2026-11-01T15:00:00Z', '2026-11-03T15:00:00Z', 25000],
++      ['hospedaje', '2026-11-01T15:00:00Z', '2026-11-03T23:00:00Z', 25000],
++      ['hospedaje', '2026-11-01T15:00:00Z', '2026-11-01T20:00:00Z', 25000],
++      ['paseo', '2026-11-01T15:00:00Z', '2026-11-01T16:00:00Z', 7000],
++      ['visita', '2026-11-01T15:00:00Z', '2026-11-01T15:30:00Z', 9000],
++      ['guarderia', '2026-11-02T11:00:00Z', '2026-11-06T21:00:00Z', 15000],
++      // Cambio de horario (abril 2027 y septiembre 2026).
++      ['hospedaje', '2027-04-03T15:00:00Z', '2027-04-05T16:00:00Z', 25000],
++      ['hospedaje', '2026-09-05T15:00:00Z', '2026-09-06T14:00:00Z', 25000],
+     ]
+     for (const [servicio, inicio, fin, unitario] of casos) {
+       const [{ precio }] = await filas<{ precio: number }>(
+@@ -541,7 +571,7 @@ describe('reglas de acceso y flujo de negocio', () => {
+         'select public.calcular_precio_reserva($1, $2, $3, $4) as precio',
+         [servicio, inicio, fin, unitario],
+       )
+-      expect(calcularPrecio(new Date(inicio), new Date(fin), unitario)).toBe(precio)
++      expect(calcularPrecio(servicio, new Date(inicio), new Date(fin), unitario), `${servicio} ${inicio}`).toBe(precio)
+     }
+   })
+ })
+diff --git a/tsconfig.json b/tsconfig.json
+index 1ffef60..9bcc00a 100644
+--- a/tsconfig.json
++++ b/tsconfig.json
+@@ -1,7 +1,14 @@
+ {
+   "files": [],
+   "references": [
+-    { "path": "./tsconfig.app.json" },
+-    { "path": "./tsconfig.node.json" }
++    {
++      "path": "./tsconfig.app.json"
++    },
++    {
++      "path": "./tsconfig.node.json"
++    },
++    {
++      "path": "./tsconfig.test.json"
++    }
+   ]
+ }
+diff --git a/tsconfig.node.json b/tsconfig.node.json
+index ef2e79e..d3daab6 100644
+--- a/tsconfig.node.json
++++ b/tsconfig.node.json
+@@ -19,5 +19,5 @@
+     "erasableSyntaxOnly": true,
+     "noFallthroughCasesInSwitch": true
+   },
+-  "include": ["vite.config.ts", "vitest.config.ts", "tests"]
++  "include": ["vite.config.ts", "vitest.config.ts"]
+ }
+diff --git a/tsconfig.test.json b/tsconfig.test.json
+new file mode 100644
+index 0000000..f29f3f3
+--- /dev/null
++++ b/tsconfig.test.json
+@@ -0,0 +1,23 @@
++{
++  "compilerOptions": {
++    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.test.tsbuildinfo",
++    "target": "es2023",
++    "lib": ["ES2023", "DOM"],
++    "module": "esnext",
++    "moduleResolution": "bundler",
++    "types": ["node", "vite/client"],
++    "skipLibCheck": true,
++    "allowImportingTsExtensions": true,
++    "verbatimModuleSyntax": true,
++    "moduleDetection": "force",
++    "noEmit": true,
++    "paths": {
++      "@/*": ["./src/*"]
++    },
++    "noUnusedLocals": true,
++    "noUnusedParameters": true,
++    "erasableSyntaxOnly": true,
++    "noFallthroughCasesInSwitch": true
++  },
++  "include": ["tests"]
++}
+diff --git a/vitest.config.ts b/vitest.config.ts
+index cf6c6db..9f91df8 100644
+--- a/vitest.config.ts
++++ b/vitest.config.ts
+@@ -1,6 +1,9 @@
+ import { defineConfig } from 'vitest/config'
+ import { fileURLToPath, URL } from 'node:url'
+ 
++// La app y el SQL calculan días de calendario en hora de Chile.
++process.env.TZ = 'America/Santiago'
++
+ export default defineConfig({
+   resolve: {
+     alias: {
+-- 
+2.54.0 (Apple Git-157)
+

@@ -1,0 +1,4089 @@
+From 02d2508a75c8f3ef6cc81e7fdab35488797ca32e Mon Sep 17 00:00:00 2001
+From: ramon328 <ramon@dropout.cl>
+Date: Tue, 20 Oct 2026 14:59:41 -0300
+Subject: [PATCH 1/8] feat(db): esquema completo de la plataforma con RLS, seed
+ y pruebas
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Mascotas y salud, cuidadores, reservas con precios calculados en el
+servidor y estados por RPC, seguimiento en vivo, chat con bloqueo y
+reporte, reseñas, panel del cuidador, bucket de fotos y Realtime.
+Pruebas con PGlite que cubren las migraciones, RLS y el flujo de reservas.
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+---
+ package-lock.json                             | 1978 +++++++++++++++--
+ package.json                                  |   11 +-
+ src/utils/precios.ts                          |   27 +
+ .../20261020120000_plataforma_safe_paws.sql   |  888 ++++++++
+ .../20261020120100_storage_y_realtime.sql     |   44 +
+ supabase/seed.sql                             |   73 +
+ tests/db/entorno.ts                           |  113 +
+ tests/db/migraciones.test.ts                  |  449 ++++
+ tsconfig.node.json                            |    2 +-
+ vitest.config.ts                              |   16 +
+ 10 files changed, 3473 insertions(+), 128 deletions(-)
+ create mode 100644 src/utils/precios.ts
+ create mode 100644 supabase/migrations/20261020120000_plataforma_safe_paws.sql
+ create mode 100644 supabase/migrations/20261020120100_storage_y_realtime.sql
+ create mode 100644 supabase/seed.sql
+ create mode 100644 tests/db/entorno.ts
+ create mode 100644 tests/db/migraciones.test.ts
+ create mode 100644 vitest.config.ts
+
+diff --git a/package-lock.json b/package-lock.json
+index 33bb99e..aa2c543 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -16,7 +16,10 @@
+         "react-router-dom": "^7.18.3"
+       },
+       "devDependencies": {
++        "@electric-sql/pglite": "^0.5.10",
+         "@eslint/js": "^10.0.1",
++        "@testing-library/dom": "^10.4.2",
++        "@testing-library/react": "^16.3.3",
+         "@types/canvas-confetti": "^1.9.0",
+         "@types/leaflet": "^1.9.22",
+         "@types/node": "^24.13.3",
+@@ -27,10 +30,12 @@
+         "eslint-plugin-react-hooks": "^7.1.1",
+         "eslint-plugin-react-refresh": "^0.5.4",
+         "globals": "^17.11.0",
++        "jsdom": "^30.1.3",
+         "typescript": "~6.0.2",
+         "typescript-eslint": "^8.67.0",
+         "vite": "^8.2.2",
+-        "vite-plugin-pwa": "^1.3.0"
++        "vite-plugin-pwa": "^1.3.0",
++        "vitest": "^3.2.7"
+       }
+     },
+     "node_modules/@apideck/better-ajv-errors": {
+@@ -48,6 +53,59 @@
+         "ajv": ">=8"
+       }
+     },
++    "node_modules/@asamuzakjp/css-color": {
++      "version": "7.1.7",
++      "resolved": "https://registry.npmjs.org/@asamuzakjp/css-color/-/css-color-7.1.7.tgz",
++      "integrity": "sha512-Q7ioeear07HwixdIitIn9KS1LZi97CEDFCSjPNm9v+y8KNbsu9q4Lrd4zUQW4faED+E7qxvfeVnbNRW46wFKuw==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@csstools/css-calc": "^3.4.3",
++        "@csstools/css-color-parser": "^4.2.6",
++        "@csstools/css-parser-algorithms": "^4.0.2",
++        "@csstools/css-tokenizer": "^4.0.2",
++        "lru-cache": "^11.5.3"
++      },
++      "engines": {
++        "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
++      }
++    },
++    "node_modules/@asamuzakjp/css-color/node_modules/lru-cache": {
++      "version": "11.5.3",
++      "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-11.5.3.tgz",
++      "integrity": "sha512-U4N8FgzmWxc8k1VH8Kr6lQg18U7Fjvby6wXHVRX/ZZ7IwWbRMgrRbP0Wrb5q5NVinryp4SQampHKdvtecItxUg==",
++      "dev": true,
++      "license": "BlueOak-1.0.0",
++      "engines": {
++        "node": "20 || >=22"
++      }
++    },
++    "node_modules/@asamuzakjp/dom-selector": {
++      "version": "10.0.4",
++      "resolved": "https://registry.npmjs.org/@asamuzakjp/dom-selector/-/dom-selector-10.0.4.tgz",
++      "integrity": "sha512-A6f1nKy99I6tyoK82U6kBHvQQZmdHmTmPzJYPY/0eaOW0r8/qPmEOwjGHs+hL/vCgOwQTupu4LT1XtXNUuDruA==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "bidi-js": "^1.1.0",
++        "css-tree": "^3.2.1",
++        "is-potential-custom-element-name": "^1.0.1",
++        "lru-cache": "^11.5.3"
++      },
++      "engines": {
++        "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
++      }
++    },
++    "node_modules/@asamuzakjp/dom-selector/node_modules/lru-cache": {
++      "version": "11.5.3",
++      "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-11.5.3.tgz",
++      "integrity": "sha512-U4N8FgzmWxc8k1VH8Kr6lQg18U7Fjvby6wXHVRX/ZZ7IwWbRMgrRbP0Wrb5q5NVinryp4SQampHKdvtecItxUg==",
++      "dev": true,
++      "license": "BlueOak-1.0.0",
++      "engines": {
++        "node": "20 || >=22"
++      }
++    },
+     "node_modules/@babel/code-frame": {
+       "version": "7.29.7",
+       "dev": true,
+@@ -1408,6 +1466,19 @@
+         "node": ">=6.9.0"
+       }
+     },
++    "node_modules/@bramus/specificity": {
++      "version": "2.4.3",
++      "resolved": "https://registry.npmjs.org/@bramus/specificity/-/specificity-2.4.3.tgz",
++      "integrity": "sha512-0GEz8qJWokkUVYQYRukmkSHIFNoBH8QTreeHrAFbvz1XFYc3Y+puhMs8PQ5x8GNugiC2l5jvDBXKLbBIByeSBw==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "css-tree": "^3.2.1"
++      },
++      "bin": {
++        "specificity": "bin/cli.js"
++      }
++    },
+     "node_modules/@cacheable/memory": {
+       "version": "2.2.0",
+       "dev": true,
+@@ -1428,176 +1499,783 @@
+         "keyv": "^5.6.0"
+       }
+     },
+-    "node_modules/@eslint-community/eslint-utils": {
+-      "version": "4.10.1",
++    "node_modules/@csstools/color-helpers": {
++      "version": "6.1.2",
++      "resolved": "https://registry.npmjs.org/@csstools/color-helpers/-/color-helpers-6.1.2.tgz",
++      "integrity": "sha512-grhRy3OKmniaAEKXMjua5z/EODX0MSqBGjunw8+j/3HQjOnahs2AGhvEOIYVUWcU6ScApbhLhVrQTX8XqrMrow==",
+       "dev": true,
+-      "license": "MIT",
+-      "dependencies": {
+-        "eslint-visitor-keys": "^3.4.3"
+-      },
++      "funding": [
++        {
++          "type": "github",
++          "url": "https://github.com/sponsors/csstools"
++        },
++        {
++          "type": "opencollective",
++          "url": "https://opencollective.com/csstools"
++        }
++      ],
++      "license": "MIT-0",
+       "engines": {
+-        "node": "^12.22.0 || ^14.17.0 || >=16.0.0"
+-      },
+-      "funding": {
+-        "url": "https://opencollective.com/eslint"
+-      },
+-      "peerDependencies": {
+-        "eslint": "^6.0.0 || ^7.0.0 || >=8.0.0"
++        "node": ">=20.19.0"
+       }
+     },
+-    "node_modules/@eslint-community/eslint-utils/node_modules/eslint-visitor-keys": {
++    "node_modules/@csstools/css-calc": {
+       "version": "3.4.3",
++      "resolved": "https://registry.npmjs.org/@csstools/css-calc/-/css-calc-3.4.3.tgz",
++      "integrity": "sha512-iex20d8CHVkyvg6B7UKV7uHnI2Bqo9g+EFfT9E0y+GvTvhZ/DwONJ+9aKb1dlqm0ZiGsL5RXjp0fCoJYnkeDjA==",
+       "dev": true,
+-      "license": "Apache-2.0",
++      "funding": [
++        {
++          "type": "github",
++          "url": "https://github.com/sponsors/csstools"
++        },
++        {
++          "type": "opencollective",
++          "url": "https://opencollective.com/csstools"
++        }
++      ],
++      "license": "MIT",
+       "engines": {
+-        "node": "^12.22.0 || ^14.17.0 || >=16.0.0"
++        "node": ">=20.19.0"
+       },
+-      "funding": {
+-        "url": "https://opencollective.com/eslint"
++      "peerDependencies": {
++        "@csstools/css-parser-algorithms": "^4.0.2",
++        "@csstools/css-tokenizer": "^4.0.2"
+       }
+     },
+-    "node_modules/@eslint-community/regexpp": {
+-      "version": "4.12.2",
++    "node_modules/@csstools/css-color-parser": {
++      "version": "4.2.6",
++      "resolved": "https://registry.npmjs.org/@csstools/css-color-parser/-/css-color-parser-4.2.6.tgz",
++      "integrity": "sha512-iiPQ3iRWwnJkeEn6RIu6SJPr7hYrLz6XZ9s/QZl+2/LI5KQVjpl2fdmDSZKuD4xP6GMmMPgHFFXg6k1Wkz0Trg==",
+       "dev": true,
++      "funding": [
++        {
++          "type": "github",
++          "url": "https://github.com/sponsors/csstools"
++        },
++        {
++          "type": "opencollective",
++          "url": "https://opencollective.com/csstools"
++        }
++      ],
+       "license": "MIT",
+-      "engines": {
+-        "node": "^12.0.0 || ^14.0.0 || >=16.0.0"
+-      }
+-    },
+-    "node_modules/@eslint/config-array": {
+-      "version": "0.23.5",
+-      "dev": true,
+-      "license": "Apache-2.0",
+       "dependencies": {
+-        "@eslint/object-schema": "^3.0.5",
+-        "debug": "^4.3.1",
+-        "minimatch": "^10.2.4"
++        "@csstools/color-helpers": "^6.1.2",
++        "@csstools/css-calc": "^3.4.3"
+       },
+       "engines": {
+-        "node": "^20.19.0 || ^22.13.0 || >=24"
+-      }
+-    },
+-    "node_modules/@eslint/config-helpers": {
+-      "version": "0.7.0",
+-      "dev": true,
+-      "license": "Apache-2.0",
+-      "dependencies": {
+-        "@eslint/core": "^1.2.1"
++        "node": ">=20.19.0"
+       },
+-      "engines": {
+-        "node": "^20.19.0 || ^22.13.0 || >=24"
++      "peerDependencies": {
++        "@csstools/css-parser-algorithms": "^4.0.2",
++        "@csstools/css-tokenizer": "^4.0.2"
+       }
+     },
+-    "node_modules/@eslint/core": {
+-      "version": "1.2.1",
++    "node_modules/@csstools/css-parser-algorithms": {
++      "version": "4.0.2",
++      "resolved": "https://registry.npmjs.org/@csstools/css-parser-algorithms/-/css-parser-algorithms-4.0.2.tgz",
++      "integrity": "sha512-40cSKyMvK+tq4qz6Awrlye2WGuOKt3FwPgtGg6KTfbHOWNw+Rk1rzbAtZnZ6IBhsY491HLRnDXwoyBAijmmILA==",
+       "dev": true,
+-      "license": "Apache-2.0",
+-      "dependencies": {
+-        "@types/json-schema": "^7.0.15"
+-      },
++      "funding": [
++        {
++          "type": "github",
++          "url": "https://github.com/sponsors/csstools"
++        },
++        {
++          "type": "opencollective",
++          "url": "https://opencollective.com/csstools"
++        }
++      ],
++      "license": "MIT",
+       "engines": {
+-        "node": "^20.19.0 || ^22.13.0 || >=24"
++        "node": ">=20.19.0"
++      },
++      "peerDependencies": {
++        "@csstools/css-tokenizer": "^4.0.2"
+       }
+     },
+-    "node_modules/@eslint/js": {
+-      "version": "10.0.1",
++    "node_modules/@csstools/css-syntax-patches-for-csstree": {
++      "version": "1.1.15",
++      "resolved": "https://registry.npmjs.org/@csstools/css-syntax-patches-for-csstree/-/css-syntax-patches-for-csstree-1.1.15.tgz",
++      "integrity": "sha512-J0u7HkVl2nzSlhsiTOp4AmwcUQ3D+mGEEKfBy/7To5/y7F2OHwyLrXfrhR0SMgr4p5Lo+eaMVSeai24zUcBIxA==",
+       "dev": true,
+-      "license": "MIT",
+-      "engines": {
+-        "node": "^20.19.0 || ^22.13.0 || >=24"
+-      },
+-      "funding": {
+-        "url": "https://eslint.org/donate"
+-      },
++      "funding": [
++        {
++          "type": "github",
++          "url": "https://github.com/sponsors/csstools"
++        },
++        {
++          "type": "opencollective",
++          "url": "https://opencollective.com/csstools"
++        }
++      ],
++      "license": "MIT-0",
+       "peerDependencies": {
+-        "eslint": "^10.0.0"
++        "css-tree": "^3.2.1"
+       },
+       "peerDependenciesMeta": {
+-        "eslint": {
++        "css-tree": {
+           "optional": true
+         }
+       }
+     },
+-    "node_modules/@eslint/object-schema": {
+-      "version": "3.0.5",
++    "node_modules/@csstools/css-tokenizer": {
++      "version": "4.0.2",
++      "resolved": "https://registry.npmjs.org/@csstools/css-tokenizer/-/css-tokenizer-4.0.2.tgz",
++      "integrity": "sha512-OoKoR0f76dCY666JlcbhmVTs2drYj1GUXZTYTcbUgJjh9Nv41aFfZ21bPQTERm5+L5cBDo466NltB2lplS5GBw==",
+       "dev": true,
+-      "license": "Apache-2.0",
++      "funding": [
++        {
++          "type": "github",
++          "url": "https://github.com/sponsors/csstools"
++        },
++        {
++          "type": "opencollective",
++          "url": "https://opencollective.com/csstools"
++        }
++      ],
++      "license": "MIT",
+       "engines": {
+-        "node": "^20.19.0 || ^22.13.0 || >=24"
++        "node": ">=20.19.0"
+       }
+     },
+-    "node_modules/@eslint/plugin-kit": {
+-      "version": "0.7.3",
++    "node_modules/@electric-sql/pglite": {
++      "version": "0.5.10",
++      "resolved": "https://registry.npmjs.org/@electric-sql/pglite/-/pglite-0.5.10.tgz",
++      "integrity": "sha512-tXc/25U3ulOkiRQuTFdwIv+JhBqtMdAF7Gvo6CfZZWtSB4+hgC4Wr2vwK5ngvvN5PJfAAEGIsfyCVy1JhCOBYw==",
+       "dev": true,
+-      "license": "Apache-2.0",
+-      "dependencies": {
+-        "@eslint/core": "^1.2.1",
+-        "levn": "^0.4.1"
+-      },
+-      "engines": {
+-        "node": "^20.19.0 || ^22.13.0 || >=24"
+-      }
++      "license": "Apache-2.0"
+     },
+-    "node_modules/@humanfs/core": {
+-      "version": "0.19.2",
++    "node_modules/@esbuild/aix-ppc64": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/aix-ppc64/-/aix-ppc64-0.28.2.tgz",
++      "integrity": "sha512-XExcO+dvLKvVtNTibSTBej1NCAbaGhWn9Ww1ZPx80qsahhPFe/8jgWP0IchNe0F3HwkU7n8ejhH8bjonqht8mQ==",
++      "cpu": [
++        "ppc64"
++      ],
+       "dev": true,
+-      "license": "Apache-2.0",
+-      "dependencies": {
+-        "@humanfs/types": "^0.15.0"
+-      },
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "aix"
++      ],
+       "engines": {
+-        "node": ">=18.18.0"
++        "node": ">=18"
+       }
+     },
+-    "node_modules/@humanfs/node": {
+-      "version": "0.16.8",
++    "node_modules/@esbuild/android-arm": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/android-arm/-/android-arm-0.28.2.tgz",
++      "integrity": "sha512-kXXoiPVVGQcnIYGOeaovwOURpniDBpSq4A03qkQ+BMQqtGG6HYap3xne9C1O1yo4TR3qxlCX5IqqmX6fFo2Lqg==",
++      "cpu": [
++        "arm"
++      ],
+       "dev": true,
+-      "license": "Apache-2.0",
+-      "dependencies": {
+-        "@humanfs/core": "^0.19.2",
+-        "@humanfs/types": "^0.15.0",
+-        "@humanwhocodes/retry": "^0.4.0"
+-      },
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "android"
++      ],
+       "engines": {
+-        "node": ">=18.18.0"
++        "node": ">=18"
+       }
+     },
+-    "node_modules/@humanfs/types": {
+-      "version": "0.15.0",
++    "node_modules/@esbuild/android-arm64": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/android-arm64/-/android-arm64-0.28.2.tgz",
++      "integrity": "sha512-5YfKeeI8qWfBZIX+u2xZC3Zlb3Os/gLS2sbEKM+I4ZOcsWmHS2WLysCcQZDAFRslDUU5Oiq44gf6PYN1vGwG5A==",
++      "cpu": [
++        "arm64"
++      ],
+       "dev": true,
+-      "license": "Apache-2.0",
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "android"
++      ],
+       "engines": {
+-        "node": ">=18.18.0"
++        "node": ">=18"
+       }
+     },
+-    "node_modules/@humanwhocodes/module-importer": {
+-      "version": "1.0.1",
++    "node_modules/@esbuild/android-x64": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/android-x64/-/android-x64-0.28.2.tgz",
++      "integrity": "sha512-O387ite7SzUyCcy3JQX4P4bLtEA7bLLkx+esve5JHnyYfNTxcVpXZo9jhdB0lTKN44gztELTdU7nS8Nr16Fs1Q==",
++      "cpu": [
++        "x64"
++      ],
+       "dev": true,
+-      "license": "Apache-2.0",
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "android"
++      ],
+       "engines": {
+-        "node": ">=12.22"
+-      },
+-      "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/nzakas"
++        "node": ">=18"
+       }
+     },
+-    "node_modules/@humanwhocodes/retry": {
+-      "version": "0.4.3",
++    "node_modules/@esbuild/darwin-arm64": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.28.2.tgz",
++      "integrity": "sha512-n4KqkOQrraxHJcgjM1RvwbigfQKIKJVpM7xp+KsxiyUSrRdIXnt73VhrPAx0fV44hgfmIVKjxMN9J1t5jySVkw==",
++      "cpu": [
++        "arm64"
++      ],
+       "dev": true,
+-      "license": "Apache-2.0",
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "darwin"
++      ],
+       "engines": {
+-        "node": ">=18.18"
+-      },
+-      "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/nzakas"
++        "node": ">=18"
+       }
+     },
+-    "node_modules/@isaacs/cliui": {
+-      "version": "9.0.0",
++    "node_modules/@esbuild/darwin-x64": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/darwin-x64/-/darwin-x64-0.28.2.tgz",
++      "integrity": "sha512-uq6suIWYP37qzGddBKPw5QEQPi6HiLGsO7UmkpfyaYNQ3D+rN6w6WfwH+nuqcGXWvawGwxOEroO4YGnFh95azw==",
++      "cpu": [
++        "x64"
++      ],
+       "dev": true,
+-      "license": "BlueOak-1.0.0",
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "darwin"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/freebsd-arm64": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/freebsd-arm64/-/freebsd-arm64-0.28.2.tgz",
++      "integrity": "sha512-n+I0BTSRIoy+d6RPKnEVwql5UwBJolytvY4mAOIEJorKlqgPII8ix6slVVrfZ5Tnj7glIZvloylbB/EJPMWEXw==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "freebsd"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/freebsd-x64": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/freebsd-x64/-/freebsd-x64-0.28.2.tgz",
++      "integrity": "sha512-78XJTJkvPs0kz2w61301PJjXl4g7q3JqiYMZ/M/yVI73EHBrCRTgkhu9oqG7vPqq+a/yadEW8aD+agKlk5xrmg==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "freebsd"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/linux-arm": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-arm/-/linux-arm-0.28.2.tgz",
++      "integrity": "sha512-XlDnu2q5yoqems+xay6wSAcg9DDD7K9RLKZEBOMZm3ckNpJBvOX20tSfby8KfrrhINDyv9V2YVZKY/SpoGJI8w==",
++      "cpu": [
++        "arm"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/linux-arm64": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-arm64/-/linux-arm64-0.28.2.tgz",
++      "integrity": "sha512-pW4AC0P3it8c7do9MVM4p51FzHzdM/TZrerurgRcHJ2WTa1VQ1CIq18xncfpBJw4ojkiZZrKW2yIBWBP92j6Ug==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/linux-ia32": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-ia32/-/linux-ia32-0.28.2.tgz",
++      "integrity": "sha512-CYbnj78HsIeA+DhgUKgFCfvNsTHFhMMrinUrMZpDXJXKN8T3XViTZ/+wtHeVxEWY8ewSzTFN+nRmSwO2tZaLUQ==",
++      "cpu": [
++        "ia32"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/linux-loong64": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-loong64/-/linux-loong64-0.28.2.tgz",
++      "integrity": "sha512-buwkd8nsph4R+ajRvw0qM5Hja/TXQow3ptzWO2EbG/cqcIkHloRrdlBtQlshyYGTNFvfkfJ5tpPLVkY4DtsPfQ==",
++      "cpu": [
++        "loong64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/linux-mips64el": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-mips64el/-/linux-mips64el-0.28.2.tgz",
++      "integrity": "sha512-ZVykbDyk7519VwiNb9Lcj9m8XM6v5V9uKPvrEMkkEedVewf+0itkhahp4HDpgERXhwLRpWFypsGbG/J8s0QjJA==",
++      "cpu": [
++        "mips64el"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/linux-ppc64": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-ppc64/-/linux-ppc64-0.28.2.tgz",
++      "integrity": "sha512-CAXl+Dtd9UUuJd8pKKdwh6MLm3MUMiqMPmhZ3tTSXPqfyQ3vDl6R5hZdZ/kYojK4ofXtdfSv1tFq8XzWx3heNQ==",
++      "cpu": [
++        "ppc64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/linux-riscv64": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-riscv64/-/linux-riscv64-0.28.2.tgz",
++      "integrity": "sha512-GeXCej4IQtU1B+QlDV8W/RRvbzI3O/Stss+/bCXv4lZls5WGRtu2a+3JkA3i4qIUlMXpcHebWpF8AkJhATowuA==",
++      "cpu": [
++        "riscv64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/linux-s390x": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-s390x/-/linux-s390x-0.28.2.tgz",
++      "integrity": "sha512-3H1weTYZPxt/WOhByszQZybS9w5lKzUn1FDMsgEChbHWQwHYQQRfBxgCcZvPhjHfKyJjIievvMmEUawJrdY9Dg==",
++      "cpu": [
++        "s390x"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/linux-x64": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/linux-x64/-/linux-x64-0.28.2.tgz",
++      "integrity": "sha512-4xTZr1FUmSoQW4XIWmit3tzQrUTZM+N3P0XV8xROKYF50XfI7xeO90+1bZvNwxIufQ9hDQVRJH5YhgPVF8A/HQ==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "linux"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/netbsd-arm64": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/netbsd-arm64/-/netbsd-arm64-0.28.2.tgz",
++      "integrity": "sha512-sSATRjPeDBg3pdgHoQfoYBob11Kk1FGa9lui5RIHZCoCkJa9QKlvl3/vKz2usCmYYjs7ymJR/2Nnsqe+Hjt5nw==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "netbsd"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/netbsd-x64": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/netbsd-x64/-/netbsd-x64-0.28.2.tgz",
++      "integrity": "sha512-lqnzCV+mM0gIADaKihiCg6ifgfU2L3h5E33rNQBN1Y4MaVGnzryzmvvf7UHxprpQdE8hpqLolJ9Rl+SkIRDpyw==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "netbsd"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/openbsd-arm64": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/openbsd-arm64/-/openbsd-arm64-0.28.2.tgz",
++      "integrity": "sha512-AL2qJILH7lNjrDmCQDvdxMfAUIv8KMNZOvrwAQ8i8//ntL9FflhOyMJ8OZSMBb8/AWXe3/5v5S20y3zCoZWKoQ==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "openbsd"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/openbsd-x64": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/openbsd-x64/-/openbsd-x64-0.28.2.tgz",
++      "integrity": "sha512-QtiuPytchRyC4rwUKhexJdQKvDuZ6hWloi3igqPQNUJCS1/v9EiO3UTOXR6A3FoMo4fnAKbWJdqaIwhOzh8qEw==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "openbsd"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/openharmony-arm64": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/openharmony-arm64/-/openharmony-arm64-0.28.2.tgz",
++      "integrity": "sha512-WkhYDmpTjLvGlScA1rwjRUmhl4k8oXR3cIbtqWmELgU/dFeHHlEllxDvdWcNJV9rbzCexB5vz8gtNewWLgCT7Q==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "openharmony"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/sunos-x64": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/sunos-x64/-/sunos-x64-0.28.2.tgz",
++      "integrity": "sha512-GPMSkTOtMnv2U2F8gxe4Io6qmVs+YKyp832Etqqxr0hFngmXQ3rzwytelm3GIn7T4VviRUlf3sOgBOiTdvaf7g==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "sunos"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/win32-arm64": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/win32-arm64/-/win32-arm64-0.28.2.tgz",
++      "integrity": "sha512-PIhhEkE9uPBleRBrQEJpUn7MBnibZzbGzYWPmY3x+YoVg/95zbjB4CxPPOQ8l5tYYM4mMaCthF8/1DIfBQQyWQ==",
++      "cpu": [
++        "arm64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "win32"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/win32-ia32": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/win32-ia32/-/win32-ia32-0.28.2.tgz",
++      "integrity": "sha512-YmJbfTlvU7Sdn9BB+4PRES4oB6pxgS37MAONj+hBr/cpXS1aBPKXxNnDbu+QCWPj0o9dgyxeq79g6c5P8KeuYA==",
++      "cpu": [
++        "ia32"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "win32"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@esbuild/win32-x64": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/@esbuild/win32-x64/-/win32-x64-0.28.2.tgz",
++      "integrity": "sha512-5ebpxr3nWMzrL/rnUI755Jkuee0bHL/Gq0WTF9lvcpv73wAp5eu8MfBUgWK9bhWvZjj7yX8etf/8tI8Ney695g==",
++      "cpu": [
++        "x64"
++      ],
++      "dev": true,
++      "license": "MIT",
++      "optional": true,
++      "os": [
++        "win32"
++      ],
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@eslint-community/eslint-utils": {
++      "version": "4.10.1",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "eslint-visitor-keys": "^3.4.3"
++      },
++      "engines": {
++        "node": "^12.22.0 || ^14.17.0 || >=16.0.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/eslint"
++      },
++      "peerDependencies": {
++        "eslint": "^6.0.0 || ^7.0.0 || >=8.0.0"
++      }
++    },
++    "node_modules/@eslint-community/eslint-utils/node_modules/eslint-visitor-keys": {
++      "version": "3.4.3",
++      "dev": true,
++      "license": "Apache-2.0",
++      "engines": {
++        "node": "^12.22.0 || ^14.17.0 || >=16.0.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/eslint"
++      }
++    },
++    "node_modules/@eslint-community/regexpp": {
++      "version": "4.12.2",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": "^12.0.0 || ^14.0.0 || >=16.0.0"
++      }
++    },
++    "node_modules/@eslint/config-array": {
++      "version": "0.23.5",
++      "dev": true,
++      "license": "Apache-2.0",
++      "dependencies": {
++        "@eslint/object-schema": "^3.0.5",
++        "debug": "^4.3.1",
++        "minimatch": "^10.2.4"
++      },
++      "engines": {
++        "node": "^20.19.0 || ^22.13.0 || >=24"
++      }
++    },
++    "node_modules/@eslint/config-helpers": {
++      "version": "0.7.0",
++      "dev": true,
++      "license": "Apache-2.0",
++      "dependencies": {
++        "@eslint/core": "^1.2.1"
++      },
++      "engines": {
++        "node": "^20.19.0 || ^22.13.0 || >=24"
++      }
++    },
++    "node_modules/@eslint/core": {
++      "version": "1.2.1",
++      "dev": true,
++      "license": "Apache-2.0",
++      "dependencies": {
++        "@types/json-schema": "^7.0.15"
++      },
++      "engines": {
++        "node": "^20.19.0 || ^22.13.0 || >=24"
++      }
++    },
++    "node_modules/@eslint/js": {
++      "version": "10.0.1",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": "^20.19.0 || ^22.13.0 || >=24"
++      },
++      "funding": {
++        "url": "https://eslint.org/donate"
++      },
++      "peerDependencies": {
++        "eslint": "^10.0.0"
++      },
++      "peerDependenciesMeta": {
++        "eslint": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@eslint/object-schema": {
++      "version": "3.0.5",
++      "dev": true,
++      "license": "Apache-2.0",
++      "engines": {
++        "node": "^20.19.0 || ^22.13.0 || >=24"
++      }
++    },
++    "node_modules/@eslint/plugin-kit": {
++      "version": "0.7.3",
++      "dev": true,
++      "license": "Apache-2.0",
++      "dependencies": {
++        "@eslint/core": "^1.2.1",
++        "levn": "^0.4.1"
++      },
++      "engines": {
++        "node": "^20.19.0 || ^22.13.0 || >=24"
++      }
++    },
++    "node_modules/@exodus/bytes": {
++      "version": "1.16.0",
++      "resolved": "https://registry.npmjs.org/@exodus/bytes/-/bytes-1.16.0.tgz",
++      "integrity": "sha512-IcpW84uEn3N7ETtNZMlxKhfl6Pec8rUNGOTBtWbK1FKhJxIFAptZyVrvVRVBimAJxJCgc3PxepxkdWWG4DVzfA==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": "^20.19.0 || ^22.12.0 || >=24.0.0"
++      },
++      "peerDependencies": {
++        "@noble/hashes": "^1.8.0 || ^2.0.0"
++      },
++      "peerDependenciesMeta": {
++        "@noble/hashes": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/@humanfs/core": {
++      "version": "0.19.2",
++      "dev": true,
++      "license": "Apache-2.0",
++      "dependencies": {
++        "@humanfs/types": "^0.15.0"
++      },
++      "engines": {
++        "node": ">=18.18.0"
++      }
++    },
++    "node_modules/@humanfs/node": {
++      "version": "0.16.8",
++      "dev": true,
++      "license": "Apache-2.0",
++      "dependencies": {
++        "@humanfs/core": "^0.19.2",
++        "@humanfs/types": "^0.15.0",
++        "@humanwhocodes/retry": "^0.4.0"
++      },
++      "engines": {
++        "node": ">=18.18.0"
++      }
++    },
++    "node_modules/@humanfs/types": {
++      "version": "0.15.0",
++      "dev": true,
++      "license": "Apache-2.0",
++      "engines": {
++        "node": ">=18.18.0"
++      }
++    },
++    "node_modules/@humanwhocodes/module-importer": {
++      "version": "1.0.1",
++      "dev": true,
++      "license": "Apache-2.0",
++      "engines": {
++        "node": ">=12.22"
++      },
++      "funding": {
++        "type": "github",
++        "url": "https://github.com/sponsors/nzakas"
++      }
++    },
++    "node_modules/@humanwhocodes/retry": {
++      "version": "0.4.3",
++      "dev": true,
++      "license": "Apache-2.0",
++      "engines": {
++        "node": ">=18.18"
++      },
++      "funding": {
++        "type": "github",
++        "url": "https://github.com/sponsors/nzakas"
++      }
++    },
++    "node_modules/@isaacs/cliui": {
++      "version": "9.0.0",
++      "dev": true,
++      "license": "BlueOak-1.0.0",
+       "engines": {
+         "node": ">=18"
+       }
+@@ -2548,6 +3226,54 @@
+         }
+       }
+     },
++    "node_modules/@testing-library/dom": {
++      "version": "10.4.2",
++      "resolved": "https://registry.npmjs.org/@testing-library/dom/-/dom-10.4.2.tgz",
++      "integrity": "sha512-yzr2S9HyAIdhz2/6qHgbs665Q7PKVcDF05vsOlHPxG1mo36gKVesdYVeDLnXgfjJ03CrKRk08knc6+E/9m8v2Q==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@babel/code-frame": "^7.10.4",
++        "@babel/runtime": "^7.12.5",
++        "@types/aria-query": "^5.0.1",
++        "aria-query": "5.3.0",
++        "dom-accessibility-api": "^0.5.9",
++        "lz-string": "^1.5.0",
++        "picocolors": "1.1.1",
++        "pretty-format": "^27.0.2"
++      },
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/@testing-library/react": {
++      "version": "16.3.3",
++      "resolved": "https://registry.npmjs.org/@testing-library/react/-/react-16.3.3.tgz",
++      "integrity": "sha512-Uo193NgQbPMz6lrrhtRQQFcMC6Re/ELLFbbuVL30WDlZxlpZf9/lMHTAVxPRLw1q1iu9OJmR1c2BLiENRstdBg==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@babel/runtime": "^7.12.5"
++      },
++      "engines": {
++        "node": ">=18"
++      },
++      "peerDependencies": {
++        "@testing-library/dom": "^10.0.0",
++        "@types/react": "^18.0.0 || ^19.0.0",
++        "@types/react-dom": "^18.0.0 || ^19.0.0",
++        "react": "^18.0.0 || ^19.0.0",
++        "react-dom": "^18.0.0 || ^19.0.0"
++      },
++      "peerDependenciesMeta": {
++        "@types/react": {
++          "optional": true
++        },
++        "@types/react-dom": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/@trickfilm400/rollup-plugin-off-main-thread": {
+       "version": "3.0.0-pre1",
+       "dev": true,
+@@ -2562,6 +3288,13 @@
+         "node": ">=12"
+       }
+     },
++    "node_modules/@types/aria-query": {
++      "version": "5.0.4",
++      "resolved": "https://registry.npmjs.org/@types/aria-query/-/aria-query-5.0.4.tgz",
++      "integrity": "sha512-rfT93uj5s0PRL7EzccGMs3brplhcrghnDoV26NqKhCAS1hVo+WdNsPvE/yb6ilfr5hi2MEk6d5EWJTKdxg8jVw==",
++      "dev": true,
++      "license": "MIT"
++    },
+     "node_modules/@types/canvas-confetti": {
+       "version": "1.9.0",
+       "resolved": "https://registry.npmjs.org/@types/canvas-confetti/-/canvas-confetti-1.9.0.tgz",
+@@ -2569,6 +3302,24 @@
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/@types/chai": {
++      "version": "5.2.3",
++      "resolved": "https://registry.npmjs.org/@types/chai/-/chai-5.2.3.tgz",
++      "integrity": "sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@types/deep-eql": "*",
++        "assertion-error": "^2.0.1"
++      }
++    },
++    "node_modules/@types/deep-eql": {
++      "version": "4.0.2",
++      "resolved": "https://registry.npmjs.org/@types/deep-eql/-/deep-eql-4.0.2.tgz",
++      "integrity": "sha512-c9h9dVVMigMPc4bwTvC5dxqtqJZwQPePsWjPlpSOnojbor6pGqdk541lfA7AqFQr5pB1BRdq0juY9db81BwyFw==",
++      "dev": true,
++      "license": "MIT"
++    },
+     "node_modules/@types/esrecurse": {
+       "version": "4.3.1",
+       "dev": true,
+@@ -2882,6 +3633,94 @@
+         }
+       }
+     },
++    "node_modules/@vitest/expect": {
++      "version": "3.2.7",
++      "resolved": "https://registry.npmjs.org/@vitest/expect/-/expect-3.2.7.tgz",
++      "integrity": "sha512-E8eBXaKibuvH2pSZErOjdVb5vF4PbKYcrnluBTYxEk1l/VhhwZg1kZQsdtjq+CsF5CFydf2Rdkz7jDHKSisi3w==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@types/chai": "^5.2.2",
++        "@vitest/spy": "3.2.7",
++        "@vitest/utils": "3.2.7",
++        "chai": "^5.2.0",
++        "tinyrainbow": "^2.0.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/vitest"
++      }
++    },
++    "node_modules/@vitest/pretty-format": {
++      "version": "3.2.7",
++      "resolved": "https://registry.npmjs.org/@vitest/pretty-format/-/pretty-format-3.2.7.tgz",
++      "integrity": "sha512-KUHlwqVu0sRlhCdyPdQ/wBoTfRahjUky1MubOmYw9fWfIZy1gNoHpuaaQBPAaMaVYdQYHJLurzj8ECCj5OwTqA==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "tinyrainbow": "^2.0.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/vitest"
++      }
++    },
++    "node_modules/@vitest/runner": {
++      "version": "3.2.7",
++      "resolved": "https://registry.npmjs.org/@vitest/runner/-/runner-3.2.7.tgz",
++      "integrity": "sha512-sB9y4ovltoQP+WaUPwmSxO9WIg9Ig694Di5PalVPsYHklAdE027mehpWF2SQSVq+k6sFgaivbTjTJwZLSHbedA==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@vitest/utils": "3.2.7",
++        "pathe": "^2.0.3",
++        "strip-literal": "^3.0.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/vitest"
++      }
++    },
++    "node_modules/@vitest/snapshot": {
++      "version": "3.2.7",
++      "resolved": "https://registry.npmjs.org/@vitest/snapshot/-/snapshot-3.2.7.tgz",
++      "integrity": "sha512-7C+MwShwtBSI5Buwoyg3s/iY1eHL9PKAf+O1wVh/TdnjXUtkoL/9YQtre90i4MtNXM6edP1wJ2zOBpfCyhIS7g==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@vitest/pretty-format": "3.2.7",
++        "magic-string": "^0.30.17",
++        "pathe": "^2.0.3"
++      },
++      "funding": {
++        "url": "https://opencollective.com/vitest"
++      }
++    },
++    "node_modules/@vitest/spy": {
++      "version": "3.2.7",
++      "resolved": "https://registry.npmjs.org/@vitest/spy/-/spy-3.2.7.tgz",
++      "integrity": "sha512-Q2eQGI6d2L/hBtZ0qNuKcAGid68XK6cv1xsoaIma6PaJhHPoqcEJhYpXZ/5myCMqkNgtP6UKuBhbc0nHKnrkuQ==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "tinyspy": "^4.0.3"
++      },
++      "funding": {
++        "url": "https://opencollective.com/vitest"
++      }
++    },
++    "node_modules/@vitest/utils": {
++      "version": "3.2.7",
++      "resolved": "https://registry.npmjs.org/@vitest/utils/-/utils-3.2.7.tgz",
++      "integrity": "sha512-x6BDOd7dyo3PFLY3I9/HJ25X/6OurhGXk2/B9gOZNPF7XDVjeBK4k01lQE5uvDpbuheErh91qYuE1E2OEjK3Rw==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@vitest/pretty-format": "3.2.7",
++        "loupe": "^3.1.4",
++        "tinyrainbow": "^2.0.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/vitest"
++      }
++    },
+     "node_modules/acorn": {
+       "version": "8.18.0",
+       "dev": true,
+@@ -2914,8 +3753,41 @@
+         "require-from-string": "^2.0.2"
+       },
+       "funding": {
+-        "type": "github",
+-        "url": "https://github.com/sponsors/epoberezkin"
++        "type": "github",
++        "url": "https://github.com/sponsors/epoberezkin"
++      }
++    },
++    "node_modules/ansi-regex": {
++      "version": "5.0.1",
++      "resolved": "https://registry.npmjs.org/ansi-regex/-/ansi-regex-5.0.1.tgz",
++      "integrity": "sha512-quJQXlTSUGL2LH9SUXo8VwsY4soanhgo6LNSm84E1LBcE8s3O0wpdiRzyR9z/ZZJMlMWv37qOOb9pdJlMUEKFQ==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=8"
++      }
++    },
++    "node_modules/ansi-styles": {
++      "version": "5.2.0",
++      "resolved": "https://registry.npmjs.org/ansi-styles/-/ansi-styles-5.2.0.tgz",
++      "integrity": "sha512-Cxwpt2SfTzTtXcfOlzGEee8O+c+MmUgGrNiBcXnuWxuFJHe6a5Hz7qwhwe5OgaSYI0IJvkLqWX1ASG+cJOkEiA==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=10"
++      },
++      "funding": {
++        "url": "https://github.com/chalk/ansi-styles?sponsor=1"
++      }
++    },
++    "node_modules/aria-query": {
++      "version": "5.3.0",
++      "resolved": "https://registry.npmjs.org/aria-query/-/aria-query-5.3.0.tgz",
++      "integrity": "sha512-b0P0sZPKtyu8HkeRAfCq0IfURZK+SuwMjY1UXGBU27wpAiTwQAIlq56IbIO+ytk/JjS1fMR14ee5WBBfKi5J6A==",
++      "dev": true,
++      "license": "Apache-2.0",
++      "dependencies": {
++        "dequal": "^2.0.3"
+       }
+     },
+     "node_modules/array-buffer-byte-length": {
+@@ -2953,6 +3825,16 @@
+         "url": "https://github.com/sponsors/ljharb"
+       }
+     },
++    "node_modules/assertion-error": {
++      "version": "2.0.1",
++      "resolved": "https://registry.npmjs.org/assertion-error/-/assertion-error-2.0.1.tgz",
++      "integrity": "sha512-Izi8RQcffqCeNVgFigKli1ssklIbpHnCYc6AknXGYoB6grJqyeby7jv12JUQgmTAnIDnbck1uxksT4dzN3PWBA==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=12"
++      }
++    },
+     "node_modules/async": {
+       "version": "3.2.6",
+       "dev": true,
+@@ -3043,6 +3925,16 @@
+         "node": ">=6.0.0"
+       }
+     },
++    "node_modules/bidi-js": {
++      "version": "1.1.0",
++      "resolved": "https://registry.npmjs.org/bidi-js/-/bidi-js-1.1.0.tgz",
++      "integrity": "sha512-fX1Onk0tdVPC7obPWB5EbJ1z7NVhLq4m2xZLq2YXBkxzMXIGRpNMU88n0EPgWseKl12J7zXs7qrDxPK4sRs2fg==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "require-from-string": "^2.0.2"
++      }
++    },
+     "node_modules/brace-expansion": {
+       "version": "5.0.9",
+       "dev": true,
+@@ -3091,6 +3983,16 @@
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/cac": {
++      "version": "6.7.14",
++      "resolved": "https://registry.npmjs.org/cac/-/cac-6.7.14.tgz",
++      "integrity": "sha512-b6Ilus+c3RrdDk+JhLKUAQfzzgLEPy6wcXqS7f/xe1EETvsDP6GORG7SFuOs6cID5YkqchW/LXZbX5bc8j7ZcQ==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=8"
++      }
++    },
+     "node_modules/cacheable": {
+       "version": "2.5.0",
+       "dev": true,
+@@ -3176,6 +4078,33 @@
+         "url": "https://www.paypal.me/kirilvatev"
+       }
+     },
++    "node_modules/chai": {
++      "version": "5.3.3",
++      "resolved": "https://registry.npmjs.org/chai/-/chai-5.3.3.tgz",
++      "integrity": "sha512-4zNhdJD/iOjSH0A05ea+Ke6MU5mmpQcbQsSOkgdaUMJ9zTlDTD/GYlwohmIE2u0gaxHYiVHEn1Fw9mZ/ktJWgw==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "assertion-error": "^2.0.1",
++        "check-error": "^2.1.1",
++        "deep-eql": "^5.0.1",
++        "loupe": "^3.1.0",
++        "pathval": "^2.0.0"
++      },
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/check-error": {
++      "version": "2.1.3",
++      "resolved": "https://registry.npmjs.org/check-error/-/check-error-2.1.3.tgz",
++      "integrity": "sha512-PAJdDJusoxnwm1VwW07VWwUN1sl7smmC3OKggvndJFadxxDRyFJBX/ggnu/KE4kQAB7a3Dp8f/YXC1FlUprWmA==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">= 16"
++      }
++    },
+     "node_modules/commander": {
+       "version": "2.20.3",
+       "dev": true,
+@@ -3241,11 +4170,39 @@
+         "node": ">=8"
+       }
+     },
++    "node_modules/css-tree": {
++      "version": "3.2.1",
++      "resolved": "https://registry.npmjs.org/css-tree/-/css-tree-3.2.1.tgz",
++      "integrity": "sha512-X7sjQzceUhu1u7Y/ylrRZFU2FS6LRiFVp6rKLPg23y3x3c3DOKAwuXGDp+PAGjh6CSnCjYeAul8pcT8bAl+lSA==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "mdn-data": "2.27.1",
++        "source-map-js": "^1.2.1"
++      },
++      "engines": {
++        "node": "^10 || ^12.20.0 || ^14.13.0 || >=15.0.0"
++      }
++    },
+     "node_modules/csstype": {
+       "version": "3.2.3",
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/data-urls": {
++      "version": "8.0.0",
++      "resolved": "https://registry.npmjs.org/data-urls/-/data-urls-8.0.0.tgz",
++      "integrity": "sha512-JQUCCK+/CAGbGGx618PlFZMXH81Jtj7t73CHv9dd/zVWvxgGT2zLFRjnKb+Ng46GIwcy+f7f88qd4duqllK+WQ==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "whatwg-mimetype": "^5.0.0",
++        "whatwg-url": "^17.1.2"
++      },
++      "engines": {
++        "node": "^22.14.0 || >=24.0.0"
++      }
++    },
+     "node_modules/data-view-buffer": {
+       "version": "1.0.2",
+       "dev": true,
+@@ -3310,6 +4267,23 @@
+         }
+       }
+     },
++    "node_modules/decimal.js": {
++      "version": "10.6.0",
++      "resolved": "https://registry.npmjs.org/decimal.js/-/decimal.js-10.6.0.tgz",
++      "integrity": "sha512-YpgQiITW3JXGntzdUmyUR1V812Hn8T1YVXhCu+wO3OpS4eU9l4YdD3qjyiKdV6mvV29zapkMeD390UVEf2lkUg==",
++      "dev": true,
++      "license": "MIT"
++    },
++    "node_modules/deep-eql": {
++      "version": "5.0.2",
++      "resolved": "https://registry.npmjs.org/deep-eql/-/deep-eql-5.0.2.tgz",
++      "integrity": "sha512-h5k/5U50IJJFpzfL6nO9jaaumfjO/f2NjK/oYB2Djzm4p9L+3T9qWpZqZ2hAbLPuuYq9wrU08WQyBTL5GbPk5Q==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=6"
++      }
++    },
+     "node_modules/deep-is": {
+       "version": "0.1.4",
+       "dev": true,
+@@ -3355,6 +4329,16 @@
+         "url": "https://github.com/sponsors/ljharb"
+       }
+     },
++    "node_modules/dequal": {
++      "version": "2.0.3",
++      "resolved": "https://registry.npmjs.org/dequal/-/dequal-2.0.3.tgz",
++      "integrity": "sha512-0je+qPKHEMohvfRTCEo3CrPG6cAzAYgmzKyxRiYSSDkS6eGJdyVJm7WaYA5ECaAD9wLB2T4EEeymA5aFVcYXCA==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=6"
++      }
++    },
+     "node_modules/detect-libc": {
+       "version": "2.1.2",
+       "dev": true,
+@@ -3363,6 +4347,13 @@
+         "node": ">=8"
+       }
+     },
++    "node_modules/dom-accessibility-api": {
++      "version": "0.5.16",
++      "resolved": "https://registry.npmjs.org/dom-accessibility-api/-/dom-accessibility-api-0.5.16.tgz",
++      "integrity": "sha512-X7BJ2yElsnOJ30pZF4uIIDfBEVgF4XEBxL9Bxhy6dnrm5hkzqmsWHGTiHqRiITNhMyFLyAiWndIJP7Z1NTteDg==",
++      "dev": true,
++      "license": "MIT"
++    },
+     "node_modules/dunder-proto": {
+       "version": "1.0.1",
+       "dev": true,
+@@ -3395,6 +4386,19 @@
+       "dev": true,
+       "license": "ISC"
+     },
++    "node_modules/entities": {
++      "version": "8.1.0",
++      "resolved": "https://registry.npmjs.org/entities/-/entities-8.1.0.tgz",
++      "integrity": "sha512-kxL7msIffSuh9aaFAMD7rxAIuTRMAHMeBtgHW2yUdWw732ZNh4MehkF2gdjvtdmikkaIP9bFDDJOPlsvm7avrA==",
++      "dev": true,
++      "license": "BSD-2-Clause",
++      "engines": {
++        "node": ">=20.19.0"
++      },
++      "funding": {
++        "url": "https://github.com/fb55/entities?sponsor=1"
++      }
++    },
+     "node_modules/es-abstract": {
+       "version": "1.24.2",
+       "dev": true,
+@@ -3495,6 +4499,13 @@
+         "node": ">= 0.4"
+       }
+     },
++    "node_modules/es-module-lexer": {
++      "version": "1.7.0",
++      "resolved": "https://registry.npmjs.org/es-module-lexer/-/es-module-lexer-1.7.0.tgz",
++      "integrity": "sha512-jEQoCwk8hyb2AZziIOLhDqpm5+2ww5uIE6lkO/6jcOCusfk6LhMHpXXfBLXTZ7Ydyt0j4VoUQv6uGNYbdW+kBA==",
++      "dev": true,
++      "license": "MIT"
++    },
+     "node_modules/es-object-atoms": {
+       "version": "1.1.2",
+       "dev": true,
+@@ -3539,6 +4550,48 @@
+         "url": "https://github.com/sponsors/ljharb"
+       }
+     },
++    "node_modules/esbuild": {
++      "version": "0.28.2",
++      "resolved": "https://registry.npmjs.org/esbuild/-/esbuild-0.28.2.tgz",
++      "integrity": "sha512-HKVLS8dvII+xoKW9kmqxbRKrnWEXfJJr/FZhhJmiqIB0e053QNYFqOBouTMO/k5sID4MvCiUCvv8b9M4h32wIA==",
++      "dev": true,
++      "hasInstallScript": true,
++      "license": "MIT",
++      "bin": {
++        "esbuild": "bin/esbuild"
++      },
++      "engines": {
++        "node": ">=18"
++      },
++      "optionalDependencies": {
++        "@esbuild/aix-ppc64": "0.28.2",
++        "@esbuild/android-arm": "0.28.2",
++        "@esbuild/android-arm64": "0.28.2",
++        "@esbuild/android-x64": "0.28.2",
++        "@esbuild/darwin-arm64": "0.28.2",
++        "@esbuild/darwin-x64": "0.28.2",
++        "@esbuild/freebsd-arm64": "0.28.2",
++        "@esbuild/freebsd-x64": "0.28.2",
++        "@esbuild/linux-arm": "0.28.2",
++        "@esbuild/linux-arm64": "0.28.2",
++        "@esbuild/linux-ia32": "0.28.2",
++        "@esbuild/linux-loong64": "0.28.2",
++        "@esbuild/linux-mips64el": "0.28.2",
++        "@esbuild/linux-ppc64": "0.28.2",
++        "@esbuild/linux-riscv64": "0.28.2",
++        "@esbuild/linux-s390x": "0.28.2",
++        "@esbuild/linux-x64": "0.28.2",
++        "@esbuild/netbsd-arm64": "0.28.2",
++        "@esbuild/netbsd-x64": "0.28.2",
++        "@esbuild/openbsd-arm64": "0.28.2",
++        "@esbuild/openbsd-x64": "0.28.2",
++        "@esbuild/openharmony-arm64": "0.28.2",
++        "@esbuild/sunos-x64": "0.28.2",
++        "@esbuild/win32-arm64": "0.28.2",
++        "@esbuild/win32-ia32": "0.28.2",
++        "@esbuild/win32-x64": "0.28.2"
++      }
++    },
+     "node_modules/escalade": {
+       "version": "3.2.0",
+       "dev": true,
+@@ -3763,6 +4816,16 @@
+         "url": "https://github.com/bgub/eta?sponsor=1"
+       }
+     },
++    "node_modules/expect-type": {
++      "version": "1.4.0",
++      "resolved": "https://registry.npmjs.org/expect-type/-/expect-type-1.4.0.tgz",
++      "integrity": "sha512-KfYbmpRm0VbLjEvVa9yGwCi9GI34xvi7A/HXYWQO65CSD2u3MczUJSuwXKFIxlGsgBQizV9q5J9NHj4VG0n+pA==",
++      "dev": true,
++      "license": "Apache-2.0",
++      "engines": {
++        "node": ">=12.0.0"
++      }
++    },
+     "node_modules/fast-deep-equal": {
+       "version": "3.1.3",
+       "dev": true,
+@@ -4223,6 +5286,19 @@
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/html-encoding-sniffer": {
++      "version": "7.0.0",
++      "resolved": "https://registry.npmjs.org/html-encoding-sniffer/-/html-encoding-sniffer-7.0.0.tgz",
++      "integrity": "sha512-UikN5yr7xsCDAq87Or5or0PAlD3HJJOKVzM05az588WnpDJ4Ux7a2A53Qi6gofGg2/EtvF/H4hCi/TXfCW4Y6w==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@exodus/bytes": "^1.15.1"
++      },
++      "engines": {
++        "node": "^22.13.0 || >=24.0.0"
++      }
++    },
+     "node_modules/iceberg-js": {
+       "version": "0.8.1",
+       "license": "MIT",
+@@ -4498,6 +5574,13 @@
+         "node": ">=0.10.0"
+       }
+     },
++    "node_modules/is-potential-custom-element-name": {
++      "version": "1.0.1",
++      "resolved": "https://registry.npmjs.org/is-potential-custom-element-name/-/is-potential-custom-element-name-1.0.1.tgz",
++      "integrity": "sha512-bCYeRA2rVibKZd+s2625gGnGF/t7DSqDs4dP7CrLA1m7jKWz6pps0LpYLJN8Q64HtmPKJ1hrN3nzPNKFEKOUiQ==",
++      "dev": true,
++      "license": "MIT"
++    },
+     "node_modules/is-regex": {
+       "version": "1.2.1",
+       "dev": true,
+@@ -4689,6 +5772,56 @@
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/jsdom": {
++      "version": "30.1.3",
++      "resolved": "https://registry.npmjs.org/jsdom/-/jsdom-30.1.3.tgz",
++      "integrity": "sha512-hQMUPvRgN7KxsfIytDQji7bimuJeRQa6Qo5+iuiZQk5CafeRxLIA10/cG5YCBFNpD9RO3oqIiN4CO1Y44kxqXg==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@asamuzakjp/css-color": "^7.1.3",
++        "@asamuzakjp/dom-selector": "^10.0.3",
++        "@bramus/specificity": "^2.4.2",
++        "@csstools/css-syntax-patches-for-csstree": "^1.1.15",
++        "@exodus/bytes": "^1.16.0",
++        "css-tree": "^3.2.1",
++        "data-urls": "^8.0.0",
++        "decimal.js": "^10.6.0",
++        "html-encoding-sniffer": "^7.0.0",
++        "is-potential-custom-element-name": "^1.0.1",
++        "lru-cache": "^11.5.3",
++        "parse5": "^8.0.1",
++        "saxes": "^6.0.0",
++        "tough-cookie": "^6.0.2",
++        "undici": "^8.12.1",
++        "w3c-xmlserializer": "^6.0.0",
++        "webidl-conversions": "^8.0.1",
++        "whatwg-mimetype": "^5.0.0",
++        "whatwg-url": "^17.2.0",
++        "xml-name-validator": "^5.0.0"
++      },
++      "engines": {
++        "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
++      },
++      "peerDependencies": {
++        "canvas": "^3.2.3"
++      },
++      "peerDependenciesMeta": {
++        "canvas": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/jsdom/node_modules/lru-cache": {
++      "version": "11.5.3",
++      "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-11.5.3.tgz",
++      "integrity": "sha512-U4N8FgzmWxc8k1VH8Kr6lQg18U7Fjvby6wXHVRX/ZZ7IwWbRMgrRbP0Wrb5q5NVinryp4SQampHKdvtecItxUg==",
++      "dev": true,
++      "license": "BlueOak-1.0.0",
++      "engines": {
++        "node": "20 || >=22"
++      }
++    },
+     "node_modules/jsesc": {
+       "version": "3.1.0",
+       "dev": true,
+@@ -5064,6 +6197,13 @@
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/loupe": {
++      "version": "3.2.1",
++      "resolved": "https://registry.npmjs.org/loupe/-/loupe-3.2.1.tgz",
++      "integrity": "sha512-CdzqowRJCeLU72bHvWqwRBBlLcMEtIvGrlvef74kMnV2AolS9Y8xUv1I0U/MNAWMhBlKIoyuEgoJ0t/bbwHbLQ==",
++      "dev": true,
++      "license": "MIT"
++    },
+     "node_modules/lru-cache": {
+       "version": "5.1.1",
+       "dev": true,
+@@ -5072,6 +6212,16 @@
+         "yallist": "^3.0.2"
+       }
+     },
++    "node_modules/lz-string": {
++      "version": "1.5.0",
++      "resolved": "https://registry.npmjs.org/lz-string/-/lz-string-1.5.0.tgz",
++      "integrity": "sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==",
++      "dev": true,
++      "license": "MIT",
++      "bin": {
++        "lz-string": "bin/bin.js"
++      }
++    },
+     "node_modules/magic-string": {
+       "version": "0.30.21",
+       "dev": true,
+@@ -5088,6 +6238,13 @@
+         "node": ">= 0.4"
+       }
+     },
++    "node_modules/mdn-data": {
++      "version": "2.27.1",
++      "resolved": "https://registry.npmjs.org/mdn-data/-/mdn-data-2.27.1.tgz",
++      "integrity": "sha512-9Yubnt3e8A0OKwxYSXyhLymGW4sCufcLG6VdiDdUGVkPhpqLxlvP5vl1983gQjJl3tqbrM731mjaZaP68AgosQ==",
++      "dev": true,
++      "license": "CC0-1.0"
++    },
+     "node_modules/minimatch": {
+       "version": "10.2.6",
+       "dev": true,
+@@ -5249,6 +6406,19 @@
+       "dev": true,
+       "license": "BlueOak-1.0.0"
+     },
++    "node_modules/parse5": {
++      "version": "8.0.1",
++      "resolved": "https://registry.npmjs.org/parse5/-/parse5-8.0.1.tgz",
++      "integrity": "sha512-z1e/HMG90obSGeidlli3hj7cbocou0/wa5HacvI3ASx34PecNjNQeaHNo5WIZpWofN9kgkqV1q5YvXe3F0FoPw==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "entities": "^8.0.0"
++      },
++      "funding": {
++        "url": "https://github.com/inikulin/parse5?sponsor=1"
++      }
++    },
+     "node_modules/path-exists": {
+       "version": "4.0.0",
+       "dev": true,
+@@ -5293,6 +6463,23 @@
+         "node": "20 || >=22"
+       }
+     },
++    "node_modules/pathe": {
++      "version": "2.0.3",
++      "resolved": "https://registry.npmjs.org/pathe/-/pathe-2.0.3.tgz",
++      "integrity": "sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==",
++      "dev": true,
++      "license": "MIT"
++    },
++    "node_modules/pathval": {
++      "version": "2.0.1",
++      "resolved": "https://registry.npmjs.org/pathval/-/pathval-2.0.1.tgz",
++      "integrity": "sha512-//nshmD55c46FuFw26xV/xFAaB5HF9Xdap7HJBBnrKdAd6/GxDBaNA1870O79+9ueg61cZLSVc+OaFlfmObYVQ==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">= 14.16"
++      }
++    },
+     "node_modules/picocolors": {
+       "version": "1.1.1",
+       "dev": true,
+@@ -5363,6 +6550,21 @@
+         "url": "https://github.com/sponsors/sindresorhus"
+       }
+     },
++    "node_modules/pretty-format": {
++      "version": "27.5.1",
++      "resolved": "https://registry.npmjs.org/pretty-format/-/pretty-format-27.5.1.tgz",
++      "integrity": "sha512-Qb1gy5OrP5+zDf2Bvnzdl3jsTf1qXVMazbvCoKhtKqVs4/YK4ozX4gKQJJVyNe+cajNPn0KoC0MC3FUmaHWEmQ==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "ansi-regex": "^5.0.1",
++        "ansi-styles": "^5.0.0",
++        "react-is": "^17.0.1"
++      },
++      "engines": {
++        "node": "^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0"
++      }
++    },
+     "node_modules/punycode": {
+       "version": "2.3.1",
+       "resolved": "https://registry.npmjs.org/punycode/-/punycode-2.3.1.tgz",
+@@ -5406,6 +6608,13 @@
+         "react": "^19.2.8"
+       }
+     },
++    "node_modules/react-is": {
++      "version": "17.0.2",
++      "resolved": "https://registry.npmjs.org/react-is/-/react-is-17.0.2.tgz",
++      "integrity": "sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==",
++      "dev": true,
++      "license": "MIT"
++    },
+     "node_modules/react-router": {
+       "version": "7.18.3",
+       "license": "MIT",
+@@ -5681,6 +6890,19 @@
+         "url": "https://github.com/sponsors/ljharb"
+       }
+     },
++    "node_modules/saxes": {
++      "version": "6.0.0",
++      "resolved": "https://registry.npmjs.org/saxes/-/saxes-6.0.0.tgz",
++      "integrity": "sha512-xAg7SOnEhrm5zI3puOOKyy1OMcMlIJZYNJY7xLBwSze0UjhPLnWfj2GF2EpT0jmzaJKIWKHLsaSSajf35bcYnA==",
++      "dev": true,
++      "license": "ISC",
++      "dependencies": {
++        "xmlchars": "^2.2.0"
++      },
++      "engines": {
++        "node": ">=v12.22.7"
++      }
++    },
+     "node_modules/scheduler": {
+       "version": "0.27.0",
+       "license": "MIT"
+@@ -5835,6 +7057,13 @@
+         "url": "https://github.com/sponsors/ljharb"
+       }
+     },
++    "node_modules/siginfo": {
++      "version": "2.0.0",
++      "resolved": "https://registry.npmjs.org/siginfo/-/siginfo-2.0.0.tgz",
++      "integrity": "sha512-ybx0WO1/8bSBLEWXZvEd7gMW3Sn3JFlW3TvX1nREbDLRNQNaeNN8WK0meBwPdAaOI7TtRRRJn/Es1zhrrCHu7g==",
++      "dev": true,
++      "license": "ISC"
++    },
+     "node_modules/signal-exit": {
+       "version": "4.1.0",
+       "dev": true,
+@@ -5887,6 +7116,20 @@
+         "node": ">=0.10.0"
+       }
+     },
++    "node_modules/stackback": {
++      "version": "0.0.2",
++      "resolved": "https://registry.npmjs.org/stackback/-/stackback-0.0.2.tgz",
++      "integrity": "sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw==",
++      "dev": true,
++      "license": "MIT"
++    },
++    "node_modules/std-env": {
++      "version": "3.10.0",
++      "resolved": "https://registry.npmjs.org/std-env/-/std-env-3.10.0.tgz",
++      "integrity": "sha512-5GS12FdOZNliM5mAOxFRg7Ir0pWz8MdpYm6AY6VPkGpbA7ZzmbzNcBJQ0GPvvyWgcY7QAhCgf9Uy89I03faLkg==",
++      "dev": true,
++      "license": "MIT"
++    },
+     "node_modules/stop-iteration-iterator": {
+       "version": "1.1.0",
+       "dev": true,
+@@ -6000,6 +7243,26 @@
+         "node": ">=10"
+       }
+     },
++    "node_modules/strip-literal": {
++      "version": "3.1.0",
++      "resolved": "https://registry.npmjs.org/strip-literal/-/strip-literal-3.1.0.tgz",
++      "integrity": "sha512-8r3mkIM/2+PpjHoOtiAW8Rg3jJLHaV7xPwG+YRGrv6FP0wwk/toTpATxWYOW0BKdWwl82VT2tFYi5DlROa0Mxg==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "js-tokens": "^9.0.1"
++      },
++      "funding": {
++        "url": "https://github.com/sponsors/antfu"
++      }
++    },
++    "node_modules/strip-literal/node_modules/js-tokens": {
++      "version": "9.0.1",
++      "resolved": "https://registry.npmjs.org/js-tokens/-/js-tokens-9.0.1.tgz",
++      "integrity": "sha512-mxa9E9ITFOt0ban3j6L5MpjwegGz6lBQmM1IJkWeBZGcMxto50+eWdjC/52xDbS2vy0k7vIMK0Fe2wfL9OQSpQ==",
++      "dev": true,
++      "license": "MIT"
++    },
+     "node_modules/supports-preserve-symlinks-flag": {
+       "version": "1.0.0",
+       "dev": true,
+@@ -6050,22 +7313,112 @@
+         "terser": "bin/terser"
+       },
+       "engines": {
+-        "node": ">=10"
++        "node": ">=10"
++      }
++    },
++    "node_modules/tinybench": {
++      "version": "2.9.0",
++      "resolved": "https://registry.npmjs.org/tinybench/-/tinybench-2.9.0.tgz",
++      "integrity": "sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg==",
++      "dev": true,
++      "license": "MIT"
++    },
++    "node_modules/tinyexec": {
++      "version": "0.3.2",
++      "resolved": "https://registry.npmjs.org/tinyexec/-/tinyexec-0.3.2.tgz",
++      "integrity": "sha512-KQQR9yN7R5+OSwaK0XQoj22pwHoTlgYqmUscPYoknOoWCWfj/5/ABTMRi69FrKU5ffPVh5QcFikpWJI/P1ocHA==",
++      "dev": true,
++      "license": "MIT"
++    },
++    "node_modules/tinyglobby": {
++      "version": "0.2.17",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "fdir": "^6.5.0",
++        "picomatch": "^4.0.4"
++      },
++      "engines": {
++        "node": ">=12.0.0"
++      },
++      "funding": {
++        "url": "https://github.com/sponsors/SuperchupuDev"
++      }
++    },
++    "node_modules/tinypool": {
++      "version": "1.1.1",
++      "resolved": "https://registry.npmjs.org/tinypool/-/tinypool-1.1.1.tgz",
++      "integrity": "sha512-Zba82s87IFq9A9XmjiX5uZA/ARWDrB03OHlq+Vw1fSdt0I+4/Kutwy8BP4Y/y/aORMo61FQ0vIb5j44vSo5Pkg==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": "^18.0.0 || >=20.0.0"
++      }
++    },
++    "node_modules/tinyrainbow": {
++      "version": "2.0.0",
++      "resolved": "https://registry.npmjs.org/tinyrainbow/-/tinyrainbow-2.0.0.tgz",
++      "integrity": "sha512-op4nsTR47R6p0vMUUoYl/a+ljLFVtlfaXkLQmqfLR1qHma1h/ysYk4hEXZ880bf2CYgTskvTa/e196Vd5dDQXw==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=14.0.0"
++      }
++    },
++    "node_modules/tinyspy": {
++      "version": "4.0.6",
++      "resolved": "https://registry.npmjs.org/tinyspy/-/tinyspy-4.0.6.tgz",
++      "integrity": "sha512-u8KszXvGfU68hVcZpRHKG28T0krMuv2G5nDhiHaMLen/gIuFEgIJhaJuO69qjnXg5paSrbPMFfx3brNuN8eVSg==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=14.0.0"
++      }
++    },
++    "node_modules/tldts": {
++      "version": "7.4.19",
++      "resolved": "https://registry.npmjs.org/tldts/-/tldts-7.4.19.tgz",
++      "integrity": "sha512-48dH6aSpQnpbzDUc4vIQZ1VjB8tkK+e8c1yx05/SZK+rkssgjEOlxDd/yU8/a4vGYQ9vRgJr9dwMq9TJ0b3X2Q==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "tldts-core": "^7.4.19"
++      },
++      "bin": {
++        "tldts": "bin/cli.js"
++      }
++    },
++    "node_modules/tldts-core": {
++      "version": "7.4.19",
++      "resolved": "https://registry.npmjs.org/tldts-core/-/tldts-core-7.4.19.tgz",
++      "integrity": "sha512-goNXV6Ho9TIOfpJZanTd6CKG5DyYgYAL+k+22T0SLh8l6+KHIfBUPFuePuSZv05UttIaaLmI9tb7TmGIdK5AkQ==",
++      "dev": true,
++      "license": "MIT"
++    },
++    "node_modules/tough-cookie": {
++      "version": "6.0.2",
++      "resolved": "https://registry.npmjs.org/tough-cookie/-/tough-cookie-6.0.2.tgz",
++      "integrity": "sha512-exgYmnmL/sJpR3upZfXG5PoatXQii55xAiXGXzY+sROLZ/Y+SLcp9PgJNI9Vz37HpQ74WvDcLT8eqm+kV3FzrA==",
++      "dev": true,
++      "license": "BSD-3-Clause",
++      "dependencies": {
++        "tldts": "^7.0.5"
++      },
++      "engines": {
++        "node": ">=16"
+       }
+     },
+-    "node_modules/tinyglobby": {
+-      "version": "0.2.17",
++    "node_modules/tr46": {
++      "version": "7.0.0",
++      "resolved": "https://registry.npmjs.org/tr46/-/tr46-7.0.0.tgz",
++      "integrity": "sha512-BcDSDW+SIGWVOns1Zm6Yg91q9AEj7eaID0QDY9oIqJD1A8dscNwMcl9Sms2DeuWCNov1X0/oXanHGYQBSLwZsg==",
+       "dev": true,
+       "license": "MIT",
+       "dependencies": {
+-        "fdir": "^6.5.0",
+-        "picomatch": "^4.0.4"
++        "punycode": "^2.3.1"
+       },
+       "engines": {
+-        "node": ">=12.0.0"
+-      },
+-      "funding": {
+-        "url": "https://github.com/sponsors/SuperchupuDev"
++        "node": "^22.14.0 || >=24.0.0"
+       }
+     },
+     "node_modules/ts-api-utils": {
+@@ -6226,6 +7579,16 @@
+         "url": "https://github.com/sponsors/ljharb"
+       }
+     },
++    "node_modules/undici": {
++      "version": "8.12.3",
++      "resolved": "https://registry.npmjs.org/undici/-/undici-8.12.3.tgz",
++      "integrity": "sha512-+fdndUTwBP86cVjihTp21hZHo7d6oj1c/47XPA3lL8mM0XHs+C4EkcjmgRsFnFk2f/UONGDy9ItBItmXsLOQHw==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=22.19.0"
++      }
++    },
+     "node_modules/undici-types": {
+       "version": "7.18.2",
+       "dev": true,
+@@ -6410,6 +7773,104 @@
+         }
+       }
+     },
++    "node_modules/vite-node": {
++      "version": "3.2.4",
++      "resolved": "https://registry.npmjs.org/vite-node/-/vite-node-3.2.4.tgz",
++      "integrity": "sha512-EbKSKh+bh1E1IFxeO0pg1n4dvoOTt0UDiXMd/qn++r98+jPO1xtJilvXldeuQ8giIB5IkpjCgMleHMNEsGH6pg==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "cac": "^6.7.14",
++        "debug": "^4.4.1",
++        "es-module-lexer": "^1.7.0",
++        "pathe": "^2.0.3",
++        "vite": "^5.0.0 || ^6.0.0 || ^7.0.0-0"
++      },
++      "bin": {
++        "vite-node": "vite-node.mjs"
++      },
++      "engines": {
++        "node": "^18.0.0 || ^20.0.0 || >=22.0.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/vitest"
++      }
++    },
++    "node_modules/vite-node/node_modules/vite": {
++      "version": "7.3.7",
++      "resolved": "https://registry.npmjs.org/vite/-/vite-7.3.7.tgz",
++      "integrity": "sha512-AHEzTORMbi7/7aXp7w7KZ5+DCUdSeLsJz0grY8xHpc9DHdYb0vQu6DqJfm2tOw3gDExNgPgnJTXxM6syYFHaCA==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "esbuild": "^0.27.0 || ^0.28.0",
++        "fdir": "^6.5.0",
++        "picomatch": "^4.0.3",
++        "postcss": "^8.5.6",
++        "rollup": "^4.43.0",
++        "tinyglobby": "^0.2.15"
++      },
++      "bin": {
++        "vite": "bin/vite.js"
++      },
++      "engines": {
++        "node": "^20.19.0 || >=22.12.0"
++      },
++      "funding": {
++        "url": "https://github.com/vitejs/vite?sponsor=1"
++      },
++      "optionalDependencies": {
++        "fsevents": "~2.3.3"
++      },
++      "peerDependencies": {
++        "@types/node": "^20.19.0 || >=22.12.0",
++        "jiti": ">=1.21.0",
++        "less": "^4.0.0",
++        "lightningcss": "^1.21.0",
++        "sass": "^1.70.0",
++        "sass-embedded": "^1.70.0",
++        "stylus": ">=0.54.8",
++        "sugarss": "^5.0.0",
++        "terser": "^5.16.0",
++        "tsx": "^4.8.1",
++        "yaml": "^2.4.2"
++      },
++      "peerDependenciesMeta": {
++        "@types/node": {
++          "optional": true
++        },
++        "jiti": {
++          "optional": true
++        },
++        "less": {
++          "optional": true
++        },
++        "lightningcss": {
++          "optional": true
++        },
++        "sass": {
++          "optional": true
++        },
++        "sass-embedded": {
++          "optional": true
++        },
++        "stylus": {
++          "optional": true
++        },
++        "sugarss": {
++          "optional": true
++        },
++        "terser": {
++          "optional": true
++        },
++        "tsx": {
++          "optional": true
++        },
++        "yaml": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/vite-plugin-pwa": {
+       "version": "1.3.0",
+       "dev": true,
+@@ -6439,6 +7900,239 @@
+         }
+       }
+     },
++    "node_modules/vitest": {
++      "version": "3.2.7",
++      "resolved": "https://registry.npmjs.org/vitest/-/vitest-3.2.7.tgz",
++      "integrity": "sha512-KrxIJ62Fd89gfysR4WotlgZABiz2dqFPgqGzX7s+CwsqLFomRH7777ZcrOD6+WVAh7khPQP41A+BKbpcJFrdEg==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@types/chai": "^5.2.2",
++        "@vitest/expect": "3.2.7",
++        "@vitest/mocker": "3.2.7",
++        "@vitest/pretty-format": "^3.2.7",
++        "@vitest/runner": "3.2.7",
++        "@vitest/snapshot": "3.2.7",
++        "@vitest/spy": "3.2.7",
++        "@vitest/utils": "3.2.7",
++        "chai": "^5.2.0",
++        "debug": "^4.4.1",
++        "expect-type": "^1.2.1",
++        "magic-string": "^0.30.17",
++        "pathe": "^2.0.3",
++        "picomatch": "^4.0.2",
++        "std-env": "^3.9.0",
++        "tinybench": "^2.9.0",
++        "tinyexec": "^0.3.2",
++        "tinyglobby": "^0.2.14",
++        "tinypool": "^1.1.1",
++        "tinyrainbow": "^2.0.0",
++        "vite": "^5.0.0 || ^6.0.0 || ^7.0.0-0",
++        "vite-node": "3.2.4",
++        "why-is-node-running": "^2.3.0"
++      },
++      "bin": {
++        "vitest": "vitest.mjs"
++      },
++      "engines": {
++        "node": "^18.0.0 || ^20.0.0 || >=22.0.0"
++      },
++      "funding": {
++        "url": "https://opencollective.com/vitest"
++      },
++      "peerDependencies": {
++        "@edge-runtime/vm": "*",
++        "@types/debug": "^4.1.12",
++        "@types/node": "^18.0.0 || ^20.0.0 || >=22.0.0",
++        "@vitest/browser": "3.2.7",
++        "@vitest/ui": "3.2.7",
++        "happy-dom": "*",
++        "jsdom": "*"
++      },
++      "peerDependenciesMeta": {
++        "@edge-runtime/vm": {
++          "optional": true
++        },
++        "@types/debug": {
++          "optional": true
++        },
++        "@types/node": {
++          "optional": true
++        },
++        "@vitest/browser": {
++          "optional": true
++        },
++        "@vitest/ui": {
++          "optional": true
++        },
++        "happy-dom": {
++          "optional": true
++        },
++        "jsdom": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/vitest/node_modules/@vitest/mocker": {
++      "version": "3.2.7",
++      "resolved": "https://registry.npmjs.org/@vitest/mocker/-/mocker-3.2.7.tgz",
++      "integrity": "sha512-Trr0hYO9CM3Wj6ksWHRhK9IZpIY6wTMO5u/MqXurMxT57sWBaOPEtP3Oq60ihZuh5JsiagKfz95OcxdEP6dBrA==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@vitest/spy": "3.2.7",
++        "estree-walker": "^3.0.3",
++        "magic-string": "^0.30.17"
++      },
++      "funding": {
++        "url": "https://opencollective.com/vitest"
++      },
++      "peerDependencies": {
++        "msw": "^2.4.9",
++        "vite": "^5.0.0 || ^6.0.0 || ^7.0.0-0"
++      },
++      "peerDependenciesMeta": {
++        "msw": {
++          "optional": true
++        },
++        "vite": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/vitest/node_modules/estree-walker": {
++      "version": "3.0.3",
++      "resolved": "https://registry.npmjs.org/estree-walker/-/estree-walker-3.0.3.tgz",
++      "integrity": "sha512-7RUKfXgSMMkzt6ZuXmqapOurLGPPfgj6l9uRZ7lRGolvk0y2yocc35LdcxKC5PQZdn2DMqioAQ2NoWcrTKmm6g==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@types/estree": "^1.0.0"
++      }
++    },
++    "node_modules/vitest/node_modules/vite": {
++      "version": "7.3.7",
++      "resolved": "https://registry.npmjs.org/vite/-/vite-7.3.7.tgz",
++      "integrity": "sha512-AHEzTORMbi7/7aXp7w7KZ5+DCUdSeLsJz0grY8xHpc9DHdYb0vQu6DqJfm2tOw3gDExNgPgnJTXxM6syYFHaCA==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "esbuild": "^0.27.0 || ^0.28.0",
++        "fdir": "^6.5.0",
++        "picomatch": "^4.0.3",
++        "postcss": "^8.5.6",
++        "rollup": "^4.43.0",
++        "tinyglobby": "^0.2.15"
++      },
++      "bin": {
++        "vite": "bin/vite.js"
++      },
++      "engines": {
++        "node": "^20.19.0 || >=22.12.0"
++      },
++      "funding": {
++        "url": "https://github.com/vitejs/vite?sponsor=1"
++      },
++      "optionalDependencies": {
++        "fsevents": "~2.3.3"
++      },
++      "peerDependencies": {
++        "@types/node": "^20.19.0 || >=22.12.0",
++        "jiti": ">=1.21.0",
++        "less": "^4.0.0",
++        "lightningcss": "^1.21.0",
++        "sass": "^1.70.0",
++        "sass-embedded": "^1.70.0",
++        "stylus": ">=0.54.8",
++        "sugarss": "^5.0.0",
++        "terser": "^5.16.0",
++        "tsx": "^4.8.1",
++        "yaml": "^2.4.2"
++      },
++      "peerDependenciesMeta": {
++        "@types/node": {
++          "optional": true
++        },
++        "jiti": {
++          "optional": true
++        },
++        "less": {
++          "optional": true
++        },
++        "lightningcss": {
++          "optional": true
++        },
++        "sass": {
++          "optional": true
++        },
++        "sass-embedded": {
++          "optional": true
++        },
++        "stylus": {
++          "optional": true
++        },
++        "sugarss": {
++          "optional": true
++        },
++        "terser": {
++          "optional": true
++        },
++        "tsx": {
++          "optional": true
++        },
++        "yaml": {
++          "optional": true
++        }
++      }
++    },
++    "node_modules/w3c-xmlserializer": {
++      "version": "6.0.0",
++      "resolved": "https://registry.npmjs.org/w3c-xmlserializer/-/w3c-xmlserializer-6.0.0.tgz",
++      "integrity": "sha512-4Nsy8K5Tr6SPDH9jhKJOHf7ChDrc1zufZTVSF7x72hwuEXBqxqk9G6cK+K2NRUtB3iELRJqjXb4JPDMBjMTl2Q==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "xml-name-validator": "^5.0.0"
++      },
++      "engines": {
++        "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
++      }
++    },
++    "node_modules/webidl-conversions": {
++      "version": "8.0.1",
++      "resolved": "https://registry.npmjs.org/webidl-conversions/-/webidl-conversions-8.0.1.tgz",
++      "integrity": "sha512-BMhLD/Sw+GbJC21C/UgyaZX41nPt8bUTg+jWyDeg7e7YN4xOM05YPSIXceACnXVtqyEw/LMClUQMtMZ+PGGpqQ==",
++      "dev": true,
++      "license": "BSD-2-Clause",
++      "engines": {
++        "node": ">=20"
++      }
++    },
++    "node_modules/whatwg-mimetype": {
++      "version": "5.0.0",
++      "resolved": "https://registry.npmjs.org/whatwg-mimetype/-/whatwg-mimetype-5.0.0.tgz",
++      "integrity": "sha512-sXcNcHOC51uPGF0P/D4NVtrkjSU2fNsm9iog4ZvZJsL3rjoDAzXZhkm2MWt1y+PUdggKAYVoMAIYcs78wJ51Cw==",
++      "dev": true,
++      "license": "MIT",
++      "engines": {
++        "node": ">=20"
++      }
++    },
++    "node_modules/whatwg-url": {
++      "version": "17.3.0",
++      "resolved": "https://registry.npmjs.org/whatwg-url/-/whatwg-url-17.3.0.tgz",
++      "integrity": "sha512-KwOAJrpf+GTgBvcBQJcP38sMF0DsQKdwtG+TxM2pW44P6E5k0hDbWrDmyuJDIF0Uef0aQq0ZoJs+5oI+k8ddhg==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "@exodus/bytes": "^1.16.0",
++        "tr46": "^7.0.0",
++        "webidl-conversions": "^8.0.1"
++      },
++      "engines": {
++        "node": "^22.14.0 || >=24.0.0"
++      }
++    },
+     "node_modules/which": {
+       "version": "2.0.2",
+       "dev": true,
+@@ -6534,6 +8228,23 @@
+         "url": "https://github.com/sponsors/ljharb"
+       }
+     },
++    "node_modules/why-is-node-running": {
++      "version": "2.3.0",
++      "resolved": "https://registry.npmjs.org/why-is-node-running/-/why-is-node-running-2.3.0.tgz",
++      "integrity": "sha512-hUrmaWBdVDcxvYqnyh09zunKzROWjbZTiNy8dBEjkS7ehEDQibXJ7XvlmtbwuTclUiIyN+CyXQD4Vmko8fNm8w==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "siginfo": "^2.0.0",
++        "stackback": "0.0.2"
++      },
++      "bin": {
++        "why-is-node-running": "cli.js"
++      },
++      "engines": {
++        "node": ">=8"
++      }
++    },
+     "node_modules/word-wrap": {
+       "version": "1.2.5",
+       "dev": true,
+@@ -6728,6 +8439,23 @@
+         "workbox-core": "7.4.1"
+       }
+     },
++    "node_modules/xml-name-validator": {
++      "version": "5.0.0",
++      "resolved": "https://registry.npmjs.org/xml-name-validator/-/xml-name-validator-5.0.0.tgz",
++      "integrity": "sha512-EvGK8EJ3DhaHfbRlETOWAS5pO9MZITeauHKJyb8wyajUfQUenkIg2MvLDTZ4T/TgIcm3HU0TFBgWWboAZ30UHg==",
++      "dev": true,
++      "license": "Apache-2.0",
++      "engines": {
++        "node": ">=18"
++      }
++    },
++    "node_modules/xmlchars": {
++      "version": "2.2.0",
++      "resolved": "https://registry.npmjs.org/xmlchars/-/xmlchars-2.2.0.tgz",
++      "integrity": "sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==",
++      "dev": true,
++      "license": "MIT"
++    },
+     "node_modules/yallist": {
+       "version": "3.1.1",
+       "dev": true,
+diff --git a/package.json b/package.json
+index e6dc169..99615d5 100644
+--- a/package.json
++++ b/package.json
+@@ -7,7 +7,9 @@
+     "dev": "vite",
+     "build": "tsc -b && vite build",
+     "lint": "eslint .",
+-    "preview": "vite preview"
++    "preview": "vite preview",
++    "test": "vitest run",
++    "typecheck": "tsc -b"
+   },
+   "dependencies": {
+     "@supabase/supabase-js": "^2.116.0",
+@@ -18,7 +20,10 @@
+     "react-router-dom": "^7.18.3"
+   },
+   "devDependencies": {
++    "@electric-sql/pglite": "^0.5.10",
+     "@eslint/js": "^10.0.1",
++    "@testing-library/dom": "^10.4.2",
++    "@testing-library/react": "^16.3.3",
+     "@types/canvas-confetti": "^1.9.0",
+     "@types/leaflet": "^1.9.22",
+     "@types/node": "^24.13.3",
+@@ -29,9 +34,11 @@
+     "eslint-plugin-react-hooks": "^7.1.1",
+     "eslint-plugin-react-refresh": "^0.5.4",
+     "globals": "^17.11.0",
++    "jsdom": "^30.1.3",
+     "typescript": "~6.0.2",
+     "typescript-eslint": "^8.67.0",
+     "vite": "^8.2.2",
+-    "vite-plugin-pwa": "^1.3.0"
++    "vite-plugin-pwa": "^1.3.0",
++    "vitest": "^3.2.7"
+   }
+ }
+diff --git a/src/utils/precios.ts b/src/utils/precios.ts
+new file mode 100644
+index 0000000..dd7d58a
+--- /dev/null
++++ b/src/utils/precios.ts
+@@ -0,0 +1,27 @@
++const MS_POR_DIA = 24 * 60 * 60 * 1000
++
++/**
++ * Bloques de 24 h iniciados (mínimo 1). Hospedaje = noches; paseo,
++ * guardería y visita = días de servicio. Misma regla que
++ * `public.calcular_precio_reserva` en Supabase (que es la que manda).
++ */
++export function unidadesCobrables(inicio: Date, fin: Date): number {
++  const duracion = fin.getTime() - inicio.getTime()
++  if (!(duracion > 0)) return 0
++  return Math.max(1, Math.ceil(duracion / MS_POR_DIA))
++}
++
++export function calcularPrecio(inicio: Date, fin: Date, precioUnitario: number | null): number {
++  if (precioUnitario == null) return 0
++  return unidadesCobrables(inicio, fin) * precioUnitario
++}
++
++const formatoClp = new Intl.NumberFormat('es-CL', {
++  style: 'currency',
++  currency: 'CLP',
++  maximumFractionDigits: 0,
++})
++
++export function formatearClp(monto: number): string {
++  return formatoClp.format(monto)
++}
+diff --git a/supabase/migrations/20261020120000_plataforma_safe_paws.sql b/supabase/migrations/20261020120000_plataforma_safe_paws.sql
+new file mode 100644
+index 0000000..e13eb5f
+--- /dev/null
++++ b/supabase/migrations/20261020120000_plataforma_safe_paws.sql
+@@ -0,0 +1,888 @@
++-- Migración: núcleo de la plataforma Safe Paws (PRD Stitch).
++-- Mascotas y salud, perfil público de cuidadores, reservas de los 4 servicios,
++-- seguimiento en vivo, chat con bloqueo/reporte, reseñas y panel del cuidador.
++-- Todas las tablas con RLS. Los cambios sensibles (estado de reservas,
++-- verificación, calificación) solo pasan por funciones con validación.
++
++-- ---------------------------------------------------------------------------
++-- Perfiles: rol dual y datos públicos
++-- ---------------------------------------------------------------------------
++
++alter table public.perfiles drop constraint if exists perfiles_rol_check;
++alter table public.perfiles
++  add constraint perfiles_rol_check check (rol in ('dueno', 'cuidador', 'ambos'));
++
++alter table public.perfiles add column if not exists avatar_url text;
++alter table public.perfiles add column if not exists comuna text not null default '';
++
++-- ---------------------------------------------------------------------------
++-- Mascotas
++-- ---------------------------------------------------------------------------
++
++create table if not exists public.mascotas (
++  id uuid primary key default gen_random_uuid(),
++  dueno_id uuid not null references public.perfiles (id) on delete cascade,
++  nombre text not null check (length(trim(nombre)) > 0),
++  tipo text not null check (tipo in ('Perro', 'Gato', 'Ave', 'Reptil', 'Acuáticos', 'Ganadería')),
++  raza text not null default '',
++  edad_anos numeric(4, 1) check (edad_anos >= 0),
++  peso_kg numeric(6, 2) check (peso_kg >= 0),
++  es_grupo boolean not null default false,
++  cantidad integer not null default 1 check (cantidad >= 1),
++  fotos text[] not null default '{}',
++  dieta text not null default '',
++  notas_salud text not null default '',
++  creado_en timestamptz not null default now(),
++  actualizado_en timestamptz not null default now()
++);
++
++create index if not exists mascotas_dueno_id_idx on public.mascotas (dueno_id);
++
++create table if not exists public.recordatorios_salud (
++  id uuid primary key default gen_random_uuid(),
++  mascota_id uuid not null references public.mascotas (id) on delete cascade,
++  titulo text not null check (length(trim(titulo)) > 0),
++  tipo text not null default 'otro'
++    check (tipo in ('vacuna', 'desparasitacion', 'medicamento', 'control', 'otro')),
++  fecha date not null,
++  completado boolean not null default false,
++  creado_en timestamptz not null default now()
++);
++
++create index if not exists recordatorios_salud_mascota_id_idx on public.recordatorios_salud (mascota_id);
++
++-- ---------------------------------------------------------------------------
++-- Cuidadores (perfil profesional)
++-- ---------------------------------------------------------------------------
++
++create table if not exists public.cuidadores (
++  id uuid primary key references public.perfiles (id) on delete cascade,
++  bio text not null default '',
++  servicios text[] not null default '{}'
++    check (servicios <@ array['paseo', 'hospedaje', 'guarderia', 'visita']::text[]),
++  -- Precios en CLP (pesos enteros).
++  precio_paseo integer check (precio_paseo >= 0),
++  precio_hospedaje integer check (precio_hospedaje >= 0),
++  precio_guarderia integer check (precio_guarderia >= 0),
++  precio_visita integer check (precio_visita >= 0),
++  comuna text not null default '',
++  latitud double precision check (latitud between -90 and 90),
++  longitud double precision check (longitud between -180 and 180),
++  radio_km integer not null default 5 check (radio_km between 1 and 100),
++  -- 0 = domingo … 6 = sábado
++  dias smallint[] not null default '{}' check (dias <@ array[0, 1, 2, 3, 4, 5, 6]::smallint[]),
++  hora_inicio time not null default '08:00',
++  hora_fin time not null default '19:00',
++  verificado boolean not null default false,
++  calificacion numeric(2, 1) not null default 0,
++  total_resenas integer not null default 0,
++  activo boolean not null default true,
++  creado_en timestamptz not null default now(),
++  actualizado_en timestamptz not null default now()
++);
++
++create index if not exists cuidadores_activo_idx on public.cuidadores (activo) where activo;
++
++-- ---------------------------------------------------------------------------
++-- Reservas
++-- ---------------------------------------------------------------------------
++
++create table if not exists public.reservas (
++  id uuid primary key default gen_random_uuid(),
++  dueno_id uuid not null references public.perfiles (id) on delete cascade,
++  cuidador_id uuid not null references public.cuidadores (id) on delete cascade,
++  mascota_id uuid not null references public.mascotas (id) on delete cascade,
++  servicio text not null check (servicio in ('paseo', 'hospedaje', 'guarderia', 'visita')),
++  inicio timestamptz not null,
++  fin timestamptz not null,
++  precio_total integer not null default 0 check (precio_total >= 0),
++  estado text not null default 'pendiente'
++    check (estado in ('pendiente', 'aceptada', 'rechazada', 'en_curso', 'completada', 'cancelada')),
++  notas text not null default '',
++  iniciado_en timestamptz,
++  finalizado_en timestamptz,
++  creado_en timestamptz not null default now(),
++  actualizado_en timestamptz not null default now(),
++  constraint reservas_fechas_check check (fin > inicio),
++  constraint reservas_partes_check check (dueno_id <> cuidador_id)
++);
++
++create index if not exists reservas_dueno_id_idx on public.reservas (dueno_id);
++create index if not exists reservas_cuidador_id_idx on public.reservas (cuidador_id);
++create index if not exists reservas_mascota_id_idx on public.reservas (mascota_id);
++
++-- ---------------------------------------------------------------------------
++-- Seguimiento en vivo
++-- ---------------------------------------------------------------------------
++
++create table if not exists public.seguimiento_puntos (
++  id bigint generated always as identity primary key,
++  reserva_id uuid not null references public.reservas (id) on delete cascade,
++  latitud double precision not null check (latitud between -90 and 90),
++  longitud double precision not null check (longitud between -180 and 180),
++  registrado_en timestamptz not null default now()
++);
++
++create index if not exists seguimiento_puntos_reserva_idx
++  on public.seguimiento_puntos (reserva_id, registrado_en);
++
++create table if not exists public.actualizaciones_servicio (
++  id uuid primary key default gen_random_uuid(),
++  reserva_id uuid not null references public.reservas (id) on delete cascade,
++  autor_id uuid not null default auth.uid() references public.perfiles (id) on delete cascade,
++  tipo text not null check (tipo in ('foto', 'nota', 'emergencia')),
++  texto text not null default '',
++  foto_url text,
++  creado_en timestamptz not null default now(),
++  constraint actualizaciones_contenido_check
++    check (tipo = 'emergencia' or length(trim(texto)) > 0 or foto_url is not null)
++);
++
++create index if not exists actualizaciones_servicio_reserva_idx
++  on public.actualizaciones_servicio (reserva_id, creado_en);
++
++-- ---------------------------------------------------------------------------
++-- Chat y seguridad
++-- ---------------------------------------------------------------------------
++
++create table if not exists public.conversaciones (
++  id uuid primary key default gen_random_uuid(),
++  participante_a uuid not null references public.perfiles (id) on delete cascade,
++  participante_b uuid not null references public.perfiles (id) on delete cascade,
++  ultimo_mensaje_en timestamptz,
++  creado_en timestamptz not null default now(),
++  -- Par ordenado: evita conversaciones duplicadas entre las mismas personas.
++  constraint conversaciones_orden_check check (participante_a < participante_b),
++  constraint conversaciones_par_unico unique (participante_a, participante_b)
++);
++
++create index if not exists conversaciones_participante_b_idx on public.conversaciones (participante_b);
++
++create table if not exists public.mensajes (
++  id uuid primary key default gen_random_uuid(),
++  conversacion_id uuid not null references public.conversaciones (id) on delete cascade,
++  autor_id uuid not null default auth.uid() references public.perfiles (id) on delete cascade,
++  texto text not null default '',
++  foto_url text,
++  leido_en timestamptz,
++  creado_en timestamptz not null default now(),
++  constraint mensajes_contenido_check check (length(trim(texto)) > 0 or foto_url is not null)
++);
++
++create index if not exists mensajes_conversacion_idx on public.mensajes (conversacion_id, creado_en);
++
++create table if not exists public.ajustes_conversacion (
++  conversacion_id uuid not null references public.conversaciones (id) on delete cascade,
++  usuario_id uuid not null default auth.uid() references public.perfiles (id) on delete cascade,
++  silenciada boolean not null default false,
++  primary key (conversacion_id, usuario_id)
++);
++
++create table if not exists public.bloqueos (
++  bloqueador_id uuid not null default auth.uid() references public.perfiles (id) on delete cascade,
++  bloqueado_id uuid not null references public.perfiles (id) on delete cascade,
++  creado_en timestamptz not null default now(),
++  primary key (bloqueador_id, bloqueado_id),
++  constraint bloqueos_distintos_check check (bloqueador_id <> bloqueado_id)
++);
++
++create index if not exists bloqueos_bloqueado_idx on public.bloqueos (bloqueado_id);
++
++create table if not exists public.reportes (
++  id uuid primary key default gen_random_uuid(),
++  reportante_id uuid not null default auth.uid() references public.perfiles (id) on delete cascade,
++  reportado_id uuid not null references public.perfiles (id) on delete cascade,
++  conversacion_id uuid references public.conversaciones (id) on delete set null,
++  motivo text not null check (length(trim(motivo)) > 0),
++  creado_en timestamptz not null default now()
++);
++
++create index if not exists reportes_reportante_idx on public.reportes (reportante_id);
++
++-- ---------------------------------------------------------------------------
++-- Reseñas
++-- ---------------------------------------------------------------------------
++
++create table if not exists public.resenas (
++  id uuid primary key default gen_random_uuid(),
++  reserva_id uuid not null unique references public.reservas (id) on delete cascade,
++  autor_id uuid not null default auth.uid() references public.perfiles (id) on delete cascade,
++  cuidador_id uuid not null references public.cuidadores (id) on delete cascade,
++  puntuacion smallint not null check (puntuacion between 1 and 5),
++  comentario text not null default '',
++  creado_en timestamptz not null default now()
++);
++
++create index if not exists resenas_cuidador_idx on public.resenas (cuidador_id, creado_en desc);
++
++-- ---------------------------------------------------------------------------
++-- Funciones auxiliares (security definer: evitan recursión entre políticas)
++-- ---------------------------------------------------------------------------
++
++create or replace function public.es_participante_reserva(p_reserva uuid)
++returns boolean
++language sql
++stable
++security definer
++set search_path = ''
++as $$
++  select exists (
++    select 1 from public.reservas r
++    where r.id = p_reserva and (select auth.uid()) in (r.dueno_id, r.cuidador_id)
++  );
++$$;
++
++create or replace function public.es_participante_conversacion(p_conversacion uuid)
++returns boolean
++language sql
++stable
++security definer
++set search_path = ''
++as $$
++  select exists (
++    select 1 from public.conversaciones c
++    where c.id = p_conversacion and (select auth.uid()) in (c.participante_a, c.participante_b)
++  );
++$$;
++
++create or replace function public.es_dueno_mascota(p_mascota uuid)
++returns boolean
++language sql
++stable
++security definer
++set search_path = ''
++as $$
++  select exists (
++    select 1 from public.mascotas m where m.id = p_mascota and m.dueno_id = (select auth.uid())
++  );
++$$;
++
++create or replace function public.cuida_mascota(p_mascota uuid)
++returns boolean
++language sql
++stable
++security definer
++set search_path = ''
++as $$
++  select exists (
++    select 1 from public.reservas r
++    where r.mascota_id = p_mascota
++      and r.cuidador_id = (select auth.uid())
++      and r.estado in ('pendiente', 'aceptada', 'en_curso', 'completada')
++  );
++$$;
++
++/** Precio en CLP según el servicio y las fechas. Misma regla que src/utils/precios.ts. */
++create or replace function public.calcular_precio_reserva(
++  p_servicio text,
++  p_inicio timestamptz,
++  p_fin timestamptz,
++  p_precio_unitario integer
++)
++returns integer
++language sql
++immutable
++set search_path = ''
++as $$
++  -- Hospedaje cobra por noche; paseo, guardería y visita por día de servicio.
++  -- En ambos casos son bloques de 24 h iniciados (mínimo 1).
++  select case
++    when p_precio_unitario is null or p_fin <= p_inicio or p_servicio is null then 0
++    else greatest(1, ceil(extract(epoch from (p_fin - p_inicio)) / 86400.0))::integer * p_precio_unitario
++  end;
++$$;
++
++-- ---------------------------------------------------------------------------
++-- Triggers
++-- ---------------------------------------------------------------------------
++
++drop trigger if exists mascotas_actualizado_en on public.mascotas;
++create trigger mascotas_actualizado_en
++  before update on public.mascotas
++  for each row execute function public.actualizar_actualizado_en();
++
++drop trigger if exists cuidadores_actualizado_en on public.cuidadores;
++create trigger cuidadores_actualizado_en
++  before update on public.cuidadores
++  for each row execute function public.actualizar_actualizado_en();
++
++drop trigger if exists reservas_actualizado_en on public.reservas;
++create trigger reservas_actualizado_en
++  before update on public.reservas
++  for each row execute function public.actualizar_actualizado_en();
++
++-- Un cuidador no puede autoverificarse ni tocar su calificación.
++create or replace function public.proteger_campos_cuidador()
++returns trigger
++language plpgsql
++set search_path = ''
++as $$
++begin
++  if current_user in ('authenticated', 'anon') then
++    if tg_op = 'INSERT' then
++      new.verificado := false;
++      new.calificacion := 0;
++      new.total_resenas := 0;
++    else
++      new.verificado := old.verificado;
++      new.calificacion := old.calificacion;
++      new.total_resenas := old.total_resenas;
++    end if;
++  end if;
++  return new;
++end;
++$$;
++
++drop trigger if exists cuidadores_proteger_campos on public.cuidadores;
++create trigger cuidadores_proteger_campos
++  before insert or update on public.cuidadores
++  for each row execute function public.proteger_campos_cuidador();
++
++-- Valida la reserva nueva y fija el precio desde la tarifa del cuidador.
++create or replace function public.preparar_reserva()
++returns trigger
++language plpgsql
++security definer
++set search_path = ''
++as $$
++declare
++  v_cuidador public.cuidadores%rowtype;
++  v_precio integer;
++begin
++  select * into v_cuidador from public.cuidadores where id = new.cuidador_id;
++  if not found or not v_cuidador.activo then
++    raise exception 'El cuidador no está disponible.' using errcode = 'P0001';
++  end if;
++  if not (new.servicio = any (v_cuidador.servicios)) then
++    raise exception 'El cuidador no ofrece este servicio.' using errcode = 'P0001';
++  end if;
++  if not exists (select 1 from public.mascotas m where m.id = new.mascota_id and m.dueno_id = new.dueno_id) then
++    raise exception 'La mascota no pertenece a quien reserva.' using errcode = 'P0001';
++  end if;
++
++  v_precio := case new.servicio
++    when 'paseo' then v_cuidador.precio_paseo
++    when 'hospedaje' then v_cuidador.precio_hospedaje
++    when 'guarderia' then v_cuidador.precio_guarderia
++    when 'visita' then v_cuidador.precio_visita
++  end;
++  if v_precio is null then
++    raise exception 'El cuidador no tiene tarifa para este servicio.' using errcode = 'P0001';
++  end if;
++
++  new.precio_total := public.calcular_precio_reserva(new.servicio, new.inicio, new.fin, v_precio);
++  new.estado := 'pendiente';
++  new.iniciado_en := null;
++  new.finalizado_en := null;
++  return new;
++end;
++$$;
++
++drop trigger if exists reservas_preparar on public.reservas;
++create trigger reservas_preparar
++  before insert on public.reservas
++  for each row execute function public.preparar_reserva();
++
++-- Reseña: solo el dueño de una reserva completada, y recalcula la calificación.
++create or replace function public.validar_resena()
++returns trigger
++language plpgsql
++security definer
++set search_path = ''
++as $$
++declare
++  v_reserva public.reservas%rowtype;
++begin
++  select * into v_reserva from public.reservas where id = new.reserva_id;
++  if not found or v_reserva.dueno_id <> new.autor_id or v_reserva.estado <> 'completada' then
++    raise exception 'Solo puedes reseñar servicios completados que contrataste.' using errcode = 'P0001';
++  end if;
++  new.cuidador_id := v_reserva.cuidador_id;
++  return new;
++end;
++$$;
++
++drop trigger if exists resenas_validar on public.resenas;
++create trigger resenas_validar
++  before insert on public.resenas
++  for each row execute function public.validar_resena();
++
++create or replace function public.recalcular_calificacion()
++returns trigger
++language plpgsql
++security definer
++set search_path = ''
++as $$
++declare
++  v_cuidador uuid := coalesce(new.cuidador_id, old.cuidador_id);
++begin
++  update public.cuidadores c
++  set calificacion = coalesce((select round(avg(r.puntuacion)::numeric, 1) from public.resenas r where r.cuidador_id = v_cuidador), 0),
++      total_resenas = (select count(*) from public.resenas r where r.cuidador_id = v_cuidador)
++  where c.id = v_cuidador;
++  return null;
++end;
++$$;
++
++drop trigger if exists resenas_recalcular on public.resenas;
++create trigger resenas_recalcular
++  after insert or update or delete on public.resenas
++  for each row execute function public.recalcular_calificacion();
++
++create or replace function public.tocar_conversacion()
++returns trigger
++language plpgsql
++security definer
++set search_path = ''
++as $$
++begin
++  update public.conversaciones set ultimo_mensaje_en = new.creado_en where id = new.conversacion_id;
++  return null;
++end;
++$$;
++
++drop trigger if exists mensajes_tocar_conversacion on public.mensajes;
++create trigger mensajes_tocar_conversacion
++  after insert on public.mensajes
++  for each row execute function public.tocar_conversacion();
++
++-- ---------------------------------------------------------------------------
++-- RPC
++-- ---------------------------------------------------------------------------
++
++-- Cambios de estado permitidos según quién actúa.
++create or replace function public.cambiar_estado_reserva(p_reserva uuid, p_estado text)
++returns public.reservas
++language plpgsql
++security definer
++set search_path = ''
++as $$
++declare
++  v_uid uuid := (select auth.uid());
++  v_reserva public.reservas%rowtype;
++  v_es_dueno boolean;
++  v_es_cuidador boolean;
++  v_permitido boolean := false;
++begin
++  if v_uid is null then
++    raise exception 'Debes iniciar sesión.' using errcode = '42501';
++  end if;
++
++  select * into v_reserva from public.reservas where id = p_reserva for update;
++  if not found then
++    raise exception 'La reserva no existe.' using errcode = 'P0002';
++  end if;
++
++  v_es_dueno := v_reserva.dueno_id = v_uid;
++  v_es_cuidador := v_reserva.cuidador_id = v_uid;
++  if not (v_es_dueno or v_es_cuidador) then
++    raise exception 'No participas en esta reserva.' using errcode = '42501';
++  end if;
++
++  v_permitido := case
++    when v_reserva.estado = 'pendiente' and p_estado in ('aceptada', 'rechazada') then v_es_cuidador
++    when v_reserva.estado = 'pendiente' and p_estado = 'cancelada' then v_es_dueno
++    when v_reserva.estado = 'aceptada' and p_estado = 'en_curso' then v_es_cuidador
++    when v_reserva.estado = 'aceptada' and p_estado = 'cancelada' then true
++    when v_reserva.estado = 'en_curso' and p_estado = 'completada' then v_es_cuidador
++    else false
++  end;
++
++  if not v_permitido then
++    raise exception 'No puedes pasar la reserva de % a %.', v_reserva.estado, p_estado using errcode = 'P0001';
++  end if;
++
++  update public.reservas
++  set estado = p_estado,
++      iniciado_en = case when p_estado = 'en_curso' then now() else iniciado_en end,
++      finalizado_en = case when p_estado = 'completada' then now() else finalizado_en end
++  where id = p_reserva
++  returning * into v_reserva;
++
++  return v_reserva;
++end;
++$$;
++
++-- Abre (o reutiliza) la conversación con otra persona.
++create or replace function public.abrir_conversacion(p_otro uuid)
++returns uuid
++language plpgsql
++security definer
++set search_path = ''
++as $$
++declare
++  v_uid uuid := (select auth.uid());
++  v_a uuid;
++  v_b uuid;
++  v_id uuid;
++begin
++  if v_uid is null then
++    raise exception 'Debes iniciar sesión.' using errcode = '42501';
++  end if;
++  if p_otro is null or p_otro = v_uid then
++    raise exception 'Conversación no válida.' using errcode = 'P0001';
++  end if;
++  if not exists (select 1 from public.perfiles where id = p_otro) then
++    raise exception 'La persona no existe.' using errcode = 'P0002';
++  end if;
++
++  v_a := least(v_uid, p_otro);
++  v_b := greatest(v_uid, p_otro);
++
++  insert into public.conversaciones (participante_a, participante_b)
++  values (v_a, v_b)
++  on conflict (participante_a, participante_b) do nothing;
++
++  select id into v_id from public.conversaciones where participante_a = v_a and participante_b = v_b;
++  return v_id;
++end;
++$$;
++
++create or replace function public.marcar_mensajes_leidos(p_conversacion uuid)
++returns void
++language sql
++security definer
++set search_path = ''
++as $$
++  update public.mensajes
++  set leido_en = now()
++  where conversacion_id = p_conversacion
++    and autor_id <> (select auth.uid())
++    and leido_en is null
++    and public.es_participante_conversacion(p_conversacion);
++$$;
++
++-- Datos visibles de otras personas: cuidadores activos, o con quien
++-- se comparte una reserva o una conversación.
++create or replace function public.perfiles_publicos(p_ids uuid[])
++returns table (id uuid, nombre text, apellido text, avatar_url text, comuna text)
++language sql
++stable
++security definer
++set search_path = ''
++as $$
++  select p.id, p.nombre, p.apellido, p.avatar_url, p.comuna
++  from public.perfiles p
++  where p.id = any (p_ids)
++    and (
++      p.id = (select auth.uid())
++      or exists (select 1 from public.cuidadores c where c.id = p.id and c.activo)
++      or exists (
++        select 1 from public.reservas r
++        where (r.dueno_id = p.id and r.cuidador_id = (select auth.uid()))
++           or (r.cuidador_id = p.id and r.dueno_id = (select auth.uid()))
++      )
++      or exists (
++        select 1 from public.conversaciones c
++        where (c.participante_a = p.id and c.participante_b = (select auth.uid()))
++           or (c.participante_b = p.id and c.participante_a = (select auth.uid()))
++      )
++    );
++$$;
++
++-- Listado público para el buscador / mapa.
++create or replace function public.listar_cuidadores(p_servicio text default null)
++returns table (
++  id uuid,
++  nombre text,
++  apellido text,
++  avatar_url text,
++  descripcion text,
++  bio text,
++  servicios text[],
++  precio_paseo integer,
++  precio_hospedaje integer,
++  precio_guarderia integer,
++  precio_visita integer,
++  comuna text,
++  latitud double precision,
++  longitud double precision,
++  radio_km integer,
++  dias smallint[],
++  hora_inicio time,
++  hora_fin time,
++  verificado boolean,
++  calificacion numeric,
++  total_resenas integer
++)
++language sql
++stable
++security definer
++set search_path = ''
++as $$
++  select
++    c.id, p.nombre, p.apellido, p.avatar_url, p.descripcion, c.bio, c.servicios,
++    c.precio_paseo, c.precio_hospedaje, c.precio_guarderia, c.precio_visita,
++    c.comuna, c.latitud, c.longitud, c.radio_km, c.dias, c.hora_inicio, c.hora_fin,
++    c.verificado, c.calificacion, c.total_resenas
++  from public.cuidadores c
++  join public.perfiles p on p.id = c.id
++  where c.activo
++    and (p_servicio is null or p_servicio = any (c.servicios))
++  order by c.verificado desc, c.calificacion desc, c.total_resenas desc;
++$$;
++
++-- Métricas del panel del cuidador.
++create or replace function public.resumen_cuidador()
++returns table (
++  ganancias_mes integer,
++  ganancias_total integer,
++  servicios_completados integer,
++  solicitudes_pendientes integer,
++  proximos_servicios integer,
++  calificacion numeric,
++  total_resenas integer
++)
++language sql
++stable
++security definer
++set search_path = ''
++as $$
++  select
++    coalesce(sum(r.precio_total) filter (
++      where r.estado = 'completada' and r.finalizado_en >= date_trunc('month', now())
++    ), 0)::integer,
++    coalesce(sum(r.precio_total) filter (where r.estado = 'completada'), 0)::integer,
++    count(*) filter (where r.estado = 'completada')::integer,
++    count(*) filter (where r.estado = 'pendiente')::integer,
++    count(*) filter (where r.estado in ('aceptada', 'en_curso') and r.fin >= now())::integer,
++    coalesce((select c.calificacion from public.cuidadores c where c.id = (select auth.uid())), 0),
++    coalesce((select c.total_resenas from public.cuidadores c where c.id = (select auth.uid())), 0)
++  from public.reservas r
++  where r.cuidador_id = (select auth.uid());
++$$;
++
++-- ---------------------------------------------------------------------------
++-- RLS
++-- ---------------------------------------------------------------------------
++
++alter table public.mascotas enable row level security;
++alter table public.recordatorios_salud enable row level security;
++alter table public.cuidadores enable row level security;
++alter table public.reservas enable row level security;
++alter table public.seguimiento_puntos enable row level security;
++alter table public.actualizaciones_servicio enable row level security;
++alter table public.conversaciones enable row level security;
++alter table public.mensajes enable row level security;
++alter table public.ajustes_conversacion enable row level security;
++alter table public.bloqueos enable row level security;
++alter table public.reportes enable row level security;
++alter table public.resenas enable row level security;
++
++-- Mascotas: el dueño gestiona; el cuidador con reserva puede ver la ficha.
++drop policy if exists "Mascotas: ver propias o a cargo" on public.mascotas;
++create policy "Mascotas: ver propias o a cargo" on public.mascotas
++  for select to authenticated
++  using (dueno_id = (select auth.uid()) or public.cuida_mascota(id));
++
++drop policy if exists "Mascotas: crear propias" on public.mascotas;
++create policy "Mascotas: crear propias" on public.mascotas
++  for insert to authenticated
++  with check (dueno_id = (select auth.uid()));
++
++drop policy if exists "Mascotas: editar propias" on public.mascotas;
++create policy "Mascotas: editar propias" on public.mascotas
++  for update to authenticated
++  using (dueno_id = (select auth.uid()))
++  with check (dueno_id = (select auth.uid()));
++
++drop policy if exists "Mascotas: borrar propias" on public.mascotas;
++create policy "Mascotas: borrar propias" on public.mascotas
++  for delete to authenticated
++  using (dueno_id = (select auth.uid()));
++
++-- Recordatorios de salud: solo el dueño de la mascota.
++drop policy if exists "Recordatorios: dueño de la mascota" on public.recordatorios_salud;
++create policy "Recordatorios: dueño de la mascota" on public.recordatorios_salud
++  for all to authenticated
++  using (public.es_dueno_mascota(mascota_id))
++  with check (public.es_dueno_mascota(mascota_id));
++
++-- Cuidadores: perfil público de lectura; cada uno edita el suyo.
++drop policy if exists "Cuidadores: lectura pública" on public.cuidadores;
++create policy "Cuidadores: lectura pública" on public.cuidadores
++  for select to anon, authenticated
++  using (activo or id = (select auth.uid()));
++
++drop policy if exists "Cuidadores: crear el propio" on public.cuidadores;
++create policy "Cuidadores: crear el propio" on public.cuidadores
++  for insert to authenticated
++  with check (id = (select auth.uid()));
++
++drop policy if exists "Cuidadores: editar el propio" on public.cuidadores;
++create policy "Cuidadores: editar el propio" on public.cuidadores
++  for update to authenticated
++  using (id = (select auth.uid()))
++  with check (id = (select auth.uid()));
++
++-- Reservas: las ven ambas partes; las crea el dueño; los estados van por RPC.
++drop policy if exists "Reservas: ver como participante" on public.reservas;
++create policy "Reservas: ver como participante" on public.reservas
++  for select to authenticated
++  using ((select auth.uid()) in (dueno_id, cuidador_id));
++
++drop policy if exists "Reservas: crear como dueño" on public.reservas;
++create policy "Reservas: crear como dueño" on public.reservas
++  for insert to authenticated
++  with check (dueno_id = (select auth.uid()));
++
++-- Seguimiento: lo ven ambas partes; solo el cuidador registra durante el servicio.
++drop policy if exists "Seguimiento: ver como participante" on public.seguimiento_puntos;
++create policy "Seguimiento: ver como participante" on public.seguimiento_puntos
++  for select to authenticated
++  using (public.es_participante_reserva(reserva_id));
++
++drop policy if exists "Seguimiento: registrar como cuidador" on public.seguimiento_puntos;
++create policy "Seguimiento: registrar como cuidador" on public.seguimiento_puntos
++  for insert to authenticated
++  with check (
++    exists (
++      select 1 from public.reservas r
++      where r.id = reserva_id and r.cuidador_id = (select auth.uid()) and r.estado = 'en_curso'
++    )
++  );
++
++-- Actualizaciones (fotos, notas, emergencia): ambas partes.
++drop policy if exists "Actualizaciones: ver como participante" on public.actualizaciones_servicio;
++create policy "Actualizaciones: ver como participante" on public.actualizaciones_servicio
++  for select to authenticated
++  using (public.es_participante_reserva(reserva_id));
++
++drop policy if exists "Actualizaciones: publicar como participante" on public.actualizaciones_servicio;
++create policy "Actualizaciones: publicar como participante" on public.actualizaciones_servicio
++  for insert to authenticated
++  with check (autor_id = (select auth.uid()) and public.es_participante_reserva(reserva_id));
++
++-- Conversaciones: solo participantes (se crean con abrir_conversacion).
++drop policy if exists "Conversaciones: ver como participante" on public.conversaciones;
++create policy "Conversaciones: ver como participante" on public.conversaciones
++  for select to authenticated
++  using ((select auth.uid()) in (participante_a, participante_b));
++
++-- Mensajes: participantes; no se puede escribir si hay bloqueo en cualquier sentido.
++drop policy if exists "Mensajes: ver como participante" on public.mensajes;
++create policy "Mensajes: ver como participante" on public.mensajes
++  for select to authenticated
++  using (public.es_participante_conversacion(conversacion_id));
++
++drop policy if exists "Mensajes: enviar sin bloqueo" on public.mensajes;
++create policy "Mensajes: enviar sin bloqueo" on public.mensajes
++  for insert to authenticated
++  with check (
++    autor_id = (select auth.uid())
++    and public.es_participante_conversacion(conversacion_id)
++    and not exists (
++      select 1
++      from public.conversaciones c
++      join public.bloqueos b
++        on (b.bloqueador_id = c.participante_a and b.bloqueado_id = c.participante_b)
++        or (b.bloqueador_id = c.participante_b and b.bloqueado_id = c.participante_a)
++      where c.id = conversacion_id
++    )
++  );
++
++drop policy if exists "Ajustes: los propios" on public.ajustes_conversacion;
++create policy "Ajustes: los propios" on public.ajustes_conversacion
++  for all to authenticated
++  using (usuario_id = (select auth.uid()))
++  with check (usuario_id = (select auth.uid()) and public.es_participante_conversacion(conversacion_id));
++
++-- Bloqueos: cada uno ve y gestiona los suyos; el bloqueado sabe que lo bloquearon
++-- (necesario para ocultar el campo de envío).
++drop policy if exists "Bloqueos: ver los que me involucran" on public.bloqueos;
++create policy "Bloqueos: ver los que me involucran" on public.bloqueos
++  for select to authenticated
++  using ((select auth.uid()) in (bloqueador_id, bloqueado_id));
++
++drop policy if exists "Bloqueos: crear los propios" on public.bloqueos;
++create policy "Bloqueos: crear los propios" on public.bloqueos
++  for insert to authenticated
++  with check (bloqueador_id = (select auth.uid()));
++
++drop policy if exists "Bloqueos: quitar los propios" on public.bloqueos;
++create policy "Bloqueos: quitar los propios" on public.bloqueos
++  for delete to authenticated
++  using (bloqueador_id = (select auth.uid()));
++
++-- Reportes: se crean y se ven los propios (moderación con service_role).
++drop policy if exists "Reportes: crear los propios" on public.reportes;
++create policy "Reportes: crear los propios" on public.reportes
++  for insert to authenticated
++  with check (reportante_id = (select auth.uid()));
++
++drop policy if exists "Reportes: ver los propios" on public.reportes;
++create policy "Reportes: ver los propios" on public.reportes
++  for select to authenticated
++  using (reportante_id = (select auth.uid()));
++
++-- Reseñas: públicas; las escribe el dueño (validación en trigger).
++drop policy if exists "Reseñas: lectura pública" on public.resenas;
++create policy "Reseñas: lectura pública" on public.resenas
++  for select to anon, authenticated
++  using (true);
++
++drop policy if exists "Reseñas: crear como dueño" on public.resenas;
++create policy "Reseñas: crear como dueño" on public.resenas
++  for insert to authenticated
++  with check (autor_id = (select auth.uid()));
++
++-- ---------------------------------------------------------------------------
++-- Permisos de ejecución de funciones
++-- ---------------------------------------------------------------------------
++
++revoke execute on function public.cambiar_estado_reserva(uuid, text) from public, anon;
++revoke execute on function public.abrir_conversacion(uuid) from public, anon;
++revoke execute on function public.marcar_mensajes_leidos(uuid) from public, anon;
++revoke execute on function public.perfiles_publicos(uuid[]) from public, anon;
++revoke execute on function public.resumen_cuidador() from public, anon;
++grant execute on function public.cambiar_estado_reserva(uuid, text) to authenticated;
++grant execute on function public.abrir_conversacion(uuid) to authenticated;
++grant execute on function public.marcar_mensajes_leidos(uuid) to authenticated;
++grant execute on function public.perfiles_publicos(uuid[]) to authenticated;
++grant execute on function public.resumen_cuidador() to authenticated;
++grant execute on function public.listar_cuidadores(text) to anon, authenticated;
++
++-- ---------------------------------------------------------------------------
++-- Datos existentes: mover mascotas y datos de cuidador desde el JSON del perfil
++-- ---------------------------------------------------------------------------
++
++insert into public.mascotas (dueno_id, nombre, tipo, raza, edad_anos, peso_kg, es_grupo, cantidad)
++select
++  p.id,
++  trim(m ->> 'nombre'),
++  m ->> 'tipo',
++  coalesce(m ->> 'raza', ''),
++  case when (m ->> 'edadAnos') ~ '^[0-9]+([.,][0-9]+)?$' then replace(m ->> 'edadAnos', ',', '.')::numeric end,
++  case when (m ->> 'pesoKg') ~ '^[0-9]+([.,][0-9]+)?$' then replace(m ->> 'pesoKg', ',', '.')::numeric end,
++  coalesce(m ->> 'modo', '') = 'grupo',
++  case when (m ->> 'cantidad') ~ '^[1-9][0-9]*$' then (m ->> 'cantidad')::integer else 1 end
++from public.perfiles p
++cross join lateral jsonb_array_elements(case when jsonb_typeof(p.mascotas) = 'array' then p.mascotas else '[]'::jsonb end) as m
++where length(trim(coalesce(m ->> 'nombre', ''))) > 0
++  and (m ->> 'tipo') in ('Perro', 'Gato', 'Ave', 'Reptil', 'Acuáticos', 'Ganadería')
++  and not exists (select 1 from public.mascotas x where x.dueno_id = p.id);
++
++insert into public.cuidadores (id, servicios, precio_paseo, precio_hospedaje, comuna, latitud, longitud, radio_km)
++select
++  p.id,
++  array(
++    select distinct case s
++      when 'Paseo' then 'paseo'
++      when 'Hospedaje' then 'hospedaje'
++      when 'Guardería' then 'guarderia'
++      when 'Visita a domicilio' then 'visita'
++    end
++    from jsonb_array_elements_text(coalesce(p.datos_cuidador -> 'servicios', '[]'::jsonb)) as s
++    where s in ('Paseo', 'Hospedaje', 'Guardería', 'Visita a domicilio')
++  ),
++  case when (p.datos_cuidador ->> 'precioPaseo') ~ '^[0-9]+$' then (p.datos_cuidador ->> 'precioPaseo')::integer end,
++  case when (p.datos_cuidador ->> 'precioNoche') ~ '^[0-9]+$' then (p.datos_cuidador ->> 'precioNoche')::integer end,
++  coalesce(p.datos_cuidador ->> 'zona', ''),
++  case when jsonb_typeof(p.datos_cuidador -> 'latitud') = 'number' then (p.datos_cuidador ->> 'latitud')::double precision end,
++  case when jsonb_typeof(p.datos_cuidador -> 'longitud') = 'number' then (p.datos_cuidador ->> 'longitud')::double precision end,
++  case when jsonb_typeof(p.datos_cuidador -> 'radioKm') = 'number'
++    then least(100, greatest(1, (p.datos_cuidador ->> 'radioKm')::integer)) else 5 end
++from public.perfiles p
++where p.rol in ('cuidador', 'ambos')
++  and p.datos_cuidador is not null
++on conflict (id) do nothing;
+diff --git a/supabase/migrations/20261020120100_storage_y_realtime.sql b/supabase/migrations/20261020120100_storage_y_realtime.sql
+new file mode 100644
+index 0000000..d0d2523
+--- /dev/null
++++ b/supabase/migrations/20261020120100_storage_y_realtime.sql
+@@ -0,0 +1,44 @@
++-- Migración: bucket de fotos y publicación Realtime.
++-- Fotos de perfil, mascotas, chat y servicio. Lectura pública por URL;
++-- cada usuario solo escribe dentro de su carpeta `<auth.uid()>/...`.
++
++insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
++values ('fotos', 'fotos', true, 5242880, array['image/jpeg', 'image/png', 'image/webp'])
++on conflict (id) do update
++  set public = excluded.public,
++      file_size_limit = excluded.file_size_limit,
++      allowed_mime_types = excluded.allowed_mime_types;
++
++drop policy if exists "Fotos: subir a la carpeta propia" on storage.objects;
++create policy "Fotos: subir a la carpeta propia" on storage.objects
++  for insert to authenticated
++  with check (bucket_id = 'fotos' and (storage.foldername(name))[1] = (select auth.uid())::text);
++
++drop policy if exists "Fotos: editar la carpeta propia" on storage.objects;
++create policy "Fotos: editar la carpeta propia" on storage.objects
++  for update to authenticated
++  using (bucket_id = 'fotos' and (storage.foldername(name))[1] = (select auth.uid())::text);
++
++drop policy if exists "Fotos: borrar de la carpeta propia" on storage.objects;
++create policy "Fotos: borrar de la carpeta propia" on storage.objects
++  for delete to authenticated
++  using (bucket_id = 'fotos' and (storage.foldername(name))[1] = (select auth.uid())::text);
++
++-- Realtime: chat, seguimiento en vivo, novedades del servicio y estados de reserva.
++do $$
++declare
++  v_tabla text;
++begin
++  if not exists (select 1 from pg_publication where pubname = 'supabase_realtime') then
++    create publication supabase_realtime;
++  end if;
++  foreach v_tabla in array array['mensajes', 'seguimiento_puntos', 'actualizaciones_servicio', 'reservas'] loop
++    if not exists (
++      select 1 from pg_publication_tables
++      where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = v_tabla
++    ) then
++      execute format('alter publication supabase_realtime add table public.%I', v_tabla);
++    end if;
++  end loop;
++end;
++$$;
+diff --git a/supabase/seed.sql b/supabase/seed.sql
+new file mode 100644
+index 0000000..006f291
+--- /dev/null
++++ b/supabase/seed.sql
+@@ -0,0 +1,73 @@
++-- Semilla: 20 cuidadores verificados en Santiago (PRD Stitch: "base de 20 cuidadores verificados").
++-- Cuentas de demostración sin contraseña utilizable (no se puede iniciar sesión con ellas).
++-- Idempotente: se puede ejecutar varias veces. Úsala solo en desarrollo / demo.
++
++with datos (n, nombre, apellido, comuna, lat, lng, servicios, paseo, hospedaje, guarderia, visita, bio, calificacion, resenas) as (
++  values
++    (1,  'Camila',    'Rojas',     'Providencia',     -33.4263, -70.6110, array['paseo','visita'],                       8000,  null,  null,  9000,  'Paseadora con 5 años de experiencia. Perros grandes y reactivos.', 4.9, 87),
++    (2,  'Matías',    'González',  'Ñuñoa',           -33.4569, -70.5978, array['paseo','hospedaje','guarderia'],        7000,  22000, 15000, null,  'Casa con patio cerrado, trabajo desde casa.', 4.8, 64),
++    (3,  'Valentina', 'Muñoz',     'Las Condes',      -33.4110, -70.5670, array['hospedaje','guarderia'],                null,  28000, 18000, null,  'Veterinaria en formación. Cuido gatos y perros senior.', 5.0, 41),
++    (4,  'Benjamín',  'Soto',      'Santiago Centro', -33.4489, -70.6693, array['paseo'],                                6000,  null,  null,  null,  'Paseos grupales en Parque Forestal, máximo 3 perros.', 4.6, 112),
++    (5,  'Fernanda',  'Díaz',      'Vitacura',        -33.3900, -70.5760, array['hospedaje','visita'],                   null,  35000, null,  12000, 'Departamento amplio, sin otras mascotas. Solo una a la vez.', 4.9, 23),
++    (6,  'Sebastián', 'Pérez',     'La Reina',        -33.4450, -70.5390, array['paseo','hospedaje','guarderia','visita'], 7500, 24000, 16000, 10000, 'Cuidador full time, casa con jardín cerca del Parque Mahuida.', 4.7, 58),
++    (7,  'Antonia',   'Silva',     'Macul',           -33.4870, -70.5990, array['guarderia','visita'],                   null,  null,  14000, 8500,  'Educadora canina, refuerzo positivo.', 4.8, 36),
++    (8,  'Joaquín',   'Morales',   'Peñalolén',       -33.4860, -70.5330, array['paseo','hospedaje'],                    6500,  20000, null,  null,  'Paseos de cerro para perros activos.', 4.5, 19),
++    (9,  'Isidora',   'Fuentes',   'San Miguel',      -33.4970, -70.6510, array['paseo','visita'],                       5500,  null,  null,  8000,  'Visitas para gatos: alimentación, arenero y mimos.', 4.9, 75),
++    (10, 'Tomás',     'Castillo',  'Providencia',     -33.4330, -70.6200, array['hospedaje','guarderia'],                null,  26000, 17000, null,  'Casa pet friendly, cámaras para que veas a tu mascota.', 4.7, 47),
++    (11, 'Javiera',   'Reyes',     'Ñuñoa',           -33.4510, -70.6070, array['paseo','guarderia'],                    7000,  null,  15000, null,  'Amo a los perros pequeños y cachorros.', 4.8, 52),
++    (12, 'Diego',     'Herrera',   'Las Condes',      -33.4180, -70.5860, array['paseo','hospedaje','visita'],           9000,  30000, null,  11000, 'Primeros auxilios caninos certificados.', 4.9, 66),
++    (13, 'Catalina',  'Vargas',    'Santiago Centro', -33.4400, -70.6500, array['visita'],                               null,  null,  null,  7500,  'Visitas a domicilio para gatos y aves.', 4.6, 28),
++    (14, 'Nicolás',   'Torres',    'La Florida',      -33.5220, -70.5980, array['paseo','hospedaje','guarderia'],        6000,  21000, 14000, null,  'Casa con patio grande, ideal para perros grandes.', 4.7, 33),
++    (15, 'Martina',   'Espinoza',  'Maipú',           -33.5110, -70.7580, array['paseo','visita'],                       5500,  null,  null,  7000,  'Estudiante de medicina veterinaria.', 4.5, 14),
++    (16, 'Agustín',   'Contreras', 'Vitacura',        -33.3980, -70.5960, array['hospedaje','guarderia','visita'],       null,  38000, 20000, 13000, 'Atención premium, reportes con fotos cada día.', 5.0, 29),
++    (17, 'Florencia', 'Sepúlveda', 'Providencia',     -33.4220, -70.6040, array['paseo'],                                7500,  null,  null,  null,  'Paseos individuales de 45 o 60 minutos.', 4.8, 91),
++    (18, 'Vicente',   'Araya',     'Ñuñoa',           -33.4640, -70.5900, array['guarderia','hospedaje'],                null,  23000, 15000, null,  'Experiencia con perros con ansiedad por separación.', 4.6, 22),
++    (19, 'Emilia',    'Navarro',   'Las Condes',      -33.4060, -70.5500, array['paseo','hospedaje','guarderia','visita'], 8500, 32000, 19000, 12000, 'Cuido a tu mascota como si fuera mía. Exóticos bienvenidos.', 4.9, 58),
++    (20, 'Lucas',     'Paredes',   'La Reina',        -33.4380, -70.5480, array['paseo','visita'],                       6500,  null,  null,  9000,  'Runner: paseos con trote para perros enérgicos.', 4.7, 40)
++),
++ids as (
++  select d.*, ('00000000-0000-4000-8000-' || lpad(d.n::text, 12, '0'))::uuid as id
++  from datos d
++),
++usuarios as (
++  insert into auth.users (
++    id, instance_id, aud, role, email, encrypted_password, email_confirmed_at,
++    raw_app_meta_data, raw_user_meta_data, created_at, updated_at
++  )
++  select
++    id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
++    'cuidador' || n || '@demo.safepaws.cl', '', now(),
++    '{"provider":"email","providers":["email"]}'::jsonb,
++    jsonb_build_object('nombre', nombre || ' ' || apellido, 'demo', true),
++    now(), now()
++  from ids
++  on conflict (id) do nothing
++  returning id
++),
++perfiles as (
++  insert into public.perfiles (id, nombre, apellido, descripcion, rol, comuna, onboarding_completo)
++  select id, nombre, apellido, bio, 'cuidador', comuna, true from ids
++  on conflict (id) do update
++    set nombre = excluded.nombre, apellido = excluded.apellido, comuna = excluded.comuna
++  returning id
++)
++insert into public.cuidadores (
++  id, bio, servicios, precio_paseo, precio_hospedaje, precio_guarderia, precio_visita,
++  comuna, latitud, longitud, radio_km, dias, hora_inicio, hora_fin,
++  verificado, calificacion, total_resenas
++)
++select
++  id, bio, servicios, paseo, hospedaje, guarderia, visita,
++  comuna, lat, lng, 10, array[1, 2, 3, 4, 5, 6]::smallint[], '08:00', '20:00',
++  true, calificacion, resenas
++from ids
++where id in (select id from perfiles)
++on conflict (id) do update
++  set servicios = excluded.servicios,
++      precio_paseo = excluded.precio_paseo,
++      precio_hospedaje = excluded.precio_hospedaje,
++      precio_guarderia = excluded.precio_guarderia,
++      precio_visita = excluded.precio_visita,
++      verificado = excluded.verificado,
++      calificacion = excluded.calificacion,
++      total_resenas = excluded.total_resenas;
+diff --git a/tests/db/entorno.ts b/tests/db/entorno.ts
+new file mode 100644
+index 0000000..cd9f000
+--- /dev/null
++++ b/tests/db/entorno.ts
+@@ -0,0 +1,113 @@
++import { readdirSync, readFileSync } from 'node:fs'
++import { join } from 'node:path'
++import { PGlite } from '@electric-sql/pglite'
++
++const RAIZ = join(import.meta.dirname, '..', '..', 'supabase')
++
++/**
++ * Lo mínimo de Supabase que las migraciones necesitan: roles de PostgREST,
++ * auth.users / auth.uid() y storage.buckets / storage.objects.
++ */
++export const ESQUELETO_SUPABASE = `
++  create role anon nologin;
++  create role authenticated nologin;
++  create role service_role nologin bypassrls;
++
++  create schema auth;
++  create table auth.users (
++    id uuid primary key,
++    instance_id uuid,
++    aud text,
++    role text,
++    email text unique,
++    encrypted_password text,
++    email_confirmed_at timestamptz,
++    raw_app_meta_data jsonb,
++    raw_user_meta_data jsonb,
++    created_at timestamptz default now(),
++    updated_at timestamptz default now()
++  );
++  create function auth.uid() returns uuid language sql stable as $$
++    select nullif(current_setting('request.jwt.claims', true)::jsonb ->> 'sub', '')::uuid
++  $$;
++  grant usage on schema auth to anon, authenticated, service_role;
++
++  create schema storage;
++  create table storage.buckets (
++    id text primary key,
++    name text not null,
++    public boolean default false,
++    file_size_limit bigint,
++    allowed_mime_types text[]
++  );
++  create table storage.objects (
++    id uuid primary key default gen_random_uuid(),
++    bucket_id text references storage.buckets (id),
++    name text,
++    owner uuid
++  );
++  alter table storage.objects enable row level security;
++  create function storage.foldername(name text) returns text[] language sql immutable as $$
++    select (string_to_array(name, '/'))[1:array_length(string_to_array(name, '/'), 1) - 1]
++  $$;
++  grant usage on schema storage to anon, authenticated, service_role;
++  grant all on storage.objects, storage.buckets to anon, authenticated, service_role;
++
++  grant usage on schema public to anon, authenticated, service_role;
++  alter default privileges in schema public grant all on tables to anon, authenticated, service_role;
++  alter default privileges in schema public grant all on sequences to anon, authenticated, service_role;
++  alter default privileges in schema public grant execute on functions to anon, authenticated, service_role;
++`
++
++export function archivosMigracion(): string[] {
++  const carpeta = join(RAIZ, 'migrations')
++  return readdirSync(carpeta)
++    .filter((archivo) => archivo.endsWith('.sql'))
++    .sort()
++    .map((archivo) => join(carpeta, archivo))
++}
++
++export async function crearBaseDeDatos(opciones: { conSemilla?: boolean } = {}): Promise<PGlite> {
++  const db = new PGlite()
++  await db.exec(ESQUELETO_SUPABASE)
++  for (const archivo of archivosMigracion()) {
++    await db.exec(readFileSync(archivo, 'utf8'))
++  }
++  if (opciones.conSemilla) {
++    await db.exec(readFileSync(join(RAIZ, 'seed.sql'), 'utf8'))
++  }
++  return db
++}
++
++/** Crea un usuario de auth + su fila de perfil (como superusuario). */
++export async function crearUsuario(
++  db: PGlite,
++  id: string,
++  datos: { nombre?: string; rol?: 'dueno' | 'cuidador' | 'ambos' } = {},
++): Promise<void> {
++  await db.query('insert into auth.users (id, email) values ($1, $2)', [id, `${id}@prueba.cl`])
++  await db.query('insert into public.perfiles (id, nombre, rol) values ($1, $2, $3)', [
++    id,
++    datos.nombre ?? 'Prueba',
++    datos.rol ?? 'dueno',
++  ])
++}
++
++/**
++ * Ejecuta `fn` como el rol `authenticated` con el JWT del usuario,
++ * igual que PostgREST. Todo corre en una transacción que se revierte
++ * si `fn` lanza, para que una prueba fallida no contamine a otras.
++ */
++export async function comoUsuario<T>(
++  db: PGlite,
++  idUsuario: string | null,
++  fn: (tx: Pick<PGlite, 'query' | 'exec'>) => Promise<T>,
++): Promise<T> {
++  return db.transaction(async (tx) => {
++    await tx.exec(`set local role ${idUsuario ? 'authenticated' : 'anon'}`)
++    await tx.query(`select set_config('request.jwt.claims', $1, true)`, [
++      JSON.stringify(idUsuario ? { sub: idUsuario, role: 'authenticated' } : { role: 'anon' }),
++    ])
++    return fn(tx)
++  })
++}
+diff --git a/tests/db/migraciones.test.ts b/tests/db/migraciones.test.ts
+new file mode 100644
+index 0000000..694c04d
+--- /dev/null
++++ b/tests/db/migraciones.test.ts
+@@ -0,0 +1,449 @@
++import { readFileSync } from 'node:fs'
++import { PGlite } from '@electric-sql/pglite'
++import { beforeAll, describe, expect, it } from 'vitest'
++import { ESQUELETO_SUPABASE, archivosMigracion, comoUsuario, crearBaseDeDatos, crearUsuario } from './entorno'
++
++const DUENO = '11111111-1111-4111-8111-111111111111'
++const CUIDADOR = '22222222-2222-4222-8222-222222222222'
++const EXTRANO = '33333333-3333-4333-8333-333333333333'
++const CUIDADOR_SEMILLA = '00000000-0000-4000-8000-000000000001'
++
++interface Fila {
++  [columna: string]: unknown
++}
++
++async function filas<T = Fila>(
++  tx: Pick<PGlite, 'query'>,
++  sql: string,
++  parametros: unknown[] = [],
++): Promise<T[]> {
++  const resultado = await tx.query<T>(sql, parametros)
++  return resultado.rows
++}
++
++describe('migraciones', () => {
++  it('se aplican desde cero junto con la semilla', async () => {
++    const db = await crearBaseDeDatos({ conSemilla: true })
++    const [{ total }] = await filas<{ total: number }>(
++      db,
++      'select count(*)::int as total from public.cuidadores where verificado',
++    )
++    expect(total).toBe(20)
++  })
++
++  it('son idempotentes (se pueden volver a aplicar)', async () => {
++    const db = await crearBaseDeDatos({ conSemilla: true })
++    for (const archivo of archivosMigracion()) {
++      await db.exec(readFileSync(archivo, 'utf8'))
++    }
++    await db.exec(readFileSync(new URL('../../supabase/seed.sql', import.meta.url), 'utf8'))
++    const [{ total }] = await filas<{ total: number }>(db, 'select count(*)::int as total from public.cuidadores')
++    expect(total).toBe(20)
++  })
++
++  it('mueven mascotas y datos de cuidador desde el JSON del perfil', async () => {
++    const db = new PGlite()
++    const [primera, ...resto] = archivosMigracion()
++    // Esqueleto + solo la primera migración: así quedaban las bases existentes.
++    await db.exec(ESQUELETO_SUPABASE)
++    await db.exec(readFileSync(primera, 'utf8'))
++    await db.query('insert into auth.users (id) values ($1), ($2)', [DUENO, CUIDADOR])
++    await db.query(
++      `insert into public.perfiles (id, rol, mascotas) values ($1, 'dueno', $2::jsonb)`,
++      [
++        DUENO,
++        JSON.stringify([
++          { nombre: 'Luna', tipo: 'Perro', raza: 'Mestizo', edadAnos: '3', pesoKg: '12,5', modo: 'individual' },
++          { nombre: '', tipo: 'Gato' },
++        ]),
++      ],
++    )
++    await db.query(
++      `insert into public.perfiles (id, rol, datos_cuidador) values ($1, 'cuidador', $2::jsonb)`,
++      [
++        CUIDADOR,
++        JSON.stringify({
++          servicios: ['Paseo', 'Hospedaje', 'Otros'],
++          precioPaseo: '7000',
++          precioNoche: '25000',
++          zona: 'Ñuñoa, Santiago',
++          latitud: -33.45,
++          longitud: -70.6,
++          radioKm: 10,
++        }),
++      ],
++    )
++    for (const archivo of resto) {
++      await db.exec(readFileSync(archivo, 'utf8'))
++    }
++
++    const mascotas = await filas<{ nombre: string; peso_kg: string }>(
++      db,
++      'select nombre, peso_kg::text from public.mascotas',
++    )
++    expect(mascotas).toEqual([{ nombre: 'Luna', peso_kg: '12.50' }])
++
++    const [cuidador] = await filas<{ servicios: string[]; precio_hospedaje: number; radio_km: number }>(
++      db,
++      'select servicios, precio_hospedaje, radio_km from public.cuidadores where id = $1',
++      [CUIDADOR],
++    )
++    expect(cuidador.servicios.sort()).toEqual(['hospedaje', 'paseo'])
++    expect(cuidador.precio_hospedaje).toBe(25000)
++    expect(cuidador.radio_km).toBe(10)
++  })
++})
++
++describe('reglas de acceso y flujo de negocio', () => {
++  let db: PGlite
++  let mascotaId: string
++
++  beforeAll(async () => {
++    db = await crearBaseDeDatos({ conSemilla: true })
++    await crearUsuario(db, DUENO, { nombre: 'Daniela', rol: 'dueno' })
++    await crearUsuario(db, CUIDADOR, { nombre: 'Carlos', rol: 'cuidador' })
++    await crearUsuario(db, EXTRANO, { nombre: 'Ext', rol: 'dueno' })
++
++    await comoUsuario(db, CUIDADOR, (tx) =>
++      tx.query(
++        `insert into public.cuidadores (id, servicios, precio_paseo, precio_hospedaje, verificado, calificacion)
++         values ($1, '{paseo,hospedaje}', 7000, 25000, true, 5)`,
++        [CUIDADOR],
++      ),
++    )
++    const [mascota] = await comoUsuario(db, DUENO, (tx) =>
++      filas<{ id: string }>(
++        tx,
++        `insert into public.mascotas (dueno_id, nombre, tipo) values ($1, 'Luna', 'Perro') returning id`,
++        [DUENO],
++      ),
++    )
++    mascotaId = mascota.id
++  })
++
++  async function crearReserva(servicio = 'hospedaje', inicio = '2026-11-01T10:00:00Z', fin = '2026-11-03T10:00:00Z') {
++    const [reserva] = await comoUsuario(db, DUENO, (tx) =>
++      filas<{ id: string; precio_total: number; estado: string }>(
++        tx,
++        `insert into public.reservas (dueno_id, cuidador_id, mascota_id, servicio, inicio, fin, precio_total, estado)
++         values ($1, $2, $3, $4, $5, $6, 1, 'completada') returning id, precio_total, estado`,
++        [DUENO, CUIDADOR, mascotaId, servicio, inicio, fin],
++      ),
++    )
++    return reserva
++  }
++
++  const cambiarEstado = (usuario: string, reserva: string, estado: string) =>
++    comoUsuario(db, usuario, (tx) => tx.query('select public.cambiar_estado_reserva($1, $2)', [reserva, estado]))
++
++  it('perfiles: cada uno ve solo el suyo', async () => {
++    const visibles = await comoUsuario(db, DUENO, (tx) => filas(tx, 'select id from public.perfiles'))
++    expect(visibles).toEqual([{ id: DUENO }])
++  })
++
++  it('cuidadores: no se pueden autoverificar ni subir su calificación', async () => {
++    const [cuidador] = await filas<{ verificado: boolean; calificacion: string }>(
++      db,
++      'select verificado, calificacion::text from public.cuidadores where id = $1',
++      [CUIDADOR],
++    )
++    expect(cuidador).toEqual({ verificado: false, calificacion: '0.0' })
++
++    await comoUsuario(db, CUIDADOR, (tx) =>
++      tx.query('update public.cuidadores set verificado = true, calificacion = 5, bio = $2 where id = $1', [
++        CUIDADOR,
++        'Hola',
++      ]),
++    )
++    const [despues] = await filas<{ verificado: boolean; bio: string }>(
++      db,
++      'select verificado, bio from public.cuidadores where id = $1',
++      [CUIDADOR],
++    )
++    expect(despues).toEqual({ verificado: false, bio: 'Hola' })
++  })
++
++  it('cuidadores: el listado público funciona sin sesión', async () => {
++    const lista = await comoUsuario(db, null, (tx) =>
++      filas<{ id: string; nombre: string }>(tx, `select id, nombre from public.listar_cuidadores('paseo')`),
++    )
++    // 13 de la semilla ofrecen paseo + el cuidador de la prueba.
++    expect(lista).toHaveLength(14)
++    expect(lista[0]).toHaveProperty('nombre')
++    expect(lista.some((c) => c.id === CUIDADOR)).toBe(true)
++  })
++
++  it('mascotas: un extraño no las ve ni las edita', async () => {
++    const visibles = await comoUsuario(db, EXTRANO, (tx) => filas(tx, 'select id from public.mascotas'))
++    expect(visibles).toEqual([])
++    const resultado = await comoUsuario(db, EXTRANO, (tx) =>
++      tx.query(`update public.mascotas set nombre = 'Hack' where id = $1`, [mascotaId]),
++    )
++    expect(resultado.affectedRows).toBe(0)
++  })
++
++  it('mascotas: no se puede crear una a nombre de otro', async () => {
++    await expect(
++      comoUsuario(db, EXTRANO, (tx) =>
++        tx.query(`insert into public.mascotas (dueno_id, nombre, tipo) values ($1, 'X', 'Gato')`, [DUENO]),
++      ),
++    ).rejects.toThrow(/row-level security/)
++  })
++
++  it('recordatorios de salud: solo el dueño de la mascota', async () => {
++    await comoUsuario(db, DUENO, (tx) =>
++      tx.query(
++        `insert into public.recordatorios_salud (mascota_id, titulo, tipo, fecha) values ($1, 'Vacuna antirrábica', 'vacuna', '2026-12-01')`,
++        [mascotaId],
++      ),
++    )
++    await expect(
++      comoUsuario(db, EXTRANO, (tx) =>
++        tx.query(
++          `insert into public.recordatorios_salud (mascota_id, titulo, fecha) values ($1, 'X', '2026-12-01')`,
++          [mascotaId],
++        ),
++      ),
++    ).rejects.toThrow(/row-level security/)
++  })
++
++  it('reservas: el precio lo calcula el servidor y el estado parte en pendiente', async () => {
++    const reserva = await crearReserva('hospedaje')
++    expect(reserva.precio_total).toBe(50000) // 2 noches × 25.000
++    expect(reserva.estado).toBe('pendiente')
++  })
++
++  it('reservas: rechaza servicios que el cuidador no ofrece y mascotas ajenas', async () => {
++    await expect(crearReserva('visita')).rejects.toThrow(/no ofrece este servicio/)
++    await expect(
++      comoUsuario(db, EXTRANO, (tx) =>
++        tx.query(
++          `insert into public.reservas (dueno_id, cuidador_id, mascota_id, servicio, inicio, fin)
++           values ($1, $2, $3, 'paseo', now(), now() + interval '1 hour')`,
++          [EXTRANO, CUIDADOR, mascotaId],
++        ),
++      ),
++    ).rejects.toThrow(/no pertenece/)
++  })
++
++  it('reservas: ciclo completo con permisos por rol', async () => {
++    const reserva = await crearReserva('paseo', '2026-11-05T15:00:00Z', '2026-11-05T16:00:00Z')
++    expect(reserva.precio_total).toBe(7000)
++
++    await expect(cambiarEstado(DUENO, reserva.id, 'aceptada')).rejects.toThrow(/No puedes pasar/)
++    await expect(cambiarEstado(EXTRANO, reserva.id, 'aceptada')).rejects.toThrow(/No participas/)
++
++    // El cuidador ya ve la ficha de la mascota.
++    const ficha = await comoUsuario(db, CUIDADOR, (tx) => filas(tx, 'select id from public.mascotas'))
++    expect(ficha).toEqual([{ id: mascotaId }])
++
++    await cambiarEstado(CUIDADOR, reserva.id, 'aceptada')
++
++    // Seguimiento: no antes de iniciar.
++    await expect(
++      comoUsuario(db, CUIDADOR, (tx) =>
++        tx.query('insert into public.seguimiento_puntos (reserva_id, latitud, longitud) values ($1, -33.4, -70.6)', [
++          reserva.id,
++        ]),
++      ),
++    ).rejects.toThrow(/row-level security/)
++
++    await cambiarEstado(CUIDADOR, reserva.id, 'en_curso')
++    await comoUsuario(db, CUIDADOR, (tx) =>
++      tx.query(
++        'insert into public.seguimiento_puntos (reserva_id, latitud, longitud) values ($1, -33.40, -70.60), ($1, -33.41, -70.61)',
++        [reserva.id],
++      ),
++    )
++    await expect(
++      comoUsuario(db, DUENO, (tx) =>
++        tx.query('insert into public.seguimiento_puntos (reserva_id, latitud, longitud) values ($1, 0, 0)', [
++          reserva.id,
++        ]),
++      ),
++    ).rejects.toThrow(/row-level security/)
++
++    const puntos = await comoUsuario(db, DUENO, (tx) =>
++      filas(tx, 'select latitud from public.seguimiento_puntos where reserva_id = $1', [reserva.id]),
++    )
++    expect(puntos).toHaveLength(2)
++    const puntosExtrano = await comoUsuario(db, EXTRANO, (tx) => filas(tx, 'select id from public.seguimiento_puntos'))
++    expect(puntosExtrano).toEqual([])
++
++    // Botón de emergencia del dueño y foto del cuidador.
++    await comoUsuario(db, DUENO, (tx) =>
++      tx.query(`insert into public.actualizaciones_servicio (reserva_id, tipo) values ($1, 'emergencia')`, [reserva.id]),
++    )
++    await comoUsuario(db, CUIDADOR, (tx) =>
++      tx.query(
++        `insert into public.actualizaciones_servicio (reserva_id, tipo, foto_url) values ($1, 'foto', 'https://x/y.jpg')`,
++        [reserva.id],
++      ),
++    )
++    await expect(
++      comoUsuario(db, EXTRANO, (tx) =>
++        tx.query(`insert into public.actualizaciones_servicio (reserva_id, tipo, texto) values ($1, 'nota', 'x')`, [
++          reserva.id,
++        ]),
++      ),
++    ).rejects.toThrow(/row-level security/)
++
++    // Reseña antes de completar: no.
++    await expect(
++      comoUsuario(db, DUENO, (tx) =>
++        tx.query(`insert into public.resenas (reserva_id, cuidador_id, puntuacion) values ($1, $2, 5)`, [
++          reserva.id,
++          CUIDADOR,
++        ]),
++      ),
++    ).rejects.toThrow(/servicios completados/)
++
++    await cambiarEstado(CUIDADOR, reserva.id, 'completada')
++    await expect(cambiarEstado(DUENO, reserva.id, 'cancelada')).rejects.toThrow(/No puedes pasar/)
++
++    await comoUsuario(db, DUENO, (tx) =>
++      tx.query(`insert into public.resenas (reserva_id, cuidador_id, puntuacion, comentario) values ($1, $2, 4, 'Bien')`, [
++        reserva.id,
++        CUIDADOR,
++      ]),
++    )
++    await expect(
++      comoUsuario(db, DUENO, (tx) =>
++        tx.query(`insert into public.resenas (reserva_id, cuidador_id, puntuacion) values ($1, $2, 5)`, [
++          reserva.id,
++          CUIDADOR,
++        ]),
++      ),
++    ).rejects.toThrow(/duplicate key/)
++
++    const [cuidador] = await filas<{ calificacion: string; total_resenas: number }>(
++      db,
++      'select calificacion::text, total_resenas from public.cuidadores where id = $1',
++      [CUIDADOR],
++    )
++    expect(cuidador).toEqual({ calificacion: '4.0', total_resenas: 1 })
++
++    const [resumen] = await comoUsuario(db, CUIDADOR, (tx) =>
++      filas<{ ganancias_total: number; servicios_completados: number; solicitudes_pendientes: number }>(
++        tx,
++        'select ganancias_total, servicios_completados, solicitudes_pendientes from public.resumen_cuidador()',
++      ),
++    )
++    expect(resumen.ganancias_total).toBe(7000)
++    expect(resumen.servicios_completados).toBe(1)
++    expect(resumen.solicitudes_pendientes).toBeGreaterThanOrEqual(1)
++  })
++
++  it('reservas: el dueño cancela una pendiente; el cuidador no', async () => {
++    const reserva = await crearReserva('paseo', '2026-11-10T15:00:00Z', '2026-11-10T16:00:00Z')
++    await expect(cambiarEstado(CUIDADOR, reserva.id, 'cancelada')).rejects.toThrow(/No puedes pasar/)
++    await cambiarEstado(DUENO, reserva.id, 'cancelada')
++  })
++
++  it('reservas: no se pueden editar directo (solo por la función de estados)', async () => {
++    const reserva = await crearReserva('paseo', '2026-11-12T15:00:00Z', '2026-11-12T16:00:00Z')
++    const resultado = await comoUsuario(db, DUENO, (tx) =>
++      tx.query(`update public.reservas set precio_total = 1, estado = 'completada' where id = $1`, [reserva.id]),
++    )
++    expect(resultado.affectedRows).toBe(0)
++  })
++
++  it('chat: conversación única, privada, y el bloqueo impide escribir', async () => {
++    const [{ id: conversacion }] = await comoUsuario(db, DUENO, (tx) =>
++      filas<{ id: string }>(tx, 'select public.abrir_conversacion($1) as id', [CUIDADOR]),
++    )
++    const [{ id: otraVez }] = await comoUsuario(db, CUIDADOR, (tx) =>
++      filas<{ id: string }>(tx, 'select public.abrir_conversacion($1) as id', [DUENO]),
++    )
++    expect(otraVez).toBe(conversacion)
++
++    await comoUsuario(db, DUENO, (tx) =>
++      tx.query(`insert into public.mensajes (conversacion_id, texto) values ($1, 'Hola!')`, [conversacion]),
++    )
++    await comoUsuario(db, CUIDADOR, (tx) => tx.query('select public.marcar_mensajes_leidos($1)', [conversacion]))
++    const [mensaje] = await comoUsuario(db, CUIDADOR, (tx) =>
++      filas<{ texto: string; leido: boolean }>(
++        tx,
++        'select texto, leido_en is not null as leido from public.mensajes where conversacion_id = $1',
++        [conversacion],
++      ),
++    )
++    expect(mensaje).toEqual({ texto: 'Hola!', leido: true })
++
++    const ajenos = await comoUsuario(db, EXTRANO, (tx) => filas(tx, 'select id from public.mensajes'))
++    expect(ajenos).toEqual([])
++    await expect(
++      comoUsuario(db, EXTRANO, (tx) =>
++        tx.query(`insert into public.mensajes (conversacion_id, texto) values ($1, 'spam')`, [conversacion]),
++      ),
++    ).rejects.toThrow(/row-level security/)
++
++    // Perfiles públicos: la contraparte ve el nombre, el extraño no ve al dueño.
++    const contraparte = await comoUsuario(db, CUIDADOR, (tx) =>
++      filas<{ nombre: string }>(tx, 'select nombre from public.perfiles_publicos($1)', [[DUENO]]),
++    )
++    expect(contraparte).toEqual([{ nombre: 'Daniela' }])
++    const oculto = await comoUsuario(db, EXTRANO, (tx) =>
++      filas(tx, 'select nombre from public.perfiles_publicos($1)', [[DUENO]]),
++    )
++    expect(oculto).toEqual([])
++
++    await comoUsuario(db, CUIDADOR, (tx) =>
++      tx.query('insert into public.bloqueos (bloqueado_id) values ($1)', [DUENO]),
++    )
++    await expect(
++      comoUsuario(db, DUENO, (tx) =>
++        tx.query(`insert into public.mensajes (conversacion_id, texto) values ($1, 'sigo?')`, [conversacion]),
++      ),
++    ).rejects.toThrow(/row-level security/)
++
++    await comoUsuario(db, CUIDADOR, (tx) =>
++      tx.query(`insert into public.reportes (reportado_id, conversacion_id, motivo) values ($1, $2, 'Spam')`, [
++        DUENO,
++        conversacion,
++      ]),
++    )
++    const reportesAjenos = await comoUsuario(db, DUENO, (tx) => filas(tx, 'select id from public.reportes'))
++    expect(reportesAjenos).toEqual([])
++
++    await comoUsuario(db, CUIDADOR, (tx) =>
++      tx.query('insert into public.ajustes_conversacion (conversacion_id, silenciada) values ($1, true)', [conversacion]),
++    )
++    await expect(
++      comoUsuario(db, EXTRANO, (tx) =>
++        tx.query('insert into public.ajustes_conversacion (conversacion_id, silenciada) values ($1, true)', [
++          conversacion,
++        ]),
++      ),
++    ).rejects.toThrow(/row-level security/)
++  })
++
++  it('storage: cada usuario sube solo a su carpeta', async () => {
++    await comoUsuario(db, DUENO, (tx) =>
++      tx.query(`insert into storage.objects (bucket_id, name) values ('fotos', $1)`, [`${DUENO}/mascotas/luna.jpg`]),
++    )
++    await expect(
++      comoUsuario(db, DUENO, (tx) =>
++        tx.query(`insert into storage.objects (bucket_id, name) values ('fotos', $1)`, [`${CUIDADOR}/x.jpg`]),
++      ),
++    ).rejects.toThrow(/row-level security/)
++  })
++
++  it('el precio de SQL coincide con la regla del frontend', async () => {
++    const { calcularPrecio } = await import('../../src/utils/precios')
++    const casos: Array<[string, string, string, number]> = [
++      ['hospedaje', '2026-11-01T10:00:00Z', '2026-11-03T10:00:00Z', 25000],
++      ['hospedaje', '2026-11-01T10:00:00Z', '2026-11-03T12:00:00Z', 25000],
++      ['paseo', '2026-11-01T10:00:00Z', '2026-11-01T11:00:00Z', 7000],
++      ['guarderia', '2026-11-01T08:00:00Z', '2026-11-05T18:00:00Z', 15000],
++    ]
++    for (const [servicio, inicio, fin, unitario] of casos) {
++      const [{ precio }] = await filas<{ precio: number }>(
++        db,
++        'select public.calcular_precio_reserva($1, $2, $3, $4) as precio',
++        [servicio, inicio, fin, unitario],
++      )
++      expect(calcularPrecio(new Date(inicio), new Date(fin), unitario)).toBe(precio)
++    }
++  })
++})
+diff --git a/tsconfig.node.json b/tsconfig.node.json
+index 8455dcb..ef2e79e 100644
+--- a/tsconfig.node.json
++++ b/tsconfig.node.json
+@@ -19,5 +19,5 @@
+     "erasableSyntaxOnly": true,
+     "noFallthroughCasesInSwitch": true
+   },
+-  "include": ["vite.config.ts"]
++  "include": ["vite.config.ts", "vitest.config.ts", "tests"]
+ }
+diff --git a/vitest.config.ts b/vitest.config.ts
+new file mode 100644
+index 0000000..cf6c6db
+--- /dev/null
++++ b/vitest.config.ts
+@@ -0,0 +1,16 @@
++import { defineConfig } from 'vitest/config'
++import { fileURLToPath, URL } from 'node:url'
++
++export default defineConfig({
++  resolve: {
++    alias: {
++      '@': fileURLToPath(new URL('./src', import.meta.url)),
++    },
++  },
++  test: {
++    include: ['tests/**/*.test.ts', 'src/**/*.test.{ts,tsx}'],
++    environment: 'node',
++    testTimeout: 30000,
++    hookTimeout: 60000,
++  },
++})
+-- 
+2.54.0 (Apple Git-157)
+

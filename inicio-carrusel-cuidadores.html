@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Safe Paws - Inicio Cuidadores</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-green: #2E7D32;
+      --dark-green: #1B5E20;
+      --light-green: #4CAF50;
+      --cream: #F5F5DC;
+      --text-dark: #333333;
+      --text-gray: #666666;
+      --white: #FFFFFF;
+      --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Arial, sans-serif;
+      background-color: var(--cream);
+      color: var(--text-dark);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* Header */
+    .app-header {
+      background: linear-gradient(135deg, var(--primary-green), var(--dark-green));
+      color: var(--white);
+      padding: 1rem 2rem;
+      box-shadow: var(--shadow);
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo i {
+      color: #FFB300;
+    }
+
+    .nav-links a {
+      color: var(--white);
+      text-decoration: none;
+      margin-left: 1.5rem;
+      font-weight: 500;
+      transition: color 0.3s;
+    }
+
+    .nav-links a:hover {
+      color: #FFB300;
+    }
+
+    /* Main Content */
+    .main-content {
+      max-width: 1200px;
+      margin: 80px auto 0;
+      padding: 0 2rem;
+    }
+
+    /* Section: Bienvenida */
+    .welcome-section {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow);
+    }
+
+    .welcome-section h2 {
+      color: var(--primary-green);
+      margin-bottom: 1rem;
+      font-size: 1.8rem;
+    }
+
+    .welcome-section p {
+      color: var(--text-gray);
+      font-size: 1rem;
+    }
+
+    /* Carousel Section */
+    .carousel-section {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 2rem;
+      box-shadow: var(--shadow);
+      margin-bottom: 2rem;
+    }
+
+    .carousel-section h2 {
+      color: var(--primary-green);
+      margin-bottom: 1.5rem;
+      font-size: 1.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .carousel-section h2 i {
+      color: #FFB300;
+    }
+
+    /* Caregiver Card */
+    .caregiver-card {
+      background: var(--cream);
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+
+    .caregiver-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+      border-color: var(--primary-green);
+    }
+
+    .caregiver-card.active {
+      border: 2px solid var(--primary-green);
+      background: var(--white);
+    }
+
+    .caregiver-image {
+      width: 100%;
+      height: 150px;
+      background: var(--light-green);
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      font-size: 3rem;
+      margin-top: -20px;
+    }
+
+    .caregiver-info h3 {
+      margin-bottom: 0.3rem;
+      color: var(--text-dark);
+    }
+
+    .caregiver-info p {
+      color: var(--text-gray);
+      font-size: 0.875rem;
+    }
+
+    .caregiver-rating {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      margin-top: 0.5rem;
+    }
+
+    .rating-stars {
+      color: #FFB300;
+    }
+
+    /* Carousel Controls */
+    .carousel-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1.5rem;
+    }
+
+    .carousel-btn {
+      background: none;
+      border: none;
+      color: var(--primary-green);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 50%;
+      transition: background 0.3s;
+    }
+
+    .carousel-btn:hover {
+      background: var(--light-green);
+    }
+
+    .carousel-indicators {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .indicator {
+      width: 10px;
+      height: 10px;
+      background: #CCCCCC;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .indicator.active {
+      background: var(--primary-green);
+    }
+
+    /* Stats Section */
+    .stats-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .stat-item {
+      background: var(--white);
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-number {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--primary-green);
+    }
+
+    .stat-label {
+      color: var(--text-gray);
+      margin-top: 0.3rem;
+      font-size: 0.875rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .header-container {
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .nav-links {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .nav-links a {
+        margin: 0 0.5rem;
+      }
+
+      .main-content {
+        margin-top: 120px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="logo">
+        <i class="fas fa-paw"></i>
+        Safe Paws
+      </div>
+      <nav class="nav-links">
+        <a href="#"><i class="fas fa-home"></i> Inicio</a>
+        <a href="#"><i class="fas fa-user-friends"></i> Cuidadores</a>
+        <a href="#"><i class="fas fa-paw"></i> Mis Mascotas</a>
+        <a href="#"><i class="fas fa.settings"></i> Perfil</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    
+    <!-- Bienvenida -->
+    <section class="welcome-section">
+      <h2>Bienvenido de nuevo</h2>
+      <p>Selecciona un cuidador para tu mascota o crea una nueva solicitud de paseo</p>
+    </section>
+
+    <!-- Carousel de Cuidadores -->
+    <section class="carousel-section">
+      <h2><i class="fas fa-user-friends"></i> Cuidadores Disponibles</h2>
+      
+      <div class="caregiver-cards" id="caregiverCards">
+        <!-- Cards generadas por JS -->
+      </div>
+
+      <div class="carousel-controls">
+        <button class="carousel-btn" onclick="prevCard()" aria-label="Anterior">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        
+        <div class="carousel-indicators" id="carouselIndicators">
+          <!-- Indicadores generados por JS -->
+        </div>
+        
+        <button class="carousel-btn" onclick="nextCard()" aria-label="Siguiente">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- Estadísticas Rápidas -->
+    <section class="stats-section" id="statsSection">
+      <!-- Estadísticas generadas por JS -->
+    </section>
+
+  </main>
+
+  <!-- JavaScript para el carrusel -->
+  <script>
+    // Datos de los cuidadores
+    const caregivers = [
+      {
+        name: "María González",
+        rating: 4.9,
+        reviews: 128,
+        species: "Perros y Gatos",
+        image: "🐕",
+        available: true,
+        price: "$15/hr"
+      },
+      {
+        name: "Carlos Rodríguez",
+        rating: 4.7,
+        reviews: 95,
+        species: "Solo Perros",
+        image: "🐱",
+        available: true,
+        price: "$12/hr"
+      },
+      {
+        name: "Laura Martínez",
+        rating: 4.8,
+        reviews: 156,
+        species: "Todos los animales",
+        image: "🐰",
+        available: false,
+        price: "$18/hr"
+      },
+      {
+        name: "José Pérez",
+        rating: 4.6,
+        reviews: 78,
+        species: "Perros",
+        image: "🐦",
+        available: true,
+        price: "$14/hr"
+      },
+      {
+        name: "Ana López",
+        rating: 4.9,
+        reviews: 203,
+        species: "Gatos",
+        image: "🐟",
+        available: true,
+        price: "$16/hr"
+      },
+      {
+        name: "Pedro Sánchez",
+        rating: 4.5,
+        reviews: 67,
+        species: "Perros grandes",
+        image: "🐴",
+        available: true,
+        price: "$13/hr"
+      }
+    ];
+
+    // Estado del carrusel
+    let currentIndex = 0;
+    const cardsPerView = 2; // Versión móvil: 1, desktop: 2+
+
+    // Renderizar cards
+    function renderCards() {
+      const cardsContainer = document.getElementById('caregiverCards');
+      const indicatorsContainer = document.getElementById('carouselIndicators');
+      
+      cardsContainer.innerHTML = '';
+      indicatorsContainer.innerHTML = '';
+      
+      caregivers.forEach((caregiver, index) => {
+        const isActive = index === currentIndex;
+        
+        // Card
+        const card = document.createElement('div');
+        card.className = `caregiver-card${isActive ? ' active' : ''}`;
+        card.innerHTML = `
+          <div class="caregiver-image">${caregiver.image}</div>
+          <div class="caregiver-info">
+            <h3>${caregiver.name}</h3>
+            <p>${caregiver.species}</p>
+          </div>
+          <div class="caregiver-rating">
+            <span class="rating-stars">${'★'.repeat(Math.floor(caregiver.rating))}</span>
+            <span>${caregiver.rating.toFixed(1)}</span>
+            <span>${caregiver.reviews} eval.</span>
+          </div>
+          <p>${caregiver.price}${!caregiver.available ? ' (No disponible)' : ''}</p>
+        `;
+        
+        card.addEventListener('click', () => goToIndex(index));
+        cardsContainer.appendChild(card);
+        
+        // Indicador
+        const indicator = document.createElement('div');
+        indicator.className = 'indicator${isActive ? ' active' : ''}';
+        indicator.dataset.index = index;
+        indicator.addEventListener('click', () => goToIndex(index));
+        indicatorsContainer.appendChild(indicator);
+      });
+      
+      updateButtonState();
+    }
+
+    // Navegar al índice
+    function goToIndex(index) {
+      currentIndex = Math.max(0, Math.min(index, caregivers.length - 1));
+      renderCards();
+    }
+
+    // Siguiente
+    function nextCard() {
+      goToIndex(currentIndex + 1);
+    }
+
+    // Anterior
+    function prevCard() {
+      goToIndex(currentIndex - 1);
+    }
+
+    // Actualizar estado de botones
+    function updateButtonState() {
+      const prevBtn = document.querySelector('.carousel-btn:first-child');
+      const nextBtn = document.querySelector('.carousel-btn:last-child');
+      
+      if (prevBtn) {
+        prevBtn.disabled = currentIndex <= 0;
+      }
+      if (nextBtn) {
+        nextBtn.disabled = currentIndex >= caregivers.length - 1;
+      }
+    }
+
+    // Inicializar al cargar
+    document.addEventListener('DOMContentLoaded', renderCards);
+  </script>
+
+</body>
+</html>

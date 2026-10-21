@@ -1,0 +1,171 @@
+.pagina {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--espaciado-5) var(--espaciado-4) var(--espaciado-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-3);
+}
+
+.volver {
+  align-self: flex-start;
+  color: var(--color-bosque-suave);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.volver:hover {
+  text-decoration: underline;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-5);
+}
+
+.titulo {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--color-bosque);
+}
+
+.subtitulo {
+  color: var(--color-texto-suave);
+}
+
+.seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-3);
+  margin: 0;
+  padding: var(--espaciado-4);
+  border: 1px solid var(--color-linea-suave);
+  border-radius: var(--radio-grande);
+  background-color: var(--color-superficie);
+  box-shadow: var(--sombra-suave);
+  min-width: 0;
+}
+
+.etiqueta {
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--color-bosque);
+  padding: 0;
+}
+
+.ayuda {
+  font-size: 0.85rem;
+  color: var(--color-texto-suave);
+  font-weight: 400;
+}
+
+.areaTexto {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+  font: inherit;
+  resize: vertical;
+}
+
+.areaTexto:focus {
+  outline: none;
+  border-color: var(--color-primario);
+  box-shadow: 0 0 0 3px var(--color-primario-claro);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaciado-2);
+}
+
+.chip,
+.chipDia {
+  border: 1px solid var(--color-borde);
+  background-color: var(--color-superficie);
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--color-texto);
+  cursor: pointer;
+}
+
+.chip {
+  padding: 8px 16px;
+}
+
+.chipDia {
+  width: 40px;
+  height: 40px;
+}
+
+.chipActivo {
+  background-color: var(--color-naranja);
+  border-color: var(--color-naranja);
+  color: var(--color-superficie);
+}
+
+.chip:focus-visible,
+.chipDia:focus-visible {
+  outline: 3px solid var(--color-secundario-claro);
+  outline-offset: 2px;
+}
+
+.precios {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--espaciado-3);
+}
+
+.dosColumnas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--espaciado-3);
+}
+
+.casilla {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--espaciado-3);
+  padding: var(--espaciado-4);
+  border-radius: var(--radio-grande);
+  background-color: var(--color-beige);
+  cursor: pointer;
+}
+
+.casilla input {
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: var(--color-bosque-suave);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaciado-3);
+  align-items: center;
+}
+
+.error {
+  color: var(--color-error);
+  font-size: 0.85rem;
+}
+
+.exito {
+  color: var(--color-exito);
+  font-weight: 700;
+}
+
+@media (max-width: 600px) {
+  .dosColumnas {
+    grid-template-columns: 1fr;
+  }
+
+  .titulo {
+    font-size: 1.5rem;
+  }
+}

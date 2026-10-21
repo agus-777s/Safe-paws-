@@ -19,7 +19,7 @@ export async function registrarse(datos: DatosRegistro) {
     email: datos.correo,
     password: datos.contrasena,
     options: {
-      data: { nombre: datos.nombre },
+      data: { nombre: datos.nombre, registro_pendiente: datos.borrador ?? null },
     },
   })
   if (error) throw error

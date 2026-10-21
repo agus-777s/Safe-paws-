@@ -26,7 +26,7 @@ export default function PuertaPerfil() {
     return <Navigate to="/iniciar-sesion" replace />
   }
 
-  if (!perfilCompleto) {
+  if (!perfilCompleto && !perfilCargando) {
     return <Navigate to="/bienvenida" replace />
   }
 

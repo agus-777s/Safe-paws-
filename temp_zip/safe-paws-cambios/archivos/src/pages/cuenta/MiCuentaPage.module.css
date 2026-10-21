@@ -1,0 +1,254 @@
+.pagina {
+  max-width: 720px;
+  padding-block: var(--espaciado-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-5);
+}
+
+.titulo {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--color-bosque);
+}
+
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-4);
+  border-radius: var(--radio-grande);
+}
+
+.identidad {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-4);
+}
+
+.identidadTexto {
+  min-width: 0;
+}
+
+.avatar {
+  position: relative;
+  flex-shrink: 0;
+  width: 88px;
+  height: 88px;
+  padding: 0;
+  border: 3px solid var(--color-bosque-claro);
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: var(--color-beige);
+  color: var(--color-bosque);
+  font-size: 1.6rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar:focus-visible {
+  outline: 3px solid var(--color-naranja);
+  outline-offset: 2px;
+}
+
+.avatar:disabled {
+  cursor: wait;
+}
+
+.avatarEditar {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 2px 0 4px;
+  background-color: rgb(21 66 18 / 0.7);
+  color: #fff;
+  font-size: 0.85rem;
+  display: flex;
+  justify-content: center;
+}
+
+.oculto {
+  display: none;
+}
+
+.nombre {
+  font-size: 1.3rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.suave {
+  color: var(--color-texto-suave);
+  overflow-wrap: anywhere;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-3);
+}
+
+.fila {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--espaciado-3);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-1);
+}
+
+.etiqueta {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.area {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  font: inherit;
+  resize: vertical;
+}
+
+.area:focus {
+  outline: none;
+  border-color: var(--color-primario);
+  box-shadow: 0 0 0 3px var(--color-primario-claro);
+}
+
+.error {
+  color: var(--color-error);
+  font-size: 0.88rem;
+}
+
+.exito {
+  color: var(--color-exito);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.tarjetaRol {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--espaciado-3);
+  border-radius: var(--radio-grande);
+  background-color: var(--color-beige);
+  border-color: var(--color-bosque-fondo);
+}
+
+.etiquetaRol {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-naranja-oscuro);
+}
+
+.rol {
+  font-weight: 800;
+  color: var(--color-bosque);
+}
+
+.subtitulo {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--color-bosque);
+  margin-bottom: var(--espaciado-3);
+}
+
+.accesos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--espaciado-3);
+}
+
+.acceso {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  height: 100%;
+  padding: var(--espaciado-4);
+  border: 1px solid var(--color-linea-suave);
+  border-radius: var(--radio-mediano);
+  background-color: var(--color-superficie);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.acceso:hover {
+  border-color: var(--color-bosque-claro);
+  transform: translateY(-2px);
+}
+
+.acceso:focus-visible {
+  outline: 3px solid var(--color-bosque-claro);
+  outline-offset: 2px;
+}
+
+.accesoIcono {
+  font-size: 1.5rem;
+  margin-bottom: var(--espaciado-1);
+}
+
+.accesoTitulo {
+  font-weight: 800;
+  color: var(--color-bosque);
+}
+
+.accesoDescripcion {
+  font-size: 0.82rem;
+  color: var(--color-texto-suave);
+}
+
+.acciones {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--espaciado-2);
+}
+
+@media (max-width: 768px) {
+  .pagina {
+    padding-block: var(--espaciado-5);
+  }
+
+  .titulo {
+    font-size: 1.6rem;
+  }
+
+  .accesos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
+  .fila {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .acceso {
+    transition: none;
+  }
+}

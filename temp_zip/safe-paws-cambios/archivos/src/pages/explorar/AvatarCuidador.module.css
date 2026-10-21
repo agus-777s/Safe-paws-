@@ -1,0 +1,21 @@
+.avatar {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: grid;
+  place-items: center;
+  background: var(--color-bosque-fondo);
+  color: var(--color-bosque);
+  font-weight: 800;
+  font-size: 1.1rem;
+  border: 2px solid var(--color-superficie);
+  box-shadow: var(--sombra-suave);
+}
+
+.grande {
+  width: 96px;
+  height: 96px;
+  font-size: 1.8rem;
+}

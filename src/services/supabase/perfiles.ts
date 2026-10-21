@@ -8,6 +8,7 @@ interface FilaPerfil {
   descripcion: string | null
   telefono: string | null
   rol: string | null
+  avatar_url: string | null
   mascotas: unknown
   datos_cuidador: unknown
   onboarding_completo: boolean | null
@@ -21,6 +22,7 @@ function filaAPerfil(fila: FilaPerfil): Perfil {
     descripcion: fila.descripcion ?? '',
     telefono: fila.telefono ?? '',
     rol: (fila.rol as Perfil['rol']) ?? null,
+    avatarUrl: fila.avatar_url ?? null,
     mascotas: Array.isArray(fila.mascotas) ? (fila.mascotas as Perfil['mascotas']) : [],
     datosCuidador: (fila.datos_cuidador as Perfil['datosCuidador']) ?? null,
     onboardingCompleto: fila.onboarding_completo ?? false,
@@ -48,6 +50,7 @@ export async function guardarPerfil(perfil: Perfil): Promise<void> {
       descripcion: perfil.descripcion,
       telefono: perfil.telefono,
       rol: perfil.rol,
+      avatar_url: perfil.avatarUrl,
       mascotas: perfil.mascotas,
       datos_cuidador: perfil.datosCuidador,
       onboarding_completo: perfil.onboardingCompleto,
@@ -57,12 +60,27 @@ export async function guardarPerfil(perfil: Perfil): Promise<void> {
   if (error) throw error
 }
 
+/** Marca la bienvenida como vista; crea la fila si el perfil aún no existe. */
 export async function completarOnboarding(idUsuario: string): Promise<void> {
-  try {
-    await supabase.from('perfiles').update({ onboarding_completo: true }).eq('id', idUsuario)
-  } catch {
-    // No bloquea la navegación si la tabla aún no existe.
-  }
+  const { error } = await supabase
+    .from('perfiles')
+    .upsert({ id: idUsuario, onboarding_completo: true }, { onConflict: 'id' })
+  if (error) throw error
+}
+
+export async function actualizarDatosPerfil(
+  idUsuario: string,
+  cambios: Partial<Pick<Perfil, 'nombre' | 'apellido' | 'descripcion' | 'telefono' | 'rol' | 'avatarUrl'>>,
+): Promise<void> {
+  const fila: Record<string, unknown> = {}
+  if (cambios.nombre !== undefined) fila.nombre = cambios.nombre.trim()
+  if (cambios.apellido !== undefined) fila.apellido = cambios.apellido.trim()
+  if (cambios.descripcion !== undefined) fila.descripcion = cambios.descripcion.trim()
+  if (cambios.telefono !== undefined) fila.telefono = cambios.telefono.trim()
+  if (cambios.rol !== undefined) fila.rol = cambios.rol
+  if (cambios.avatarUrl !== undefined) fila.avatar_url = cambios.avatarUrl
+  const { error } = await supabase.from('perfiles').update(fila).eq('id', idUsuario)
+  if (error) throw error
 }
 
 const CLAVE_PENDIENTE = 'safe-paws-perfil-pendiente'

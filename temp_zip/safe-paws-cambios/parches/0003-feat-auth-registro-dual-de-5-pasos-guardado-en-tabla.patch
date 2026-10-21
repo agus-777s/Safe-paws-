@@ -1,0 +1,1892 @@
+From 29af80425f837a8493ec3041d354207d4c2f61f8 Mon Sep 17 00:00:00 2001
+From: ramon328 <ramon@dropout.cl>
+Date: Tue, 20 Oct 2026 15:05:04 -0300
+Subject: [PATCH 3/8] feat(auth): registro dual de 5 pasos guardado en tablas y
+ Storage
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Rol 'ambos' (perfil dual) con pasos de mascotas y servicios
+- El wizard guarda perfil, mascotas, cuidador y fotos en Supabase
+- Borrador en metadatos de la cuenta para confirmar el correo en otro dispositivo
+- El filtro de perfil usa el perfil remoto, no la marca local
+- No redirige antes de mostrar la confirmación del registro
+- hay_bloqueo solo responde a las personas involucradas
+- Corrige los errores de lint previos (MapaCobertura, PuertaPerfil)
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+---
+ src/components/mapa/MapaCobertura.tsx         |  46 +---
+ src/components/mapa/geocodificacion.ts        |  42 +++
+ src/components/routing/PuertaPerfil.tsx       |  17 +-
+ src/context/AuthProvider.tsx                  |  79 +++---
+ src/pages/auth/RegistroPage.tsx               | 105 ++++---
+ src/services/supabase/auth.ts                 |   2 +-
+ src/services/supabase/chat.ts                 | 185 +++++++++++++
+ src/services/supabase/cuidadores.ts           | 140 ++++++++++
+ src/services/supabase/fotos.ts                |  37 +++
+ src/services/supabase/mascotas.ts             | 147 ++++++++++
+ src/services/supabase/perfiles.ts             |  28 +-
+ src/services/supabase/registro.ts             |  99 +++++++
+ src/services/supabase/reservas.ts             | 257 ++++++++++++++++++
+ src/types/auth.ts                             |   2 +
+ src/types/dominio.ts                          | 178 ++++++++++++
+ src/types/perfil.ts                           |  20 +-
+ .../20261020120000_plataforma_safe_paws.sql   |  20 +-
+ tests/db/migraciones.test.ts                  |  18 +-
+ 18 files changed, 1293 insertions(+), 129 deletions(-)
+ create mode 100644 src/components/mapa/geocodificacion.ts
+ create mode 100644 src/services/supabase/chat.ts
+ create mode 100644 src/services/supabase/cuidadores.ts
+ create mode 100644 src/services/supabase/fotos.ts
+ create mode 100644 src/services/supabase/mascotas.ts
+ create mode 100644 src/services/supabase/registro.ts
+ create mode 100644 src/services/supabase/reservas.ts
+ create mode 100644 src/types/dominio.ts
+
+diff --git a/src/components/mapa/MapaCobertura.tsx b/src/components/mapa/MapaCobertura.tsx
+index a20d4d0..b52d8a3 100644
+--- a/src/components/mapa/MapaCobertura.tsx
++++ b/src/components/mapa/MapaCobertura.tsx
+@@ -1,6 +1,7 @@
+ import { useEffect, useRef } from 'react'
+ import L from 'leaflet'
+ import 'leaflet/dist/leaflet.css'
++import { geocodificarInverso } from './geocodificacion'
+ import estilo from './MapaCobertura.module.css'
+ 
+ export interface UbicacionMapa {
+@@ -18,47 +19,6 @@ interface MapaCoberturaProps {
+   alCambiarUbicacion: (ubicacion: UbicacionMapa) => void
+ }
+ 
+-export const SANTIAGO = { lat: -33.4489, lng: -70.6693 }
+-
+-function etiquetaCorta(direccion: Record<string, string | undefined>, lat: number, lng: number) {
+-  const comuna =
+-    direccion.suburb ?? direccion.neighbourhood ?? direccion.city_district ?? direccion.city ?? direccion.town ?? direccion.village
+-  const ciudad = direccion.city ?? direccion.town ?? direccion.state
+-  if (comuna && ciudad && comuna !== ciudad) return `${comuna}, ${ciudad}`
+-  if (comuna) return comuna
+-  if (ciudad) return ciudad
+-  return `${lat.toFixed(4)}, ${lng.toFixed(4)}`
+-}
+-
+-async function geocodificarInverso(lat: number, lng: number): Promise<string> {
+-  try {
+-    const respuesta = await fetch(
+-      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=es&zoom=14`,
+-    )
+-    if (!respuesta.ok) throw new Error('sin respuesta')
+-    const datos = (await respuesta.json()) as { address?: Record<string, string | undefined> }
+-    if (!datos.address) throw new Error('sin dirección')
+-    return etiquetaCorta(datos.address, lat, lng)
+-  } catch {
+-    return `${lat.toFixed(4)}, ${lng.toFixed(4)}`
+-  }
+-}
+-
+-/** Busca una comuna/dirección dentro de Chile y devuelve sus coordenadas. */
+-export async function geocodificarTexto(texto: string): Promise<{ lat: number; lng: number } | null> {
+-  try {
+-    const respuesta = await fetch(
+-      `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(texto)}&countrycodes=cl&limit=1&accept-language=es`,
+-    )
+-    if (!respuesta.ok) return null
+-    const datos = (await respuesta.json()) as Array<{ lat: string; lon: string }>
+-    if (datos.length === 0) return null
+-    return { lat: Number(datos[0].lat), lng: Number(datos[0].lon) }
+-  } catch {
+-    return null
+-  }
+-}
+-
+ const ICONO_PIN = L.divIcon({
+   className: estilo.pin,
+   html: '<span aria-hidden="true">📍</span>',
+@@ -72,7 +32,9 @@ export default function MapaCobertura({ radioKm, centroInicial, destino, alCambi
+   const marcadorRef = useRef<L.Marker | null>(null)
+   const circuloRef = useRef<L.Circle | null>(null)
+   const cambioRef = useRef(alCambiarUbicacion)
+-  cambioRef.current = alCambiarUbicacion
++  useEffect(() => {
++    cambioRef.current = alCambiarUbicacion
++  }, [alCambiarUbicacion])
+   const destinoPrevioRef = useRef<{ lat: number; lng: number } | null>(null)
+ 
+   useEffect(() => {
+diff --git a/src/components/mapa/geocodificacion.ts b/src/components/mapa/geocodificacion.ts
+new file mode 100644
+index 0000000..baa7f43
+--- /dev/null
++++ b/src/components/mapa/geocodificacion.ts
+@@ -0,0 +1,42 @@
++/** Geocodificación con Nominatim (OpenStreetMap), limitada a Chile. */
++
++export const SANTIAGO = { lat: -33.4489, lng: -70.6693 }
++
++function etiquetaCorta(direccion: Record<string, string | undefined>, lat: number, lng: number) {
++  const comuna =
++    direccion.suburb ?? direccion.neighbourhood ?? direccion.city_district ?? direccion.city ?? direccion.town ?? direccion.village
++  const ciudad = direccion.city ?? direccion.town ?? direccion.state
++  if (comuna && ciudad && comuna !== ciudad) return `${comuna}, ${ciudad}`
++  if (comuna) return comuna
++  if (ciudad) return ciudad
++  return `${lat.toFixed(4)}, ${lng.toFixed(4)}`
++}
++
++export async function geocodificarInverso(lat: number, lng: number): Promise<string> {
++  try {
++    const respuesta = await fetch(
++      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=es&zoom=14`,
++    )
++    if (!respuesta.ok) throw new Error('sin respuesta')
++    const datos = (await respuesta.json()) as { address?: Record<string, string | undefined> }
++    if (!datos.address) throw new Error('sin dirección')
++    return etiquetaCorta(datos.address, lat, lng)
++  } catch {
++    return `${lat.toFixed(4)}, ${lng.toFixed(4)}`
++  }
++}
++
++/** Busca una comuna/dirección dentro de Chile y devuelve sus coordenadas. */
++export async function geocodificarTexto(texto: string): Promise<{ lat: number; lng: number } | null> {
++  try {
++    const respuesta = await fetch(
++      `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(texto)}&countrycodes=cl&limit=1&accept-language=es`,
++    )
++    if (!respuesta.ok) return null
++    const datos = (await respuesta.json()) as Array<{ lat: string; lon: string }>
++    if (datos.length === 0) return null
++    return { lat: Number(datos[0].lat), lng: Number(datos[0].lon) }
++  } catch {
++    return null
++  }
++}
+diff --git a/src/components/routing/PuertaPerfil.tsx b/src/components/routing/PuertaPerfil.tsx
+index d0a58ab..27ffc55 100644
+--- a/src/components/routing/PuertaPerfil.tsx
++++ b/src/components/routing/PuertaPerfil.tsx
+@@ -2,6 +2,14 @@ import { Navigate, Outlet } from 'react-router-dom'
+ import Spinner from '@/components/ui/Spinner'
+ import { useAuth } from '@/hooks/useAuth'
+ 
++function bienvenidaVista(): boolean {
++  try {
++    return window.localStorage.getItem('safe-paws-bienvenida-vista') === '1'
++  } catch {
++    return false
++  }
++}
++
+ /**
+  * Puerta de bienvenida: un usuario autenticado que aún no completa el
+  * onboarding es redirigido a /bienvenida antes de entrar a la app.
+@@ -16,14 +24,7 @@ export default function PuertaPerfil() {
+   }
+ 
+   if (!usuario) {
+-    try {
+-      if (window.localStorage.getItem('safe-paws-bienvenida-vista') !== '1') {
+-        return <Navigate to="/bienvenida" replace />
+-      }
+-    } catch {
+-      return <Navigate to="/bienvenida" replace />
+-    }
+-    return <Navigate to="/iniciar-sesion" replace />
++    return <Navigate to={bienvenidaVista() ? '/iniciar-sesion' : '/bienvenida'} replace />
+   }
+ 
+   if (!perfilCompleto) {
+diff --git a/src/context/AuthProvider.tsx b/src/context/AuthProvider.tsx
+index 791eebc..9a1477f 100644
+--- a/src/context/AuthProvider.tsx
++++ b/src/context/AuthProvider.tsx
+@@ -4,46 +4,69 @@ import type { User } from '@supabase/supabase-js'
+ import type { DatosRegistro } from '@/types/auth'
+ import type { Perfil } from '@/types/perfil'
+ import * as authService from '@/services/supabase/auth'
+-import { guardarPerfil, obtenerPerfil, obtenerYLimpiarPerfilPendiente } from '@/services/supabase/perfiles'
++import { completarOnboarding, obtenerPerfil, obtenerYLimpiarPerfilPendiente } from '@/services/supabase/perfiles'
++import { guardarRegistro } from '@/services/supabase/registro'
+ import { supabase } from '@/services/supabase/client'
+ import { AuthContext } from './AuthContext'
+ import type { AuthContextValue } from './AuthContext'
+ 
+ const CLAVE_BIENVENIDA = 'safe-paws-bienvenida-vista'
+ 
++function bienvenidaVista(): boolean {
++  try {
++    return window.localStorage.getItem(CLAVE_BIENVENIDA) === '1'
++  } catch {
++    return false
++  }
++}
++
++type BorradorRegistro = Omit<Perfil, 'id' | 'onboardingCompleto'>
++
++/** Borrador del wizard: primero el de esta pestaña (con fotos), si no, el de los metadatos de la cuenta. */
++function borradorPendiente(usuario: User): BorradorRegistro | null {
++  const local = obtenerYLimpiarPerfilPendiente()
++  if (local) return local
++  const remoto = usuario.user_metadata?.registro_pendiente as BorradorRegistro | null | undefined
++  return remoto && typeof remoto === 'object' && 'nombre' in remoto ? remoto : null
++}
++
+ export function AuthProvider({ children }: { children: ReactNode }) {
+   const [usuario, setUsuario] = useState<User | null>(null)
+   const [sesionCargando, setSesionCargando] = useState(true)
+   const [perfil, setPerfil] = useState<Perfil | null>(null)
+   const [perfilCargando, setPerfilCargando] = useState(false)
+ 
+-  const cargarPerfil = useCallback(async (idUsuario: string | null) => {
+-    if (!idUsuario) {
++  const cargarPerfil = useCallback(async (actual: User | null) => {
++    if (!actual) {
+       setPerfil(null)
+       setPerfilCargando(false)
+       return
+     }
+     setPerfilCargando(true)
+     try {
+-      const existente = await obtenerPerfil(idUsuario)
+-      if (existente) {
+-        setPerfil(existente)
+-        return
++      let existente = await obtenerPerfil(actual.id)
++      if (!existente) {
++        // Registro con confirmación por correo: el borrador se guarda ahora con sesión activa.
++        const pendiente = borradorPendiente(actual)
++        if (pendiente) {
++          try {
++            await guardarRegistro({ ...pendiente, id: actual.id, onboardingCompleto: false })
++            existente = await obtenerPerfil(actual.id)
++          } catch {
++            existente = null
++          }
++        }
+       }
+-      // Si el usuario se registró con confirmación por correo, su borrador
+-      // de perfil quedó pendiente: se guarda ahora con su sesión activa.
+-      const pendiente = obtenerYLimpiarPerfilPendiente()
+-      if (pendiente) {
+-        const completo: Perfil = { ...pendiente, id: idUsuario, onboardingCompleto: false }
++      // Si ya vio la bienvenida antes de iniciar sesión, no se la mostramos de nuevo.
++      if (existente && !existente.onboardingCompleto && bienvenidaVista()) {
+         try {
+-          await guardarPerfil(completo)
+-          setPerfil(completo)
++          await completarOnboarding(actual.id)
++          existente = { ...existente, onboardingCompleto: true }
+         } catch {
+-          setPerfil(null)
++          // Se reintentará al terminar la bienvenida.
+         }
+-        return
+       }
+-      setPerfil(null)
++      setPerfil(existente)
+     } finally {
+       setPerfilCargando(false)
+     }
+@@ -57,15 +80,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
+       const actual = sesion?.user ?? null
+       setUsuario(actual)
+       setSesionCargando(false)
+-      void cargarPerfil(actual?.id ?? null)
++      void cargarPerfil(actual)
+     })
+ 
+-    const suscripcion = supabase.auth.onAuthStateChange((_evento, sesion) => {
++    const suscripcion = supabase.auth.onAuthStateChange((evento, sesion) => {
+       if (!activo) return
+       const actual = sesion?.user ?? null
+       setUsuario(actual)
+       setSesionCargando(false)
+-      void cargarPerfil(actual?.id ?? null)
++      // El refresco de token no cambia el perfil: evita recargas innecesarias.
++      if (evento === 'TOKEN_REFRESHED') return
++      void cargarPerfil(actual)
+     })
+ 
+     return () => {
+@@ -93,19 +118,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
+ 
+   const refrescarPerfil = useCallback(async () => {
+     const sesion = await authService.obtenerSesion()
+-    await cargarPerfil(sesion?.user?.id ?? null)
++    await cargarPerfil(sesion?.user ?? null)
+   }, [cargarPerfil])
+ 
+-  const perfilCompleto = useMemo(() => {
+-    if (typeof window !== 'undefined') {
+-      try {
+-        if (window.localStorage.getItem(CLAVE_BIENVENIDA) === '1') return true
+-      } catch {
+-        // Ignorar: el gate seguirá usando el perfil remoto.
+-      }
+-    }
+-    return Boolean(perfil?.onboardingCompleto)
+-  }, [perfil])
++  // Con sesión, manda el perfil remoto (la marca local solo sirve antes de iniciar sesión).
++  const perfilCompleto = Boolean(perfil?.onboardingCompleto)
+ 
+   const valor = useMemo<AuthContextValue>(
+     () => ({
+diff --git a/src/pages/auth/RegistroPage.tsx b/src/pages/auth/RegistroPage.tsx
+index 6ccd31e..472ea45 100644
+--- a/src/pages/auth/RegistroPage.tsx
++++ b/src/pages/auth/RegistroPage.tsx
+@@ -5,10 +5,12 @@ import BarraProgreso from '@/components/ui/BarraProgreso'
+ import Button from '@/components/ui/Button'
+ import CampoTexto from '@/components/ui/CampoTexto'
+ import Logo from '@/components/ui/Logo'
+-import MapaCobertura, { SANTIAGO, geocodificarTexto } from '@/components/mapa/MapaCobertura'
++import MapaCobertura from '@/components/mapa/MapaCobertura'
++import { SANTIAGO, geocodificarTexto } from '@/components/mapa/geocodificacion'
+ import type { UbicacionMapa } from '@/components/mapa/MapaCobertura'
+ import { useAuth } from '@/hooks/useAuth'
+-import { guardarPerfil, guardarPerfilPendiente } from '@/services/supabase/perfiles'
++import { guardarPerfilPendiente } from '@/services/supabase/perfiles'
++import { guardarRegistro } from '@/services/supabase/registro'
+ import type { DatosCuidador, DatosMascota, ModoMascota, Perfil, RolUsuario, TipoMascota } from '@/types/perfil'
+ import {
+   COMUNAS_SANTIAGO,
+@@ -27,7 +29,6 @@ import { mensajeError } from '@/utils/errores'
+ import { clases } from '@/utils/clases'
+ import estilo from './RegistroPage.module.css'
+ 
+-const TOTAL_PASOS = 4
+ const MAX_MASCOTAS = 3
+ const MAX_FOTOS_MASCOTA = 3
+ 
+@@ -107,21 +108,36 @@ export default function RegistroPage() {
+   const inputFotoPerfil = useRef<HTMLInputElement>(null)
+   const inputFotoMascota = useRef<HTMLInputElement>(null)
+   const inputVerificacion = useRef<HTMLInputElement>(null)
++  // Evita que la sesión recién creada saque al usuario antes de ver la confirmación.
++  const registrando = useRef(false)
+ 
+   useEffect(() => {
+-    if (!sesionCargando && usuario) {
++    if (!sesionCargando && usuario && !registrando.current) {
+       navigate('/', { replace: true })
+     }
+   }, [sesionCargando, usuario, navigate])
+ 
+-  const esDueno = rol === 'dueno'
+-  const esCuidador = rol === 'cuidador'
++  const esDueno = rol === 'dueno' || rol === 'ambos'
++  const esCuidador = rol === 'cuidador' || rol === 'ambos'
++  const esAmbos = rol === 'ambos'
++  // Perfil dual (PRD): 5 pasos; dueño o cuidador: 4 pasos.
++  const TOTAL_PASOS = esAmbos ? 5 : 4
++  type Etapa = 'datos' | 'rol' | 'mascotas' | 'servicios' | 'confirmacion'
++  function etapaDe(numero: number): Etapa {
++    if (numero === 1) return 'datos'
++    if (numero === 2) return 'rol'
++    if (numero === TOTAL_PASOS) return 'confirmacion'
++    if (esAmbos) return numero === 3 ? 'mascotas' : 'servicios'
++    return esCuidador ? 'servicios' : 'mascotas'
++  }
++  const etapa = etapaDe(paso)
+ 
+   const titulosPaso: Record<number, string> = {
+     1: 'Datos Personales',
+     2: 'Elige tu rol',
+-    3: esCuidador ? 'Servicios' : 'Detalles de Mascota',
+-    4: 'Confirmación',
++    3: etapaDe(3) === 'servicios' ? 'Servicios' : 'Detalles de Mascota',
++    4: etapaDe(4) === 'servicios' ? 'Servicios' : 'Confirmación',
++    5: 'Confirmación',
+   }
+ 
+   /* ---------- Mascotas (solo Dueño) ---------- */
+@@ -222,19 +238,19 @@ export default function RegistroPage() {
+       }
+       return null
+     }
+-    if (actual === 2) {
++    const etapaActual = etapaDe(actual)
++    if (etapaActual === 'rol') {
+       if (!rol) return 'Elige un rol para personalizar tu experiencia.'
+       return null
+     }
+-    if (actual === 3) {
+-      if (esDueno) {
+-        const incompleta = mascotas.some((m) => !m.nombre.trim() || !m.tipo)
+-        if (incompleta) return 'Cada mascota necesita al menos un nombre y un tipo.'
+-      }
+-      if (esCuidador) {
+-        if (cuidador.servicios.length === 0) return 'Selecciona al menos un servicio que quieras ofrecer.'
+-        if (!cuidador.zona.trim()) return 'Indica la zona donde ofreces tus servicios.'
+-      }
++    if (etapaActual === 'mascotas') {
++      const incompleta = mascotas.some((m) => !m.nombre.trim() || !m.tipo)
++      if (incompleta) return 'Cada mascota necesita al menos un nombre y un tipo.'
++      return null
++    }
++    if (etapaActual === 'servicios') {
++      if (cuidador.servicios.length === 0) return 'Selecciona al menos un servicio que quieras ofrecer.'
++      if (!cuidador.zona.trim()) return 'Indica la zona donde ofreces tus servicios.'
+       return null
+     }
+     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) return 'Escribe un correo electrónico válido.'
+@@ -286,22 +302,22 @@ export default function RegistroPage() {
+   }
+ 
+   async function finalizar() {
+-    const problema = validarPaso(4)
++    const problema = validarPaso(TOTAL_PASOS)
+     if (problema) {
+       setError(problema)
+       return
+     }
+     setError(null)
+     setEnviando(true)
++    registrando.current = true
+     try {
+-      const resultado = await registrarse({ nombre: `${nombre.trim()} ${apellido.trim()}`.trim(), correo, contrasena })
+-      const perfil: Perfil = {
+-        id: resultado.idUsuario ?? '',
++      const datosPerfil: Omit<Perfil, 'id'> = {
+         nombre: nombre.trim(),
+         apellido: apellido.trim(),
+         descripcion: descripcion.trim(),
+         telefono: telefono.trim(),
+         rol,
++        avatarUrl: fotoPerfil,
+         mascotas: esDueno ? mascotas : [],
+         datosCuidador: esCuidador
+           ? {
+@@ -315,9 +331,23 @@ export default function RegistroPage() {
+           : null,
+         onboardingCompleto: false,
+       }
++      // Borrador sin fotos en los metadatos de la cuenta: si confirma el correo en otro
++      // dispositivo, el perfil se completa igual al iniciar sesión.
++      const borrador = {
++        ...datosPerfil,
++        avatarUrl: null,
++        mascotas: datosPerfil.mascotas.map((m) => ({ ...m, fotos: [] })),
++      }
++      const resultado = await registrarse({
++        nombre: `${nombre.trim()} ${apellido.trim()}`.trim(),
++        correo,
++        contrasena,
++        borrador,
++      })
++      const perfil: Perfil = { ...datosPerfil, id: resultado.idUsuario ?? '' }
+       if (resultado.sesionIniciada && resultado.idUsuario) {
+         try {
+-          await guardarPerfil(perfil)
++          await guardarRegistro(perfil)
+           await refrescarPerfil()
+         } catch {
+           guardarPerfilPendiente(perfil)
+@@ -329,6 +359,7 @@ export default function RegistroPage() {
+       if (esCuidador) lanzarConfeti()
+       window.scrollTo({ top: 0 })
+     } catch (e) {
++      registrando.current = false
+       setError(mensajeError(e))
+     } finally {
+       setEnviando(false)
+@@ -486,7 +517,7 @@ export default function RegistroPage() {
+           </section>
+         )}
+ 
+-        {paso === 3 && esDueno && (
++        {etapa === 'mascotas' && (
+           <section className={estilo.tarjeta} aria-label="Registrar mascota">
+             <p className={estilo.tituloSeccion}>Registrar Mascota</p>
+             <p className={estilo.subtituloSeccion}>
+@@ -644,7 +675,7 @@ export default function RegistroPage() {
+           </section>
+         )}
+ 
+-        {paso === 3 && esCuidador && (
++        {etapa === 'servicios' && (
+           <section className={estilo.tarjeta} aria-label="Configurar servicios">
+             <p className={estilo.tituloSeccion}>Configura tus servicios</p>
+             <p className={estilo.subtituloSeccion}>
+@@ -831,7 +862,7 @@ export default function RegistroPage() {
+           </section>
+         )}
+ 
+-        {paso === 4 && esDueno && (
++        {etapa === 'confirmacion' && esDueno && (
+           <section aria-label="Confirmación de dueño">
+             <p className={estilo.tituloSeccion}>Revisa tus datos</p>
+             <div className={estilo.resumen}>
+@@ -897,11 +928,21 @@ export default function RegistroPage() {
+                   Acepto la <strong>Política de privacidad</strong> y el tratamiento de mis datos.
+                 </span>
+               </label>
++              {esCuidador && (
++                <label className={estilo.casilla}>
++                  <input
++                    type="checkbox"
++                    checked={aceptaComunicaciones}
++                    onChange={(e) => setAceptaComunicaciones(e.target.checked)}
++                  />
++                  <span>Acepto recibir comunicaciones y alertas importantes.</span>
++                </label>
++              )}
+             </div>
+           </section>
+         )}
+ 
+-        {paso === 4 && esCuidador && (
++        {etapa === 'confirmacion' && !esDueno && (
+           <section aria-label="Confirmación de cuidador">
+             <p className={estilo.tituloSeccion}>Revisa tus datos</p>
+             <div className={estilo.resumen}>
+@@ -991,7 +1032,7 @@ export default function RegistroPage() {
+               disabled={paso === 2 && !rol}
+               onClick={avanzar}
+             >
+-              {paso === 3 && esCuidador ? 'Continuar al último paso →' : 'Continuar →'}
++              {paso === TOTAL_PASOS - 1 ? 'Continuar al último paso →' : 'Continuar →'}
+             </Button>
+           ) : (
+             <Button
+@@ -1065,12 +1106,14 @@ export default function RegistroPage() {
+             </div>
+             <h2 className={estilo.exitoTitulo}>¡Bienvenido a Safe Paws!</h2>
+             <p className={estilo.exitoTexto}>
+-              {esDueno
++              {esAmbos
++                ? `Tu perfil dual está listo: ya puedes reservar para ${primeraMascota?.nombre || 'tu mascota'} y recibir solicitudes como cuidador.`
++                : esDueno
+                 ? `El perfil de ${primeraMascota?.nombre || 'tu mascota'} se ha creado exitosamente. Ya puedes empezar a disfrutar de todos nuestros servicios.`
+                 : 'Tu perfil de cuidador ha sido creado con éxito. ¡Estamos felices de tenerte con nosotros!'}
+             </p>
+-            <Button tamanio="grande" className={estilo.boton} enlace="/">
+-              ¡Listo! Ir al Inicio →
++            <Button tamanio="grande" className={estilo.boton} enlace={esCuidador ? '/panel' : '/explorar'}>
++              {esCuidador ? '¡Listo! Ir a mi panel →' : '¡Listo! Buscar cuidadores →'}
+             </Button>
+           </div>
+         </div>
+diff --git a/src/services/supabase/auth.ts b/src/services/supabase/auth.ts
+index 2725793..6999fbd 100644
+--- a/src/services/supabase/auth.ts
++++ b/src/services/supabase/auth.ts
+@@ -19,7 +19,7 @@ export async function registrarse(datos: DatosRegistro) {
+     email: datos.correo,
+     password: datos.contrasena,
+     options: {
+-      data: { nombre: datos.nombre },
++      data: { nombre: datos.nombre, registro_pendiente: datos.borrador ?? null },
+     },
+   })
+   if (error) throw error
+diff --git a/src/services/supabase/chat.ts b/src/services/supabase/chat.ts
+new file mode 100644
+index 0000000..5844ce0
+--- /dev/null
++++ b/src/services/supabase/chat.ts
+@@ -0,0 +1,185 @@
++import type { RealtimeChannel } from '@supabase/supabase-js'
++import { supabase } from './client'
++import type { Conversacion, Mensaje, PerfilPublico } from '@/types/dominio'
++
++interface FilaConversacion {
++  id: string
++  participante_a: string
++  participante_b: string
++  ultimo_mensaje_en: string | null
++}
++
++interface FilaMensaje {
++  id: string
++  conversacion_id: string
++  autor_id: string
++  texto: string
++  foto_url: string | null
++  leido_en: string | null
++  creado_en: string
++}
++
++interface FilaPerfilPublico {
++  id: string
++  nombre: string
++  apellido: string
++  avatar_url: string | null
++  comuna: string
++}
++
++function filaAConversacion(fila: FilaConversacion): Conversacion {
++  return {
++    id: fila.id,
++    participanteA: fila.participante_a,
++    participanteB: fila.participante_b,
++    ultimoMensajeEn: fila.ultimo_mensaje_en,
++  }
++}
++
++function filaAMensaje(fila: FilaMensaje): Mensaje {
++  return {
++    id: fila.id,
++    conversacionId: fila.conversacion_id,
++    autorId: fila.autor_id,
++    texto: fila.texto,
++    fotoUrl: fila.foto_url,
++    leidoEn: fila.leido_en,
++    creadoEn: fila.creado_en,
++  }
++}
++
++export function otroParticipante(conversacion: Conversacion, miId: string): string {
++  return conversacion.participanteA === miId ? conversacion.participanteB : conversacion.participanteA
++}
++
++/** Nombre y foto de otras personas (solo las que la base permite ver). */
++export async function obtenerPerfilesPublicos(ids: string[]): Promise<Map<string, PerfilPublico>> {
++  const unicos = [...new Set(ids)].filter(Boolean)
++  const mapa = new Map<string, PerfilPublico>()
++  if (unicos.length === 0) return mapa
++  const { data, error } = await supabase.rpc('perfiles_publicos', { p_ids: unicos })
++  if (error) throw error
++  for (const fila of (data ?? []) as FilaPerfilPublico[]) {
++    mapa.set(fila.id, {
++      id: fila.id,
++      nombre: fila.nombre,
++      apellido: fila.apellido,
++      avatarUrl: fila.avatar_url,
++      comuna: fila.comuna,
++    })
++  }
++  return mapa
++}
++
++export async function abrirConversacion(otroId: string): Promise<string> {
++  const { data, error } = await supabase.rpc('abrir_conversacion', { p_otro: otroId })
++  if (error) throw error
++  return data as string
++}
++
++export async function listarConversaciones(): Promise<Conversacion[]> {
++  const { data, error } = await supabase
++    .from('conversaciones')
++    .select('*')
++    .order('ultimo_mensaje_en', { ascending: false, nullsFirst: false })
++  if (error) throw error
++  return (data as FilaConversacion[]).map(filaAConversacion)
++}
++
++export async function obtenerConversacion(id: string): Promise<Conversacion | null> {
++  const { data, error } = await supabase.from('conversaciones').select('*').eq('id', id).maybeSingle()
++  if (error) throw error
++  return data ? filaAConversacion(data as FilaConversacion) : null
++}
++
++export async function listarMensajes(conversacionId: string): Promise<Mensaje[]> {
++  const { data, error } = await supabase
++    .from('mensajes')
++    .select('*')
++    .eq('conversacion_id', conversacionId)
++    .order('creado_en', { ascending: true })
++  if (error) throw error
++  return (data as FilaMensaje[]).map(filaAMensaje)
++}
++
++export async function enviarMensaje(
++  conversacionId: string,
++  contenido: { texto?: string; fotoUrl?: string | null },
++): Promise<Mensaje> {
++  const { data, error } = await supabase
++    .from('mensajes')
++    .insert({ conversacion_id: conversacionId, texto: contenido.texto?.trim() ?? '', foto_url: contenido.fotoUrl ?? null })
++    .select('*')
++    .single()
++  if (error) throw error
++  return filaAMensaje(data as FilaMensaje)
++}
++
++export async function marcarLeidos(conversacionId: string): Promise<void> {
++  const { error } = await supabase.rpc('marcar_mensajes_leidos', { p_conversacion: conversacionId })
++  if (error) throw error
++}
++
++export function escucharMensajes(conversacionId: string, alMensaje: (mensaje: Mensaje) => void): RealtimeChannel {
++  return supabase
++    .channel(`mensajes-${conversacionId}`)
++    .on(
++      'postgres_changes',
++      { event: 'INSERT', schema: 'public', table: 'mensajes', filter: `conversacion_id=eq.${conversacionId}` },
++      (carga) => alMensaje(filaAMensaje(carga.new as FilaMensaje)),
++    )
++    .subscribe()
++}
++
++// ---------------------------------------------------------------------------
++// Seguridad: silenciar, bloquear, reportar
++// ---------------------------------------------------------------------------
++
++export async function obtenerSilenciada(conversacionId: string, miId: string): Promise<boolean> {
++  const { data, error } = await supabase
++    .from('ajustes_conversacion')
++    .select('silenciada')
++    .eq('conversacion_id', conversacionId)
++    .eq('usuario_id', miId)
++    .maybeSingle()
++  if (error) throw error
++  return Boolean((data as { silenciada: boolean } | null)?.silenciada)
++}
++
++export async function cambiarSilenciada(conversacionId: string, miId: string, silenciada: boolean): Promise<void> {
++  const { error } = await supabase
++    .from('ajustes_conversacion')
++    .upsert({ conversacion_id: conversacionId, usuario_id: miId, silenciada }, { onConflict: 'conversacion_id,usuario_id' })
++  if (error) throw error
++}
++
++/** Estado de bloqueo entre yo y otra persona, en ambos sentidos. */
++export async function obtenerBloqueo(miId: string, otroId: string): Promise<{ yoBloquee: boolean; meBloquearon: boolean }> {
++  const { data, error } = await supabase
++    .from('bloqueos')
++    .select('bloqueador_id, bloqueado_id')
++    .or(`and(bloqueador_id.eq.${miId},bloqueado_id.eq.${otroId}),and(bloqueador_id.eq.${otroId},bloqueado_id.eq.${miId})`)
++  if (error) throw error
++  const filas = (data ?? []) as Array<{ bloqueador_id: string; bloqueado_id: string }>
++  return {
++    yoBloquee: filas.some((f) => f.bloqueador_id === miId),
++    meBloquearon: filas.some((f) => f.bloqueador_id === otroId),
++  }
++}
++
++export async function bloquear(otroId: string): Promise<void> {
++  const { error } = await supabase.from('bloqueos').insert({ bloqueado_id: otroId })
++  if (error && error.code !== '23505') throw error
++}
++
++export async function desbloquear(miId: string, otroId: string): Promise<void> {
++  const { error } = await supabase.from('bloqueos').delete().eq('bloqueador_id', miId).eq('bloqueado_id', otroId)
++  if (error) throw error
++}
++
++export async function reportar(otroId: string, motivo: string, conversacionId?: string): Promise<void> {
++  const { error } = await supabase
++    .from('reportes')
++    .insert({ reportado_id: otroId, motivo: motivo.trim(), conversacion_id: conversacionId ?? null })
++  if (error) throw error
++}
+diff --git a/src/services/supabase/cuidadores.ts b/src/services/supabase/cuidadores.ts
+new file mode 100644
+index 0000000..0f7dd99
+--- /dev/null
++++ b/src/services/supabase/cuidadores.ts
+@@ -0,0 +1,140 @@
++import { supabase } from './client'
++import type { CuidadorPublico, PerfilCuidador, ResumenCuidador, Servicio } from '@/types/dominio'
++
++interface FilaCuidadorBase {
++  id: string
++  bio: string
++  servicios: Servicio[]
++  precio_paseo: number | null
++  precio_hospedaje: number | null
++  precio_guarderia: number | null
++  precio_visita: number | null
++  comuna: string
++  latitud: number | null
++  longitud: number | null
++  radio_km: number
++  dias: number[]
++  hora_inicio: string
++  hora_fin: string
++  verificado: boolean
++  calificacion: number | string
++  total_resenas: number
++}
++
++interface FilaCuidador extends FilaCuidadorBase {
++  activo: boolean
++}
++
++interface FilaCuidadorPublico extends FilaCuidadorBase {
++  nombre: string
++  apellido: string
++  avatar_url: string | null
++  descripcion: string
++}
++
++interface FilaResumen {
++  ganancias_mes: number
++  ganancias_total: number
++  servicios_completados: number
++  solicitudes_pendientes: number
++  proximos_servicios: number
++  calificacion: number | string
++  total_resenas: number
++}
++
++const hora = (valor: string) => valor.slice(0, 5)
++
++function camposBase(fila: FilaCuidadorBase): Omit<PerfilCuidador, 'activo'> {
++  return {
++    id: fila.id,
++    bio: fila.bio,
++    servicios: fila.servicios ?? [],
++    precios: {
++      paseo: fila.precio_paseo,
++      hospedaje: fila.precio_hospedaje,
++      guarderia: fila.precio_guarderia,
++      visita: fila.precio_visita,
++    },
++    comuna: fila.comuna,
++    latitud: fila.latitud,
++    longitud: fila.longitud,
++    radioKm: fila.radio_km,
++    dias: fila.dias ?? [],
++    horaInicio: hora(fila.hora_inicio),
++    horaFin: hora(fila.hora_fin),
++    verificado: fila.verificado,
++    calificacion: Number(fila.calificacion),
++    totalResenas: fila.total_resenas,
++  }
++}
++
++function filaAPublico(fila: FilaCuidadorPublico): CuidadorPublico {
++  return {
++    ...camposBase(fila),
++    nombre: fila.nombre,
++    apellido: fila.apellido,
++    avatarUrl: fila.avatar_url,
++    descripcion: fila.descripcion,
++  }
++}
++
++export async function listarCuidadores(servicio?: Servicio | null): Promise<CuidadorPublico[]> {
++  const { data, error } = await supabase.rpc('listar_cuidadores', { p_servicio: servicio ?? null })
++  if (error) throw error
++  return ((data ?? []) as FilaCuidadorPublico[]).map(filaAPublico)
++}
++
++export async function obtenerCuidadorPublico(id: string): Promise<CuidadorPublico | null> {
++  const lista = await listarCuidadores(null)
++  return lista.find((cuidador) => cuidador.id === id) ?? null
++}
++
++/** Perfil profesional propio (incluye inactivo). */
++export async function obtenerMiPerfilCuidador(id: string): Promise<PerfilCuidador | null> {
++  const { data, error } = await supabase.from('cuidadores').select('*').eq('id', id).maybeSingle()
++  if (error) throw error
++  if (!data) return null
++  const fila = data as FilaCuidador
++  return { ...camposBase(fila), activo: fila.activo }
++}
++
++export type DatosPerfilCuidador = Omit<PerfilCuidador, 'id' | 'verificado' | 'calificacion' | 'totalResenas'>
++
++export async function guardarPerfilCuidador(id: string, datos: DatosPerfilCuidador): Promise<void> {
++  const { error } = await supabase.from('cuidadores').upsert(
++    {
++      id,
++      bio: datos.bio.trim(),
++      servicios: datos.servicios,
++      precio_paseo: datos.precios.paseo,
++      precio_hospedaje: datos.precios.hospedaje,
++      precio_guarderia: datos.precios.guarderia,
++      precio_visita: datos.precios.visita,
++      comuna: datos.comuna.trim(),
++      latitud: datos.latitud,
++      longitud: datos.longitud,
++      radio_km: datos.radioKm,
++      dias: datos.dias,
++      hora_inicio: datos.horaInicio,
++      hora_fin: datos.horaFin,
++      activo: datos.activo,
++    },
++    { onConflict: 'id' },
++  )
++  if (error) throw error
++}
++
++export async function obtenerResumenCuidador(): Promise<ResumenCuidador> {
++  const { data, error } = await supabase.rpc('resumen_cuidador')
++  if (error) throw error
++  const fila = ((data ?? []) as FilaResumen[])[0]
++  return {
++    gananciasMes: fila?.ganancias_mes ?? 0,
++    gananciasTotal: fila?.ganancias_total ?? 0,
++    serviciosCompletados: fila?.servicios_completados ?? 0,
++    solicitudesPendientes: fila?.solicitudes_pendientes ?? 0,
++    proximosServicios: fila?.proximos_servicios ?? 0,
++    calificacion: Number(fila?.calificacion ?? 0),
++    totalResenas: fila?.total_resenas ?? 0,
++  }
++}
+diff --git a/src/services/supabase/fotos.ts b/src/services/supabase/fotos.ts
+new file mode 100644
+index 0000000..fd70906
+--- /dev/null
++++ b/src/services/supabase/fotos.ts
+@@ -0,0 +1,37 @@
++import { supabase } from './client'
++
++const BUCKET = 'fotos'
++const LADO_MAXIMO = 1280
++
++/** Reduce la imagen en el navegador antes de subirla (ahorra datos móviles). */
++async function reducirImagen(archivo: File): Promise<Blob> {
++  if (!archivo.type.startsWith('image/') || typeof createImageBitmap === 'undefined') return archivo
++  try {
++    const mapa = await createImageBitmap(archivo)
++    const escala = Math.min(1, LADO_MAXIMO / Math.max(mapa.width, mapa.height))
++    if (escala === 1 && archivo.size < 1_000_000) return archivo
++    const lienzo = document.createElement('canvas')
++    lienzo.width = Math.round(mapa.width * escala)
++    lienzo.height = Math.round(mapa.height * escala)
++    lienzo.getContext('2d')?.drawImage(mapa, 0, 0, lienzo.width, lienzo.height)
++    return await new Promise<Blob>((resolver) =>
++      lienzo.toBlob((blob) => resolver(blob ?? archivo), 'image/jpeg', 0.85),
++    )
++  } catch {
++    return archivo
++  }
++}
++
++/**
++ * Sube una foto a `fotos/<usuario>/<carpeta>/<uuid>.jpg` y devuelve su URL pública.
++ * La política de Storage solo permite escribir en la carpeta del propio usuario.
++ */
++export async function subirFoto(usuarioId: string, carpeta: string, archivo: File): Promise<string> {
++  const contenido = await reducirImagen(archivo)
++  const tipo = contenido.type || 'image/jpeg'
++  const extension = tipo === 'image/png' ? 'png' : tipo === 'image/webp' ? 'webp' : 'jpg'
++  const ruta = `${usuarioId}/${carpeta}/${crypto.randomUUID()}.${extension}`
++  const { error } = await supabase.storage.from(BUCKET).upload(ruta, contenido, { contentType: tipo, upsert: false })
++  if (error) throw error
++  return supabase.storage.from(BUCKET).getPublicUrl(ruta).data.publicUrl
++}
+diff --git a/src/services/supabase/mascotas.ts b/src/services/supabase/mascotas.ts
+new file mode 100644
+index 0000000..ba888e1
+--- /dev/null
++++ b/src/services/supabase/mascotas.ts
+@@ -0,0 +1,147 @@
++import { supabase } from './client'
++import type { Mascota, NuevaMascota, RecordatorioSalud, TipoRecordatorio } from '@/types/dominio'
++import type { TipoMascota } from '@/types/perfil'
++
++interface FilaMascota {
++  id: string
++  dueno_id: string
++  nombre: string
++  tipo: TipoMascota
++  raza: string
++  edad_anos: number | string | null
++  peso_kg: number | string | null
++  es_grupo: boolean
++  cantidad: number
++  fotos: string[] | null
++  dieta: string
++  notas_salud: string
++}
++
++interface FilaRecordatorio {
++  id: string
++  mascota_id: string
++  titulo: string
++  tipo: TipoRecordatorio
++  fecha: string
++  completado: boolean
++}
++
++const aNumero = (valor: number | string | null) => (valor == null ? null : Number(valor))
++
++function filaAMascota(fila: FilaMascota): Mascota {
++  return {
++    id: fila.id,
++    duenoId: fila.dueno_id,
++    nombre: fila.nombre,
++    tipo: fila.tipo,
++    raza: fila.raza,
++    edadAnos: aNumero(fila.edad_anos),
++    pesoKg: aNumero(fila.peso_kg),
++    esGrupo: fila.es_grupo,
++    cantidad: fila.cantidad,
++    fotos: fila.fotos ?? [],
++    dieta: fila.dieta,
++    notasSalud: fila.notas_salud,
++  }
++}
++
++function mascotaAFila(mascota: Partial<NuevaMascota>) {
++  return {
++    nombre: mascota.nombre?.trim(),
++    tipo: mascota.tipo,
++    raza: mascota.raza?.trim(),
++    edad_anos: mascota.edadAnos,
++    peso_kg: mascota.pesoKg,
++    es_grupo: mascota.esGrupo,
++    cantidad: mascota.cantidad,
++    fotos: mascota.fotos,
++    dieta: mascota.dieta,
++    notas_salud: mascota.notasSalud,
++  }
++}
++
++function filaARecordatorio(fila: FilaRecordatorio): RecordatorioSalud {
++  return {
++    id: fila.id,
++    mascotaId: fila.mascota_id,
++    titulo: fila.titulo,
++    tipo: fila.tipo,
++    fecha: fila.fecha,
++    completado: fila.completado,
++  }
++}
++
++/** Mascotas visibles: las propias y, para cuidadores, las que tienen a cargo. */
++export async function listarMascotas(duenoId: string): Promise<Mascota[]> {
++  const { data, error } = await supabase
++    .from('mascotas')
++    .select('*')
++    .eq('dueno_id', duenoId)
++    .order('creado_en', { ascending: true })
++  if (error) throw error
++  return (data as FilaMascota[]).map(filaAMascota)
++}
++
++export async function obtenerMascota(id: string): Promise<Mascota | null> {
++  const { data, error } = await supabase.from('mascotas').select('*').eq('id', id).maybeSingle()
++  if (error) throw error
++  return data ? filaAMascota(data as FilaMascota) : null
++}
++
++export async function crearMascota(duenoId: string, mascota: NuevaMascota): Promise<Mascota> {
++  const { data, error } = await supabase
++    .from('mascotas')
++    .insert({ ...mascotaAFila(mascota), dueno_id: duenoId })
++    .select('*')
++    .single()
++  if (error) throw error
++  return filaAMascota(data as FilaMascota)
++}
++
++export async function actualizarMascota(id: string, cambios: Partial<NuevaMascota>): Promise<Mascota> {
++  const { data, error } = await supabase.from('mascotas').update(mascotaAFila(cambios)).eq('id', id).select('*').single()
++  if (error) throw error
++  return filaAMascota(data as FilaMascota)
++}
++
++export async function eliminarMascota(id: string): Promise<void> {
++  const { error } = await supabase.from('mascotas').delete().eq('id', id)
++  if (error) throw error
++}
++
++export async function listarRecordatorios(mascotaId: string): Promise<RecordatorioSalud[]> {
++  const { data, error } = await supabase
++    .from('recordatorios_salud')
++    .select('*')
++    .eq('mascota_id', mascotaId)
++    .order('fecha', { ascending: true })
++  if (error) throw error
++  return (data as FilaRecordatorio[]).map(filaARecordatorio)
++}
++
++export async function crearRecordatorio(
++  recordatorio: Omit<RecordatorioSalud, 'id' | 'completado'>,
++): Promise<RecordatorioSalud> {
++  const { data, error } = await supabase
++    .from('recordatorios_salud')
++    .insert({
++      mascota_id: recordatorio.mascotaId,
++      titulo: recordatorio.titulo.trim(),
++      tipo: recordatorio.tipo,
++      fecha: recordatorio.fecha,
++    })
++    .select('*')
++    .single()
++  if (error) throw error
++  return filaARecordatorio(data as FilaRecordatorio)
++}
++
++export async function marcarRecordatorio(id: string, completado: boolean): Promise<void> {
++  const { error } = await supabase.from('recordatorios_salud').update({ completado }).eq('id', id)
++  if (error) throw error
++}
++
++export async function eliminarRecordatorio(id: string): Promise<void> {
++  const { error } = await supabase.from('recordatorios_salud').delete().eq('id', id)
++  if (error) throw error
++}
+diff --git a/src/services/supabase/perfiles.ts b/src/services/supabase/perfiles.ts
+index de07c50..a14d031 100644
+--- a/src/services/supabase/perfiles.ts
++++ b/src/services/supabase/perfiles.ts
+@@ -8,6 +8,7 @@ interface FilaPerfil {
+   descripcion: string | null
+   telefono: string | null
+   rol: string | null
++  avatar_url: string | null
+   mascotas: unknown
+   datos_cuidador: unknown
+   onboarding_completo: boolean | null
+@@ -21,6 +22,7 @@ function filaAPerfil(fila: FilaPerfil): Perfil {
+     descripcion: fila.descripcion ?? '',
+     telefono: fila.telefono ?? '',
+     rol: (fila.rol as Perfil['rol']) ?? null,
++    avatarUrl: fila.avatar_url ?? null,
+     mascotas: Array.isArray(fila.mascotas) ? (fila.mascotas as Perfil['mascotas']) : [],
+     datosCuidador: (fila.datos_cuidador as Perfil['datosCuidador']) ?? null,
+     onboardingCompleto: fila.onboarding_completo ?? false,
+@@ -48,6 +50,7 @@ export async function guardarPerfil(perfil: Perfil): Promise<void> {
+       descripcion: perfil.descripcion,
+       telefono: perfil.telefono,
+       rol: perfil.rol,
++      avatar_url: perfil.avatarUrl,
+       mascotas: perfil.mascotas,
+       datos_cuidador: perfil.datosCuidador,
+       onboarding_completo: perfil.onboardingCompleto,
+@@ -57,12 +60,27 @@ export async function guardarPerfil(perfil: Perfil): Promise<void> {
+   if (error) throw error
+ }
+ 
++/** Marca la bienvenida como vista; crea la fila si el perfil aún no existe. */
+ export async function completarOnboarding(idUsuario: string): Promise<void> {
+-  try {
+-    await supabase.from('perfiles').update({ onboarding_completo: true }).eq('id', idUsuario)
+-  } catch {
+-    // No bloquea la navegación si la tabla aún no existe.
+-  }
++  const { error } = await supabase
++    .from('perfiles')
++    .upsert({ id: idUsuario, onboarding_completo: true }, { onConflict: 'id' })
++  if (error) throw error
++}
++
++export async function actualizarDatosPerfil(
++  idUsuario: string,
++  cambios: Partial<Pick<Perfil, 'nombre' | 'apellido' | 'descripcion' | 'telefono' | 'rol' | 'avatarUrl'>>,
++): Promise<void> {
++  const fila: Record<string, unknown> = {}
++  if (cambios.nombre !== undefined) fila.nombre = cambios.nombre.trim()
++  if (cambios.apellido !== undefined) fila.apellido = cambios.apellido.trim()
++  if (cambios.descripcion !== undefined) fila.descripcion = cambios.descripcion.trim()
++  if (cambios.telefono !== undefined) fila.telefono = cambios.telefono.trim()
++  if (cambios.rol !== undefined) fila.rol = cambios.rol
++  if (cambios.avatarUrl !== undefined) fila.avatar_url = cambios.avatarUrl
++  const { error } = await supabase.from('perfiles').update(fila).eq('id', idUsuario)
++  if (error) throw error
+ }
+ 
+ const CLAVE_PENDIENTE = 'safe-paws-perfil-pendiente'
+diff --git a/src/services/supabase/registro.ts b/src/services/supabase/registro.ts
+new file mode 100644
+index 0000000..c96d50b
+--- /dev/null
++++ b/src/services/supabase/registro.ts
+@@ -0,0 +1,99 @@
++import { guardarPerfilCuidador } from './cuidadores'
++import { subirFoto } from './fotos'
++import { crearMascota, listarMascotas } from './mascotas'
++import { guardarPerfil } from './perfiles'
++import type { Servicio } from '@/types/dominio'
++import type { DatosCuidador, DatosMascota, Perfil, TipoMascota } from '@/types/perfil'
++import { DIAS_SEMANA, esRolCuidador, esRolDueno } from '@/types/perfil'
++
++const SERVICIO_DESDE_REGISTRO: Record<string, Servicio> = {
++  Paseo: 'paseo',
++  Hospedaje: 'hospedaje',
++  Guardería: 'guarderia',
++  'Visita a domicilio': 'visita',
++}
++
++function aEntero(texto: string): number | null {
++  const limpio = texto.replace(/[^\d]/g, '')
++  return limpio ? Number(limpio) : null
++}
++
++function aDecimal(texto: string): number | null {
++  const limpio = texto.trim().replace(',', '.')
++  if (!limpio) return null
++  const numero = Number(limpio)
++  return Number.isFinite(numero) && numero >= 0 ? numero : null
++}
++
++/** El wizard pide precio por paseo y por noche; visita y guardería parten de esos valores. */
++export function datosCuidadorDesdeRegistro(datos: DatosCuidador) {
++  const servicios = [...new Set(datos.servicios.map((s) => SERVICIO_DESDE_REGISTRO[s]).filter(Boolean))]
++  const precioPaseo = aEntero(datos.precioPaseo)
++  const precioNoche = aEntero(datos.precioNoche)
++  return {
++    bio: '',
++    servicios,
++    precios: {
++      paseo: servicios.includes('paseo') ? (precioPaseo ?? precioNoche) : null,
++      hospedaje: servicios.includes('hospedaje') ? (precioNoche ?? precioPaseo) : null,
++      guarderia: servicios.includes('guarderia') ? (precioNoche ?? precioPaseo) : null,
++      visita: servicios.includes('visita') ? (precioPaseo ?? precioNoche) : null,
++    },
++    comuna: datos.zona,
++    latitud: datos.latitud,
++    longitud: datos.longitud,
++    radioKm: datos.radioKm,
++    dias: datos.dias.map((dia) => DIAS_SEMANA.indexOf(dia)).filter((indice) => indice >= 0),
++    horaInicio: datos.horaInicio,
++    horaFin: datos.horaFin,
++    activo: true,
++  }
++}
++
++async function dataUrlAArchivo(dataUrl: string, nombre: string): Promise<File> {
++  const blob = await (await fetch(dataUrl)).blob()
++  return new File([blob], nombre, { type: blob.type || 'image/jpeg' })
++}
++
++async function subirSiEsDataUrl(usuarioId: string, carpeta: string, valor: string): Promise<string> {
++  if (!valor.startsWith('data:')) return valor
++  return subirFoto(usuarioId, carpeta, await dataUrlAArchivo(valor, 'foto.jpg'))
++}
++
++function mascotaValida(mascota: DatosMascota): mascota is DatosMascota & { tipo: TipoMascota } {
++  return Boolean(mascota.nombre.trim() && mascota.tipo)
++}
++
++/**
++ * Persiste el resultado del wizard: perfil, mascotas (tabla) y perfil de cuidador.
++ * Se puede repetir sin duplicar mascotas.
++ */
++export async function guardarRegistro(perfil: Perfil): Promise<void> {
++  const avatarUrl = perfil.avatarUrl ? await subirSiEsDataUrl(perfil.id, 'perfil', perfil.avatarUrl) : null
++  await guardarPerfil({ ...perfil, avatarUrl, mascotas: [] })
++
++  if (esRolDueno(perfil.rol)) {
++    const existentes = await listarMascotas(perfil.id)
++    if (existentes.length === 0) {
++      for (const mascota of perfil.mascotas.filter(mascotaValida)) {
++        const fotos = await Promise.all(mascota.fotos.map((foto) => subirSiEsDataUrl(perfil.id, 'mascotas', foto)))
++        await crearMascota(perfil.id, {
++          nombre: mascota.nombre,
++          tipo: mascota.tipo,
++          raza: mascota.raza,
++          edadAnos: aDecimal(mascota.edadAnos),
++          pesoKg: aDecimal(mascota.pesoKg),
++          esGrupo: mascota.modo === 'grupo',
++          cantidad: mascota.modo === 'grupo' ? (aEntero(mascota.cantidad ?? '') ?? 1) : 1,
++          fotos,
++          dieta: '',
++          notasSalud: '',
++        })
++      }
++    }
++  }
++
++  if (esRolCuidador(perfil.rol) && perfil.datosCuidador) {
++    await guardarPerfilCuidador(perfil.id, datosCuidadorDesdeRegistro(perfil.datosCuidador))
++  }
++}
+diff --git a/src/services/supabase/reservas.ts b/src/services/supabase/reservas.ts
+new file mode 100644
+index 0000000..a375968
+--- /dev/null
++++ b/src/services/supabase/reservas.ts
+@@ -0,0 +1,257 @@
++import type { RealtimeChannel } from '@supabase/supabase-js'
++import { supabase } from './client'
++import type {
++  ActualizacionServicio,
++  EstadoReserva,
++  NuevaReserva,
++  PuntoSeguimiento,
++  Resena,
++  Reserva,
++  Servicio,
++  TipoActualizacion,
++} from '@/types/dominio'
++
++interface FilaReserva {
++  id: string
++  dueno_id: string
++  cuidador_id: string
++  mascota_id: string
++  servicio: Servicio
++  inicio: string
++  fin: string
++  precio_total: number
++  estado: EstadoReserva
++  notas: string
++  iniciado_en: string | null
++  finalizado_en: string | null
++  creado_en: string
++}
++
++interface FilaPunto {
++  id: number
++  reserva_id: string
++  latitud: number
++  longitud: number
++  registrado_en: string
++}
++
++interface FilaActualizacion {
++  id: string
++  reserva_id: string
++  autor_id: string
++  tipo: TipoActualizacion
++  texto: string
++  foto_url: string | null
++  creado_en: string
++}
++
++interface FilaResena {
++  id: string
++  reserva_id: string
++  autor_id: string
++  cuidador_id: string
++  puntuacion: number
++  comentario: string
++  creado_en: string
++}
++
++export function filaAReserva(fila: FilaReserva): Reserva {
++  return {
++    id: fila.id,
++    duenoId: fila.dueno_id,
++    cuidadorId: fila.cuidador_id,
++    mascotaId: fila.mascota_id,
++    servicio: fila.servicio,
++    inicio: fila.inicio,
++    fin: fila.fin,
++    precioTotal: fila.precio_total,
++    estado: fila.estado,
++    notas: fila.notas,
++    iniciadoEn: fila.iniciado_en,
++    finalizadoEn: fila.finalizado_en,
++    creadoEn: fila.creado_en,
++  }
++}
++
++function filaAPunto(fila: FilaPunto): PuntoSeguimiento {
++  return {
++    id: fila.id,
++    reservaId: fila.reserva_id,
++    latitud: fila.latitud,
++    longitud: fila.longitud,
++    registradoEn: fila.registrado_en,
++  }
++}
++
++function filaAActualizacion(fila: FilaActualizacion): ActualizacionServicio {
++  return {
++    id: fila.id,
++    reservaId: fila.reserva_id,
++    autorId: fila.autor_id,
++    tipo: fila.tipo,
++    texto: fila.texto,
++    fotoUrl: fila.foto_url,
++    creadoEn: fila.creado_en,
++  }
++}
++
++function filaAResena(fila: FilaResena): Resena {
++  return {
++    id: fila.id,
++    reservaId: fila.reserva_id,
++    autorId: fila.autor_id,
++    cuidadorId: fila.cuidador_id,
++    puntuacion: fila.puntuacion,
++    comentario: fila.comentario,
++    creadoEn: fila.creado_en,
++  }
++}
++
++/** Reservas donde participo (como dueño o como cuidador), más recientes primero. */
++export async function listarMisReservas(): Promise<Reserva[]> {
++  const { data, error } = await supabase.from('reservas').select('*').order('inicio', { ascending: false })
++  if (error) throw error
++  return (data as FilaReserva[]).map(filaAReserva)
++}
++
++export async function obtenerReserva(id: string): Promise<Reserva | null> {
++  const { data, error } = await supabase.from('reservas').select('*').eq('id', id).maybeSingle()
++  if (error) throw error
++  return data ? filaAReserva(data as FilaReserva) : null
++}
++
++/** El precio y el estado inicial los fija el servidor. */
++export async function crearReserva(duenoId: string, reserva: NuevaReserva): Promise<Reserva> {
++  const { data, error } = await supabase
++    .from('reservas')
++    .insert({
++      dueno_id: duenoId,
++      cuidador_id: reserva.cuidadorId,
++      mascota_id: reserva.mascotaId,
++      servicio: reserva.servicio,
++      inicio: reserva.inicio.toISOString(),
++      fin: reserva.fin.toISOString(),
++      notas: reserva.notas.trim(),
++    })
++    .select('*')
++    .single()
++  if (error) throw error
++  return filaAReserva(data as FilaReserva)
++}
++
++export async function cambiarEstadoReserva(id: string, estado: EstadoReserva): Promise<Reserva> {
++  const { data, error } = await supabase.rpc('cambiar_estado_reserva', { p_reserva: id, p_estado: estado })
++  if (error) throw error
++  return filaAReserva(data as FilaReserva)
++}
++
++export function escucharReserva(id: string, alCambiar: (reserva: Reserva) => void): RealtimeChannel {
++  return supabase
++    .channel(`reserva-${id}`)
++    .on(
++      'postgres_changes',
++      { event: 'UPDATE', schema: 'public', table: 'reservas', filter: `id=eq.${id}` },
++      (carga) => alCambiar(filaAReserva(carga.new as FilaReserva)),
++    )
++    .subscribe()
++}
++
++// ---------------------------------------------------------------------------
++// Seguimiento en vivo
++// ---------------------------------------------------------------------------
++
++export async function listarPuntos(reservaId: string): Promise<PuntoSeguimiento[]> {
++  const { data, error } = await supabase
++    .from('seguimiento_puntos')
++    .select('*')
++    .eq('reserva_id', reservaId)
++    .order('registrado_en', { ascending: true })
++  if (error) throw error
++  return (data as FilaPunto[]).map(filaAPunto)
++}
++
++export async function registrarPunto(reservaId: string, latitud: number, longitud: number): Promise<void> {
++  const { error } = await supabase.from('seguimiento_puntos').insert({ reserva_id: reservaId, latitud, longitud })
++  if (error) throw error
++}
++
++export async function listarActualizaciones(reservaId: string): Promise<ActualizacionServicio[]> {
++  const { data, error } = await supabase
++    .from('actualizaciones_servicio')
++    .select('*')
++    .eq('reserva_id', reservaId)
++    .order('creado_en', { ascending: true })
++  if (error) throw error
++  return (data as FilaActualizacion[]).map(filaAActualizacion)
++}
++
++export async function publicarActualizacion(
++  reservaId: string,
++  tipo: TipoActualizacion,
++  contenido: { texto?: string; fotoUrl?: string | null } = {},
++): Promise<void> {
++  const { error } = await supabase.from('actualizaciones_servicio').insert({
++    reserva_id: reservaId,
++    tipo,
++    texto: contenido.texto?.trim() ?? '',
++    foto_url: contenido.fotoUrl ?? null,
++  })
++  if (error) throw error
++}
++
++/** Puntos y novedades nuevas de un servicio en curso. */
++export function escucharSeguimiento(
++  reservaId: string,
++  manejadores: {
++    alPunto: (punto: PuntoSeguimiento) => void
++    alActualizacion: (actualizacion: ActualizacionServicio) => void
++  },
++): RealtimeChannel {
++  return supabase
++    .channel(`seguimiento-${reservaId}`)
++    .on(
++      'postgres_changes',
++      { event: 'INSERT', schema: 'public', table: 'seguimiento_puntos', filter: `reserva_id=eq.${reservaId}` },
++      (carga) => manejadores.alPunto(filaAPunto(carga.new as FilaPunto)),
++    )
++    .on(
++      'postgres_changes',
++      { event: 'INSERT', schema: 'public', table: 'actualizaciones_servicio', filter: `reserva_id=eq.${reservaId}` },
++      (carga) => manejadores.alActualizacion(filaAActualizacion(carga.new as FilaActualizacion)),
++    )
++    .subscribe()
++}
++
++// ---------------------------------------------------------------------------
++// Reseñas
++// ---------------------------------------------------------------------------
++
++export async function listarResenasCuidador(cuidadorId: string): Promise<Resena[]> {
++  const { data, error } = await supabase
++    .from('resenas')
++    .select('*')
++    .eq('cuidador_id', cuidadorId)
++    .order('creado_en', { ascending: false })
++  if (error) throw error
++  return (data as FilaResena[]).map(filaAResena)
++}
++
++export async function obtenerResenaDeReserva(reservaId: string): Promise<Resena | null> {
++  const { data, error } = await supabase.from('resenas').select('*').eq('reserva_id', reservaId).maybeSingle()
++  if (error) throw error
++  return data ? filaAResena(data as FilaResena) : null
++}
++
++export async function crearResena(
++  reserva: Pick<Reserva, 'id' | 'cuidadorId'>,
++  puntuacion: number,
++  comentario: string,
++): Promise<void> {
++  const { error } = await supabase.from('resenas').insert({
++    reserva_id: reserva.id,
++    cuidador_id: reserva.cuidadorId,
++    puntuacion,
++    comentario: comentario.trim(),
++  })
++  if (error) throw error
++}
+diff --git a/src/types/auth.ts b/src/types/auth.ts
+index 6a46448..e38df0d 100644
+--- a/src/types/auth.ts
++++ b/src/types/auth.ts
+@@ -2,4 +2,6 @@ export interface DatosRegistro {
+   nombre: string
+   correo: string
+   contrasena: string
++  /** Perfil del wizard (sin fotos) para completar el registro tras confirmar el correo. */
++  borrador?: Record<string, unknown>
+ }
+\ No newline at end of file
+diff --git a/src/types/dominio.ts b/src/types/dominio.ts
+new file mode 100644
+index 0000000..d3357a3
+--- /dev/null
++++ b/src/types/dominio.ts
+@@ -0,0 +1,178 @@
++import type { TipoMascota } from './perfil'
++
++export type Servicio = 'paseo' | 'hospedaje' | 'guarderia' | 'visita'
++
++export const SERVICIOS: Array<{ valor: Servicio; titulo: string; unidad: string; icono: string }> = [
++  { valor: 'paseo', titulo: 'Paseo', unidad: 'por paseo', icono: '🦮' },
++  { valor: 'hospedaje', titulo: 'Hospedaje', unidad: 'por noche', icono: '🏠' },
++  { valor: 'guarderia', titulo: 'Guardería', unidad: 'por día', icono: '☀️' },
++  { valor: 'visita', titulo: 'Visita a domicilio', unidad: 'por visita', icono: '🔑' },
++]
++
++export function tituloServicio(servicio: Servicio): string {
++  return SERVICIOS.find((s) => s.valor === servicio)?.titulo ?? servicio
++}
++
++export interface Mascota {
++  id: string
++  duenoId: string
++  nombre: string
++  tipo: TipoMascota
++  raza: string
++  edadAnos: number | null
++  pesoKg: number | null
++  esGrupo: boolean
++  cantidad: number
++  fotos: string[]
++  dieta: string
++  notasSalud: string
++}
++
++export type NuevaMascota = Omit<Mascota, 'id' | 'duenoId'>
++
++export type TipoRecordatorio = 'vacuna' | 'desparasitacion' | 'medicamento' | 'control' | 'otro'
++
++export const TIPOS_RECORDATORIO: Array<{ valor: TipoRecordatorio; titulo: string }> = [
++  { valor: 'vacuna', titulo: 'Vacuna' },
++  { valor: 'desparasitacion', titulo: 'Desparasitación' },
++  { valor: 'medicamento', titulo: 'Medicamento' },
++  { valor: 'control', titulo: 'Control veterinario' },
++  { valor: 'otro', titulo: 'Otro' },
++]
++
++export interface RecordatorioSalud {
++  id: string
++  mascotaId: string
++  titulo: string
++  tipo: TipoRecordatorio
++  /** Fecha ISO `YYYY-MM-DD`. */
++  fecha: string
++  completado: boolean
++}
++
++export interface PerfilCuidador {
++  id: string
++  bio: string
++  servicios: Servicio[]
++  precios: Record<Servicio, number | null>
++  comuna: string
++  latitud: number | null
++  longitud: number | null
++  radioKm: number
++  /** 0 = domingo … 6 = sábado */
++  dias: number[]
++  horaInicio: string
++  horaFin: string
++  verificado: boolean
++  calificacion: number
++  totalResenas: number
++  activo: boolean
++}
++
++export interface CuidadorPublico extends Omit<PerfilCuidador, 'activo'> {
++  nombre: string
++  apellido: string
++  avatarUrl: string | null
++  descripcion: string
++}
++
++export type EstadoReserva = 'pendiente' | 'aceptada' | 'rechazada' | 'en_curso' | 'completada' | 'cancelada'
++
++export const ETIQUETAS_ESTADO: Record<EstadoReserva, string> = {
++  pendiente: 'Pendiente',
++  aceptada: 'Confirmada',
++  rechazada: 'Rechazada',
++  en_curso: 'En curso',
++  completada: 'Completada',
++  cancelada: 'Cancelada',
++}
++
++export interface Reserva {
++  id: string
++  duenoId: string
++  cuidadorId: string
++  mascotaId: string
++  servicio: Servicio
++  inicio: string
++  fin: string
++  precioTotal: number
++  estado: EstadoReserva
++  notas: string
++  iniciadoEn: string | null
++  finalizadoEn: string | null
++  creadoEn: string
++}
++
++export interface NuevaReserva {
++  cuidadorId: string
++  mascotaId: string
++  servicio: Servicio
++  inicio: Date
++  fin: Date
++  notas: string
++}
++
++export interface PuntoSeguimiento {
++  id: number
++  reservaId: string
++  latitud: number
++  longitud: number
++  registradoEn: string
++}
++
++export type TipoActualizacion = 'foto' | 'nota' | 'emergencia'
++
++export interface ActualizacionServicio {
++  id: string
++  reservaId: string
++  autorId: string
++  tipo: TipoActualizacion
++  texto: string
++  fotoUrl: string | null
++  creadoEn: string
++}
++
++export interface PerfilPublico {
++  id: string
++  nombre: string
++  apellido: string
++  avatarUrl: string | null
++  comuna: string
++}
++
++export interface Conversacion {
++  id: string
++  participanteA: string
++  participanteB: string
++  ultimoMensajeEn: string | null
++}
++
++export interface Mensaje {
++  id: string
++  conversacionId: string
++  autorId: string
++  texto: string
++  fotoUrl: string | null
++  leidoEn: string | null
++  creadoEn: string
++}
++
++export interface Resena {
++  id: string
++  reservaId: string
++  autorId: string
++  cuidadorId: string
++  puntuacion: number
++  comentario: string
++  creadoEn: string
++}
++
++export interface ResumenCuidador {
++  gananciasMes: number
++  gananciasTotal: number
++  serviciosCompletados: number
++  solicitudesPendientes: number
++  proximosServicios: number
++  calificacion: number
++  totalResenas: number
++}
+diff --git a/src/types/perfil.ts b/src/types/perfil.ts
+index a5c04a5..5c8bf7d 100644
+--- a/src/types/perfil.ts
++++ b/src/types/perfil.ts
+@@ -1,4 +1,4 @@
+-export type RolUsuario = 'dueno' | 'cuidador'
++export type RolUsuario = 'dueno' | 'cuidador' | 'ambos'
+ 
+ // Tipos de mascota según Stitch (pantalla 04: Perro, Gato, Ave, Reptil, Acuáticos, Ganadería)
+ export type TipoMascota = 'Perro' | 'Gato' | 'Ave' | 'Reptil' | 'Acuáticos' | 'Ganadería'
+@@ -64,6 +64,8 @@ export interface Perfil {
+   descripcion: string
+   telefono: string
+   rol: RolUsuario | null
++  /** URL pública (Storage) o dataURL mientras el registro está pendiente. */
++  avatarUrl: string | null
+   mascotas: DatosMascota[]
+   datosCuidador: DatosCuidador | null
+   onboardingCompleto: boolean
+@@ -93,8 +95,24 @@ export const ROLES: Array<{
+     imagen: '/stitch/registro/rol-cuidador.svg',
+     imagenAlt: 'Cuidadora paseando a un perro con correa en un parque',
+   },
++  {
++    valor: 'ambos',
++    titulo: 'Perfil dual (Dueño y Cuidador)',
++    descripcion: 'Tengo mascotas y además quiero ofrecer mis servicios a otros dueños.',
++    icono: '🤝',
++    imagen: '/stitch/registro/rol-dueno.jpg',
++    imagenAlt: 'Persona con su perro, lista para cuidar a otras mascotas',
++  },
+ ]
+ 
++export function esRolDueno(rol: RolUsuario | null | undefined): boolean {
++  return rol === 'dueno' || rol === 'ambos'
++}
++
++export function esRolCuidador(rol: RolUsuario | null | undefined): boolean {
++  return rol === 'cuidador' || rol === 'ambos'
++}
++
+ // Servicios según Stitch (pantalla 07: Paseo, Hospedaje, Guardería, Visita a domicilio, Otros)
+ export const SERVICIOS_CUIDADOR = ['Paseo', 'Hospedaje', 'Guardería', 'Visita a domicilio', 'Otros']
+ 
+diff --git a/supabase/migrations/20261020120000_plataforma_safe_paws.sql b/supabase/migrations/20261020120000_plataforma_safe_paws.sql
+index ace3797..a514106 100644
+--- a/supabase/migrations/20261020120000_plataforma_safe_paws.sql
++++ b/supabase/migrations/20261020120000_plataforma_safe_paws.sql
+@@ -279,11 +279,14 @@ stable
+ security definer
+ set search_path = ''
+ as $$
+-  select exists (
+-    select 1 from public.bloqueos b
+-    where (b.bloqueador_id = p_a and b.bloqueado_id = p_b)
+-       or (b.bloqueador_id = p_b and b.bloqueado_id = p_a)
+-  );
++  -- Solo responde si quien pregunta es una de las dos personas: no sirve para
++  -- averiguar bloqueos ajenos. Sin sesión (service_role) devuelve null = sin bloqueo.
++  select (select auth.uid()) in (p_a, p_b)
++    and exists (
++      select 1 from public.bloqueos b
++      where (b.bloqueador_id = p_a and b.bloqueado_id = p_b)
++         or (b.bloqueador_id = p_b and b.bloqueado_id = p_a)
++    );
+ $$;
+ 
+ /** Precio en CLP según el servicio y las fechas. Misma regla que src/utils/precios.ts. */
+@@ -373,7 +376,7 @@ begin
+   if not exists (select 1 from public.mascotas m where m.id = new.mascota_id and m.dueno_id = new.dueno_id) then
+     raise exception 'La mascota no pertenece a quien reserva.' using errcode = 'P0001';
+   end if;
+-  if public.hay_bloqueo(new.dueno_id, new.cuidador_id) then
++  if coalesce(public.hay_bloqueo(new.dueno_id, new.cuidador_id), false) then
+     raise exception 'No es posible reservar con esta persona.' using errcode = 'P0001';
+   end if;
+ 
+@@ -551,7 +554,7 @@ begin
+   ) then
+     raise exception 'No puedes iniciar una conversación con esta persona.' using errcode = '42501';
+   end if;
+-  if public.hay_bloqueo(v_uid, p_otro) then
++  if coalesce(public.hay_bloqueo(v_uid, p_otro), false) then
+     raise exception 'No puedes iniciar una conversación con esta persona.' using errcode = '42501';
+   end if;
+ 
+@@ -791,7 +794,7 @@ create policy "Actualizaciones: publicar como participante" on public.actualizac
+       where r.id = reserva_id
+         and (select auth.uid()) in (r.dueno_id, r.cuidador_id)
+         and r.estado in ('aceptada', 'en_curso')
+-        and not public.hay_bloqueo(r.dueno_id, r.cuidador_id)
++        and not coalesce(public.hay_bloqueo(r.dueno_id, r.cuidador_id), false)
+     )
+   );
+ 
+@@ -872,6 +875,7 @@ create policy "Reseñas: crear como dueño" on public.resenas
+ -- Permisos de ejecución de funciones
+ -- ---------------------------------------------------------------------------
+ 
++revoke execute on function public.hay_bloqueo(uuid, uuid) from public, anon;
+ revoke execute on function public.cambiar_estado_reserva(uuid, text) from public, anon;
+ revoke execute on function public.abrir_conversacion(uuid) from public, anon;
+ revoke execute on function public.marcar_mensajes_leidos(uuid) from public, anon;
+diff --git a/tests/db/migraciones.test.ts b/tests/db/migraciones.test.ts
+index 29b2c93..e2b93fe 100644
+--- a/tests/db/migraciones.test.ts
++++ b/tests/db/migraciones.test.ts
+@@ -1,7 +1,7 @@
+ import { readFileSync } from 'node:fs'
+ import { PGlite } from '@electric-sql/pglite'
+ import { beforeAll, describe, expect, it } from 'vitest'
+-import { ESQUELETO_SUPABASE, archivosMigracion, comoUsuario, crearBaseDeDatos, crearUsuario } from './entorno'
++import { ESQUELETO_SUPABASE, archivosMigracion, comoUsuario, crearBaseDeDatos, crearUsuario } from './entorno.ts'
+ 
+ const DUENO = '11111111-1111-4111-8111-111111111111'
+ const CUIDADOR = '22222222-2222-4222-8222-222222222222'
+@@ -485,6 +485,20 @@ describe('reglas de acceso y flujo de negocio', () => {
+     )
+   })
+ 
++  it('bloqueos: un tercero no puede averiguar quién bloqueó a quién', async () => {
++    await comoUsuario(db, CUIDADOR, (tx) => tx.query('delete from public.bloqueos where bloqueado_id = $1', [DUENO]))
++    await comoUsuario(db, CUIDADOR, (tx) => tx.query('insert into public.bloqueos (bloqueado_id) values ($1)', [DUENO]))
++    const [{ visto }] = await comoUsuario(db, EXTRANO, (tx) =>
++      filas<{ visto: boolean }>(tx, 'select coalesce(public.hay_bloqueo($1, $2), false) as visto', [DUENO, CUIDADOR]),
++    )
++    expect(visto).toBe(false)
++    const [{ propio }] = await comoUsuario(db, DUENO, (tx) =>
++      filas<{ propio: boolean }>(tx, 'select public.hay_bloqueo($1, $2) as propio', [DUENO, CUIDADOR]),
++    )
++    expect(propio).toBe(true)
++    await comoUsuario(db, CUIDADOR, (tx) => tx.query('delete from public.bloqueos where bloqueado_id = $1', [DUENO]))
++  })
++
+   it('storage: cada usuario sube solo a su carpeta', async () => {
+     await comoUsuario(db, DUENO, (tx) =>
+       tx.query(`insert into storage.objects (bucket_id, name) values ('fotos', $1)`, [`${DUENO}/mascotas/luna.jpg`]),
+@@ -497,7 +511,7 @@ describe('reglas de acceso y flujo de negocio', () => {
+   })
+ 
+   it('el precio de SQL coincide con la regla del frontend', async () => {
+-    const { calcularPrecio } = await import('../../src/utils/precios')
++    const { calcularPrecio } = await import('../../src/utils/precios.ts')
+     const casos: Array<[string, string, string, number]> = [
+       ['hospedaje', '2026-11-01T10:00:00Z', '2026-11-03T10:00:00Z', 25000],
+       ['hospedaje', '2026-11-01T10:00:00Z', '2026-11-03T12:00:00Z', 25000],
+-- 
+2.54.0 (Apple Git-157)
+

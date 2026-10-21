@@ -1,0 +1,119 @@
+.pagina {
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: var(--espaciado-6) var(--espaciado-4) var(--espaciado-7);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-4);
+}
+
+.cabecera {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-1);
+}
+
+.titulo {
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: var(--color-bosque);
+}
+
+.subtitulo {
+  color: var(--color-texto-suave);
+}
+
+.pestanas {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--espaciado-1);
+  padding: var(--espaciado-1);
+  border-radius: var(--radio-boton);
+  background-color: var(--color-superficie-baja);
+  margin-bottom: var(--espaciado-3);
+}
+
+.pestana {
+  border: none;
+  background: transparent;
+  border-radius: var(--radio-boton);
+  padding: 10px 12px;
+  font-weight: 700;
+  color: var(--color-texto-suave);
+  cursor: pointer;
+}
+
+.pestanaActiva {
+  background-color: var(--color-superficie);
+  color: var(--color-bosque);
+  box-shadow: var(--sombra-suave);
+}
+
+.contador {
+  display: inline-block;
+  min-width: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background-color: var(--color-bosque-claro);
+  color: var(--color-bosque);
+  font-size: 0.75rem;
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaciado-2);
+  margin-bottom: var(--espaciado-4);
+}
+
+.chip {
+  border: 1px solid var(--color-borde);
+  background-color: var(--color-superficie);
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--color-texto);
+  cursor: pointer;
+}
+
+.chipActivo {
+  background-color: var(--color-naranja);
+  border-color: var(--color-naranja);
+  color: var(--color-superficie);
+}
+
+.pestana:focus-visible,
+.chip:focus-visible {
+  outline: 3px solid var(--color-primario-claro);
+  outline-offset: 2px;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-4);
+}
+
+.vacioLista {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espaciado-3);
+  padding: var(--espaciado-6) var(--espaciado-4);
+  border: 1px dashed var(--color-borde);
+  border-radius: var(--radio-grande);
+  color: var(--color-texto-suave);
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  .pagina {
+    padding-top: var(--espaciado-5);
+  }
+
+  .titulo {
+    font-size: 1.6rem;
+  }
+}

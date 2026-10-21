@@ -4,12 +4,31 @@ import type { User } from '@supabase/supabase-js'
 import type { DatosRegistro } from '@/types/auth'
 import type { Perfil } from '@/types/perfil'
 import * as authService from '@/services/supabase/auth'
-import { guardarPerfil, obtenerPerfil, obtenerYLimpiarPerfilPendiente } from '@/services/supabase/perfiles'
+import { completarOnboarding, obtenerPerfil, obtenerYLimpiarPerfilPendiente } from '@/services/supabase/perfiles'
+import { guardarRegistro } from '@/services/supabase/registro'
 import { supabase } from '@/services/supabase/client'
 import { AuthContext } from './AuthContext'
 import type { AuthContextValue } from './AuthContext'
 
 const CLAVE_BIENVENIDA = 'safe-paws-bienvenida-vista'
+
+function bienvenidaVista(): boolean {
+  try {
+    return window.localStorage.getItem(CLAVE_BIENVENIDA) === '1'
+  } catch {
+    return false
+  }
+}
+
+type BorradorRegistro = Omit<Perfil, 'id' | 'onboardingCompleto'>
+
+/** Borrador del wizard: primero el de esta pestaña (con fotos), si no, el de los metadatos de la cuenta. */
+function borradorPendiente(usuario: User): BorradorRegistro | null {
+  const local = obtenerYLimpiarPerfilPendiente()
+  if (local) return local
+  const remoto = usuario.user_metadata?.registro_pendiente as BorradorRegistro | null | undefined
+  return remoto && typeof remoto === 'object' && 'nombre' in remoto ? remoto : null
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [usuario, setUsuario] = useState<User | null>(null)
@@ -17,33 +36,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [perfil, setPerfil] = useState<Perfil | null>(null)
   const [perfilCargando, setPerfilCargando] = useState(false)
 
-  const cargarPerfil = useCallback(async (idUsuario: string | null) => {
-    if (!idUsuario) {
+  const cargarPerfil = useCallback(async (actual: User | null) => {
+    if (!actual) {
       setPerfil(null)
       setPerfilCargando(false)
       return
     }
     setPerfilCargando(true)
     try {
-      const existente = await obtenerPerfil(idUsuario)
-      if (existente) {
-        setPerfil(existente)
-        return
-      }
-      // Si el usuario se registró con confirmación por correo, su borrador
-      // de perfil quedó pendiente: se guarda ahora con su sesión activa.
-      const pendiente = obtenerYLimpiarPerfilPendiente()
-      if (pendiente) {
-        const completo: Perfil = { ...pendiente, id: idUsuario, onboardingCompleto: false }
-        try {
-          await guardarPerfil(completo)
-          setPerfil(completo)
-        } catch {
-          setPerfil(null)
+      let existente = await obtenerPerfil(actual.id)
+      if (!existente) {
+        // Registro con confirmación por correo: el borrador se guarda ahora con sesión activa.
+        const pendiente = borradorPendiente(actual)
+        if (pendiente) {
+          try {
+            await guardarRegistro({ ...pendiente, id: actual.id, onboardingCompleto: false })
+            existente = await obtenerPerfil(actual.id)
+          } catch {
+            existente = null
+          }
         }
-        return
       }
-      setPerfil(null)
+      // Si ya vio la bienvenida antes de iniciar sesión, no se la mostramos de nuevo.
+      if (existente && !existente.onboardingCompleto && bienvenidaVista()) {
+        try {
+          await completarOnboarding(actual.id)
+          existente = { ...existente, onboardingCompleto: true }
+        } catch {
+          // Se reintentará al terminar la bienvenida.
+        }
+      }
+      setPerfil(existente)
     } finally {
       setPerfilCargando(false)
     }
@@ -57,15 +80,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const actual = sesion?.user ?? null
       setUsuario(actual)
       setSesionCargando(false)
-      void cargarPerfil(actual?.id ?? null)
+      void cargarPerfil(actual)
     })
 
-    const suscripcion = supabase.auth.onAuthStateChange((_evento, sesion) => {
+    const suscripcion = supabase.auth.onAuthStateChange((evento, sesion) => {
       if (!activo) return
       const actual = sesion?.user ?? null
       setUsuario(actual)
       setSesionCargando(false)
-      void cargarPerfil(actual?.id ?? null)
+      // El refresco de token no cambia el perfil: evita recargas innecesarias.
+      if (evento === 'TOKEN_REFRESHED') return
+      void cargarPerfil(actual)
     })
 
     return () => {
@@ -93,19 +118,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const refrescarPerfil = useCallback(async () => {
     const sesion = await authService.obtenerSesion()
-    await cargarPerfil(sesion?.user?.id ?? null)
+    await cargarPerfil(sesion?.user ?? null)
   }, [cargarPerfil])
 
-  const perfilCompleto = useMemo(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        if (window.localStorage.getItem(CLAVE_BIENVENIDA) === '1') return true
-      } catch {
-        // Ignorar: el gate seguirá usando el perfil remoto.
-      }
-    }
-    return Boolean(perfil?.onboardingCompleto)
-  }, [perfil])
+  // Con sesión, manda el perfil remoto (la marca local solo sirve antes de iniciar sesión).
+  const perfilCompleto = Boolean(perfil?.onboardingCompleto)
 
   const valor = useMemo<AuthContextValue>(
     () => ({

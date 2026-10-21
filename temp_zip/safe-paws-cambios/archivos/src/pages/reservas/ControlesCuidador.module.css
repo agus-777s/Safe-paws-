@@ -1,0 +1,134 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-3);
+  padding: var(--espaciado-4);
+  border-radius: var(--radio-grande);
+  background-color: var(--color-beige);
+  border: 1px solid var(--color-bosque-fondo);
+}
+
+.titulo {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--color-bosque);
+}
+
+.ubicacion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaciado-3);
+  padding: var(--espaciado-3);
+  border-radius: var(--radio-mediano);
+  background-color: var(--color-superficie);
+}
+
+.rotulo {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.ayuda {
+  font-size: 0.8rem;
+  color: var(--color-texto-suave);
+}
+
+.interruptor {
+  position: relative;
+  flex-shrink: 0;
+  width: 52px;
+  height: 30px;
+  border: none;
+  border-radius: 999px;
+  background-color: var(--color-borde);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.interruptorActivo {
+  background-color: var(--color-bosque-suave);
+}
+
+.perilla {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--color-superficie);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+  transition: transform 0.15s ease;
+}
+
+.interruptorActivo .perilla {
+  transform: translateX(22px);
+}
+
+.interruptor:focus-visible,
+.foto input:focus-visible + .botonFoto {
+  outline: 3px solid var(--color-bosque-claro);
+  outline-offset: 2px;
+}
+
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.botonFoto {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espaciado-2);
+  padding: 12px;
+  border-radius: var(--radio-boton);
+  background-color: var(--color-naranja);
+  color: var(--color-superficie);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.deshabilitado {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.nota {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-2);
+  align-items: flex-start;
+}
+
+.areaTexto {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  font: inherit;
+  resize: vertical;
+}
+
+.areaTexto:focus {
+  outline: none;
+  border-color: var(--color-primario);
+  box-shadow: 0 0 0 3px var(--color-primario-claro);
+}
+
+.error {
+  color: var(--color-error);
+  font-size: 0.85rem;
+}
+
+.exito {
+  color: var(--color-exito);
+  font-size: 0.85rem;
+  font-weight: 700;
+}

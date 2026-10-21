@@ -1,0 +1,142 @@
+From ced820beecac8b8fdf86074a0a4ecc684300dd08 Mon Sep 17 00:00:00 2001
+From: ramon328 <ramon@dropout.cl>
+Date: Tue, 20 Oct 2026 15:15:47 -0300
+Subject: [PATCH 6/8] =?UTF-8?q?feat(reservas):=20tel=C3=A9fono=20de=20la?=
+ =?UTF-8?q?=20contraparte=20en=20emergencias=20durante=20reservas=20activa?=
+ =?UTF-8?q?s?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+---
+ src/pages/reservas/BotonEmergencia.tsx        |  9 ++++++++-
+ src/services/supabase/reservas.ts             |  7 +++++++
+ .../20261020120000_plataforma_safe_paws.sql   | 19 +++++++++++++++++++
+ tests/db/migraciones.test.ts                  | 15 +++++++++++++++
+ 4 files changed, 49 insertions(+), 1 deletion(-)
+
+diff --git a/src/pages/reservas/BotonEmergencia.tsx b/src/pages/reservas/BotonEmergencia.tsx
+index 5ba4802..0d6b1ae 100644
+--- a/src/pages/reservas/BotonEmergencia.tsx
++++ b/src/pages/reservas/BotonEmergencia.tsx
+@@ -1,6 +1,6 @@
+ import { useState } from 'react'
+ import Button from '@/components/ui/Button'
+-import { publicarActualizacion } from '@/services/supabase/reservas'
++import { obtenerTelefonoContraparte, publicarActualizacion } from '@/services/supabase/reservas'
+ import { mensajeError } from '@/utils/errores'
+ import { useAbrirChat } from './useAbrirChat'
+ import estilo from './BotonEmergencia.module.css'
+@@ -16,6 +16,7 @@ type Fase = 'inicial' | 'confirmando' | 'enviando' | 'enviada'
+ export default function BotonEmergencia({ reservaId, cuidadorId, alPublicar }: BotonEmergenciaProps) {
+   const [fase, setFase] = useState<Fase>('inicial')
+   const [error, setError] = useState<string | null>(null)
++  const [telefono, setTelefono] = useState<string | null>(null)
+   const { abrirChat, abriendo, errorChat } = useAbrirChat()
+ 
+   async function activar() {
+@@ -25,6 +26,7 @@ export default function BotonEmergencia({ reservaId, cuidadorId, alPublicar }: B
+       await publicarActualizacion(reservaId, 'emergencia', { texto: 'El dueño activó el botón de emergencia' })
+       setFase('enviada')
+       alPublicar()
++      obtenerTelefonoContraparte(reservaId).then(setTelefono, () => setTelefono(null))
+     } catch (e) {
+       setError(mensajeError(e))
+       setFase('confirmando')
+@@ -62,6 +64,11 @@ export default function BotonEmergencia({ reservaId, cuidadorId, alPublicar }: B
+       {fase === 'enviada' && (
+         <div className={estilo.enviada} role="alert">
+           <p className={estilo.pregunta}>Alerta enviada al cuidador.</p>
++          {telefono && (
++            <p className={estilo.texto}>
++              Teléfono del cuidador: <a href={`tel:${telefono.replace(/\s/g, '')}`}>{telefono}</a>
++            </p>
++          )}
+           <p className={estilo.texto}>
+             Llama al <a href="tel:133">133 (Carabineros)</a> o a tu veterinario si la situación lo requiere.
+           </p>
+diff --git a/src/services/supabase/reservas.ts b/src/services/supabase/reservas.ts
+index a375968..aa492cf 100644
+--- a/src/services/supabase/reservas.ts
++++ b/src/services/supabase/reservas.ts
+@@ -156,6 +156,13 @@ export function escucharReserva(id: string, alCambiar: (reserva: Reserva) => voi
+     .subscribe()
+ }
+ 
++/** Teléfono de la otra parte; solo con la reserva aceptada o en curso. */
++export async function obtenerTelefonoContraparte(reservaId: string): Promise<string | null> {
++  const { data, error } = await supabase.rpc('telefono_contraparte', { p_reserva: reservaId })
++  if (error) throw error
++  return (data as string | null) ?? null
++}
++
+ // ---------------------------------------------------------------------------
+ // Seguimiento en vivo
+ // ---------------------------------------------------------------------------
+diff --git a/supabase/migrations/20261020120000_plataforma_safe_paws.sql b/supabase/migrations/20261020120000_plataforma_safe_paws.sql
+index 84f4a65..0f5a3d4 100644
+--- a/supabase/migrations/20261020120000_plataforma_safe_paws.sql
++++ b/supabase/migrations/20261020120000_plataforma_safe_paws.sql
+@@ -585,6 +585,23 @@ as $$
+     and public.es_participante_conversacion(p_conversacion);
+ $$;
+ 
++-- Teléfono de la contraparte, solo mientras la reserva está activa (emergencias).
++create or replace function public.telefono_contraparte(p_reserva uuid)
++returns text
++language sql
++stable
++security definer
++set search_path = ''
++as $$
++  select nullif(p.telefono, '')
++  from public.reservas r
++  join public.perfiles p
++    on p.id = case when r.dueno_id = (select auth.uid()) then r.cuidador_id else r.dueno_id end
++  where r.id = p_reserva
++    and (select auth.uid()) in (r.dueno_id, r.cuidador_id)
++    and r.estado in ('aceptada', 'en_curso');
++$$;
++
+ -- Datos visibles de otras personas: cuidadores activos, o con quien
+ -- se comparte una reserva o una conversación.
+ create or replace function public.perfiles_publicos(p_ids uuid[])
+@@ -877,6 +894,8 @@ create policy "Reseñas: crear como dueño" on public.resenas
+ -- ---------------------------------------------------------------------------
+ 
+ revoke execute on function public.hay_bloqueo(uuid, uuid) from public, anon;
++revoke execute on function public.telefono_contraparte(uuid) from public, anon;
++grant execute on function public.telefono_contraparte(uuid) to authenticated;
+ revoke execute on function public.cambiar_estado_reserva(uuid, text) from public, anon;
+ revoke execute on function public.abrir_conversacion(uuid) from public, anon;
+ revoke execute on function public.marcar_mensajes_leidos(uuid) from public, anon;
+diff --git a/tests/db/migraciones.test.ts b/tests/db/migraciones.test.ts
+index c499b11..efbca36 100644
+--- a/tests/db/migraciones.test.ts
++++ b/tests/db/migraciones.test.ts
+@@ -499,6 +499,21 @@ describe('reglas de acceso y flujo de negocio', () => {
+     await comoUsuario(db, CUIDADOR, (tx) => tx.query('delete from public.bloqueos where bloqueado_id = $1', [DUENO]))
+   })
+ 
++  it('emergencia: el teléfono de la contraparte solo con reserva activa', async () => {
++    await filas(db, `update public.perfiles set telefono = '+56911112222' where id = $1`, [CUIDADOR])
++    const reserva = await crearReserva('paseo', '2026-11-25T15:00:00Z', '2026-11-25T16:00:00Z')
++    const telefono = (usuario: string) =>
++      comoUsuario(db, usuario, (tx) =>
++        filas<{ t: string | null }>(tx, 'select public.telefono_contraparte($1) as t', [reserva.id]),
++      ).then(([fila]) => fila.t)
++    expect(await telefono(DUENO)).toBeNull() // pendiente
++    await cambiarEstado(CUIDADOR, reserva.id, 'aceptada')
++    expect(await telefono(DUENO)).toBe('+56911112222')
++    expect(await telefono(EXTRANO)).toBeNull()
++    await cambiarEstado(DUENO, reserva.id, 'cancelada')
++    expect(await telefono(DUENO)).toBeNull()
++  })
++
+   it('storage: cada usuario sube solo a su carpeta', async () => {
+     await comoUsuario(db, DUENO, (tx) =>
+       tx.query(`insert into storage.objects (bucket_id, name) values ('fotos', $1)`, [`${DUENO}/mascotas/luna.jpg`]),
+-- 
+2.54.0 (Apple Git-157)
+

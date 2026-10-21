@@ -4,7 +4,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Button from '@/components/ui/Button'
 import Logo from '@/components/ui/Logo'
 import { useAuth } from '@/hooks/useAuth'
-import { mensajeError } from '@/utils/errores'
 import { clases } from '@/utils/clases'
 import estilo from './IniciarSesionPage.module.css'
 
@@ -43,6 +42,8 @@ export default function IniciarSesionPage() {
 
   async function manejarEnvio(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault()
+    // Prevenir múltiples envíos si el formulario ya se está procesando
+    if (enviando) return
     setError(null)
     setEnviando(true)
 
@@ -50,7 +51,10 @@ export default function IniciarSesionPage() {
       await iniciarSesion(correo, contrasena)
       navigate('/', { replace: true })
     } catch (e) {
-      setError(mensajeError(e))
+      // Mostrar error real de Supabase
+      const errorMsg = e instanceof Error ? e.message : String(e)
+      // Rate limit "Demasiados intentos" es manejado por mensajeError
+      setError(errorMsg)
     } finally {
       setEnviando(false)
     }

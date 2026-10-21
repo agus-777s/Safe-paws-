@@ -1,0 +1,163 @@
+export type RolUsuario = 'dueno' | 'cuidador' | 'ambos'
+
+// Tipos de mascota según Stitch (pantalla 04: Perro, Gato, Ave, Reptil, Acuáticos, Ganadería)
+export type TipoMascota = 'Perro' | 'Gato' | 'Ave' | 'Reptil' | 'Acuáticos' | 'Ganadería'
+
+export const TIPOS_MASCOTA: TipoMascota[] = ['Perro', 'Gato', 'Ave', 'Reptil', 'Acuáticos', 'Ganadería']
+
+export const ICONOS_TIPO_MASCOTA: Record<TipoMascota, string> = {
+  Perro: '🐶',
+  Gato: '🐱',
+  Ave: '🐦',
+  Reptil: '🦎',
+  Acuáticos: '🐠',
+  Ganadería: '🐄',
+}
+
+// Sugerencias de raza por tipo para el buscador (pantalla 04: "Buscar Raza/Especie")
+export const RAZAS_SUGERIDAS: Record<TipoMascota, string[]> = {
+  Perro: ['Golden Retriever', 'Labrador', 'Bulldog', 'Poodle', 'Beagle', 'Pastor Alemán', 'Mestizo'],
+  Gato: ['Siamés', 'Persa', 'Maine Coon', 'Británico', 'Mestizo'],
+  Ave: ['Canario', 'Periquito', 'Ninfa', 'Loro', 'Otra'],
+  Reptil: ['Tortuga', 'Iguana', 'Gecko', 'Serpiente', 'Otro'],
+  Acuáticos: ['Betta', 'Guppy', 'Goldfish', 'Tetra', 'Otro'],
+  Ganadería: ['Vaca', 'Cabra', 'Oveja', 'Caballo', 'Gallina', 'Otro'],
+}
+
+export type ModoMascota = 'individual' | 'grupo'
+
+export interface DatosMascota {
+  id: string
+  modo: ModoMascota
+  nombre: string
+  tipo: TipoMascota | ''
+  raza: string
+  edadAnos: string
+  pesoKg: string
+  cantidad?: string
+  /** Fotos en dataURL (máx 3, reducidas para guardar en el perfil). */
+  fotos: string[]
+}
+
+export interface DatosCuidador {
+  servicios: string[]
+  tarifa: string
+  zona: string
+  disponibilidad: string
+  precioPaseo: string
+  precioNoche: string
+  dias: string[]
+  horaInicio: string
+  horaFin: string
+  radioKm: number
+  /** Solo el nombre del archivo de verificación (el documento no se sube al perfil). */
+  verificacionNombre: string | null
+  /** Ubicación real elegida en el mapa (puede ser null si aún no se elige). */
+  latitud: number | null
+  longitud: number | null
+}
+
+export interface Perfil {
+  id: string
+  nombre: string
+  apellido: string
+  descripcion: string
+  telefono: string
+  rol: RolUsuario | null
+  /** URL pública (Storage) o dataURL mientras el registro está pendiente. */
+  avatarUrl: string | null
+  mascotas: DatosMascota[]
+  datosCuidador: DatosCuidador | null
+  onboardingCompleto: boolean
+}
+
+export const ROLES: Array<{
+  valor: RolUsuario
+  titulo: string
+  descripcion: string
+  icono: string
+  imagen: string
+  imagenAlt: string
+}> = [
+  {
+    valor: 'dueno',
+    titulo: 'Usuario (Dueño)',
+    descripcion: 'Busco cuidadores, paseadores y servicios de confianza para mi mascota.',
+    icono: '🐶',
+    imagen: '/stitch/fondo-onboarding-1.jpg',
+    imagenAlt: 'Dueño abrazando a su perro en un parque',
+  },
+  {
+    valor: 'cuidador',
+    titulo: 'Cuidador',
+    descripcion: 'Quiero ofrecer mis servicios de paseo, alojamiento o guardería.',
+    icono: '🏠',
+    imagen: '/stitch/registro/rol-cuidador.svg',
+    imagenAlt: 'Cuidadora paseando a un perro con correa en un parque',
+  },
+  {
+    valor: 'ambos',
+    titulo: 'Perfil dual (Dueño y Cuidador)',
+    descripcion: 'Tengo mascotas y además quiero ofrecer mis servicios a otros dueños.',
+    icono: '🤝',
+    imagen: '/stitch/fondo-onboarding-3.jpg',
+    imagenAlt: 'Persona con su perro, lista para cuidar a otras mascotas',
+  },
+]
+
+export function esRolDueno(rol: RolUsuario | null | undefined): boolean {
+  return rol === 'dueno' || rol === 'ambos'
+}
+
+export function esRolCuidador(rol: RolUsuario | null | undefined): boolean {
+  return rol === 'cuidador' || rol === 'ambos'
+}
+
+// Servicios según Stitch (pantalla 07: Paseo, Hospedaje, Guardería, Visita a domicilio, Otros)
+export const SERVICIOS_CUIDADOR = ['Paseo', 'Hospedaje', 'Guardería', 'Visita a domicilio', 'Otros']
+
+export const DIAS_SEMANA = ['D', 'L', 'M', 'X', 'J', 'V', 'S']
+
+// Comunas de Santiago según el buscador de Stitch (pantalla 07)
+export const COMUNAS_SANTIAGO = [
+  'Providencia, Santiago',
+  'Las Condes, Santiago',
+  'Santiago Centro, Santiago',
+  'Ñuñoa, Santiago',
+  'Vitacura, Santiago',
+  'La Reina, Santiago',
+  'Macul, Santiago',
+  'Peñalolén, Santiago',
+  'San Miguel, Santiago',
+]
+
+export const RADIOS_KM = [5, 10, 15, 20, 30, 50]
+
+// Sugerencias de precio por noche según Stitch (pantalla 07)
+export const SUGERENCIAS_PRECIO_NOCHE = [10000, 20000, 30000, 40000]
+
+export function crearMascotaVacia(modo: ModoMascota = 'individual'): DatosMascota {
+  const id =
+    typeof crypto !== 'undefined' && 'randomUUID' in crypto
+      ? crypto.randomUUID()
+      : `mascota-${Date.now()}-${Math.floor(Math.random() * 10000)}`
+  return { id, modo, nombre: '', tipo: '', raza: '', edadAnos: '', pesoKg: '', cantidad: '', fotos: [] }
+}
+
+export function crearDatosCuidadorVacios(): DatosCuidador {
+  return {
+    servicios: [],
+    tarifa: '',
+    zona: '',
+    disponibilidad: '',
+    precioPaseo: '',
+    precioNoche: '',
+    dias: [],
+    horaInicio: '08:00',
+    horaFin: '19:00',
+    radioKm: 5,
+    verificacionNombre: null,
+    latitud: null,
+    longitud: null,
+  }
+}

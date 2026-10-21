@@ -1,10 +1,193 @@
+.contenedor {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.buscador {
+  position: relative;
+  /* Los panes internos de Leaflet usan z-index 200-700: el buscador debe
+     estar por encima para que la lista de resultados sea visible y clicable. */
+  z-index: 1000;
+}
+
+.lupa {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1rem;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.entrada {
+  width: 100%;
+  height: 42px;
+  padding: 0 38px 0 36px;
+  border-radius: 999px;
+  border: 1px solid var(--color-borde);
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  font: inherit;
+  font-size: 0.9rem;
+  box-shadow: var(--sombra-suave);
+  box-sizing: border-box;
+}
+
+.entrada:focus {
+  outline: none;
+  border-color: var(--color-primario);
+  box-shadow: 0 0 0 3px var(--color-primario-claro);
+}
+
+.entrada::placeholder {
+  color: var(--color-texto-suave);
+}
+
+.cargando {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.spinner {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--color-linea-suave);
+  border-top-color: var(--color-bosque);
+  animation: girar 0.8s linear infinite;
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.limpiar {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: var(--color-texto-suave);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.limpiar:hover {
+  background-color: var(--color-superficie-baja);
+  color: var(--color-texto);
+}
+
+.resultados {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-mediano);
+  box-shadow: var(--sombra-suave);
+  z-index: 30;
+}
+
+.estado {
+  margin: 0;
+  padding: 12px 14px;
+  font-size: 0.85rem;
+  color: var(--color-texto-suave);
+}
+
+.estadoError {
+  margin: 0;
+  padding: 12px 14px;
+  font-size: 0.85rem;
+  color: var(--color-error);
+}
+
+.opcion {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  border: none;
+  border-top: 1px solid var(--color-linea-suave);
+  background: none;
+  padding: 10px 14px;
+  cursor: pointer;
+  font: inherit;
+  color: var(--color-texto);
+}
+
+.opcion:first-of-type {
+  border-top: none;
+}
+
+.opcion:hover {
+  background-color: var(--color-superficie-baja);
+}
+
+.opcionPin {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.opcionTextos {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.opcionTitulo {
+  font-size: 0.9rem;
+}
+
+.opcionDetalle {
+  font-size: 0.75rem;
+  color: var(--color-texto-suave);
+  line-height: 1.3;
+}
+
 .mapa {
   width: 100%;
   height: 230px;
   border-radius: var(--radio-mediano);
   border: 1px solid var(--color-linea-suave);
   overflow: hidden;
+  /* position + z-index crean un contexto de apilamiento propio: los panes
+     de Leaflet (z 200-700) quedan contenidos y no tapan el buscador. */
+  position: relative;
   z-index: 0;
+}
+
+.seleccion {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--color-texto-suave);
+}
+
+.seleccion strong {
+  color: var(--color-bosque);
+}
+
+.seleccion small {
+  font-size: 0.75rem;
 }
 
 .pin {

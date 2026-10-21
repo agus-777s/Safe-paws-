@@ -1,0 +1,256 @@
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-4);
+  padding-top: clamp(1.25rem, 3vw, 2rem);
+  padding-bottom: clamp(2rem, 5vw, 3rem);
+}
+
+.volver {
+  align-self: flex-start;
+  font-weight: 700;
+  color: var(--color-bosque-suave);
+  text-decoration: none;
+}
+
+.volver:hover {
+  text-decoration: underline;
+}
+
+.rejilla {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--espaciado-4);
+}
+
+.principal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-4);
+  min-width: 0;
+}
+
+.cabecera {
+  display: flex;
+  align-items: center;
+  gap: var(--espaciado-4);
+  background: linear-gradient(135deg, var(--color-beige), var(--color-superficie));
+}
+
+.identidad {
+  min-width: 0;
+}
+
+.nombre {
+  margin: 0;
+  font-size: clamp(1.4rem, 4vw, 1.9rem);
+  font-weight: 800;
+  color: var(--color-bosque);
+}
+
+.insignias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaciado-2) var(--espaciado-3);
+  margin-top: var(--espaciado-2);
+  font-size: 0.9rem;
+  color: var(--color-texto-suave);
+}
+
+.verificado {
+  font-weight: 800;
+  font-size: 0.8rem;
+  color: var(--color-bosque-suave);
+  background: var(--color-bosque-fondo);
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+
+.subtitulo {
+  margin: 0 0 var(--espaciado-3);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--color-bosque);
+}
+
+.bio {
+  margin: 0;
+  white-space: pre-line;
+  color: var(--color-texto);
+}
+
+.suave {
+  margin: var(--espaciado-2) 0 0;
+  font-size: 0.88rem;
+  color: var(--color-texto-suave);
+}
+
+.servicios {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-2);
+}
+
+.servicio {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--espaciado-3);
+  padding: var(--espaciado-3);
+  border-radius: var(--radio-pequeno);
+  background: var(--color-crema);
+}
+
+.servicioIcono {
+  font-size: 1.4rem;
+}
+
+.servicioTitulo {
+  font-weight: 700;
+}
+
+.servicioPrecio {
+  text-align: right;
+}
+
+.servicioPrecio strong {
+  color: var(--color-naranja-oscuro);
+}
+
+.servicioPrecio small {
+  color: var(--color-texto-suave);
+}
+
+.dias {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaciado-2);
+}
+
+.dia {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  background: var(--color-superficie-baja);
+  color: var(--color-gris-verde);
+}
+
+.diaActivo {
+  background: var(--color-bosque);
+  color: #fff;
+}
+
+.horario {
+  margin: var(--espaciado-3) 0 0;
+  font-weight: 700;
+}
+
+.resenas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.resena {
+  padding: var(--espaciado-3) 0;
+  border-top: 1px solid var(--color-linea-suave);
+}
+
+.resena:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.resenaCabecera {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--espaciado-2);
+}
+
+.estrellas {
+  color: var(--color-naranja);
+  letter-spacing: 1px;
+}
+
+.estrellasVacias {
+  color: var(--color-linea-suave);
+}
+
+.resenaTexto {
+  margin: var(--espaciado-2) 0 0;
+}
+
+.lateral {
+  min-width: 0;
+}
+
+.acciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-3);
+}
+
+.accionesTitulo {
+  margin: 0;
+  font-weight: 800;
+  font-size: 1.05rem;
+  color: var(--color-bosque);
+}
+
+.reservar {
+  background: var(--color-naranja);
+  color: #fff;
+}
+
+.reservar:hover {
+  background: var(--color-naranja-oscuro);
+}
+
+.error {
+  margin: 0;
+  color: var(--color-error);
+  font-size: 0.88rem;
+}
+
+@media (min-width: 900px) {
+  .rejilla {
+    grid-template-columns: minmax(0, 1fr) 320px;
+    align-items: start;
+  }
+
+  .lateral {
+    position: sticky;
+    top: var(--espaciado-5);
+  }
+}
+
+@media (max-width: 899px) {
+  /* En móvil, las acciones quedan fijas abajo para reservar sin hacer scroll. */
+  .lateral {
+    position: sticky;
+    bottom: var(--espaciado-3);
+    z-index: 1;
+  }
+}
+
+@media (max-width: 479px) {
+  .cabecera {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .insignias {
+    justify-content: center;
+  }
+}

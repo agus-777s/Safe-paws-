@@ -1,0 +1,113 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-3);
+  padding: var(--espaciado-4);
+  border-radius: var(--radio-grande);
+  background-color: var(--color-superficie);
+  border: 1px solid var(--color-linea-suave);
+  box-shadow: var(--sombra-suave);
+}
+
+.titulo {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--color-bosque);
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-3);
+  align-items: flex-start;
+}
+
+.grupo {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.leyenda {
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: var(--espaciado-1);
+}
+
+.estrellas {
+  display: flex;
+  gap: var(--espaciado-1);
+}
+
+.estrella {
+  position: relative;
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--color-borde);
+  cursor: pointer;
+}
+
+.estrella:has(.radio:focus-visible) {
+  outline: 3px solid var(--color-secundario-claro);
+  outline-offset: 2px;
+  border-radius: var(--radio-pequeno);
+}
+
+.llena {
+  color: var(--color-secundario);
+}
+
+.vacia {
+  color: var(--color-borde);
+}
+
+.radio,
+.soloLector {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  opacity: 0;
+}
+
+.areaTexto {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pequeno);
+  font: inherit;
+  resize: vertical;
+}
+
+.areaTexto:focus {
+  outline: none;
+  border-color: var(--color-primario);
+  box-shadow: 0 0 0 3px var(--color-primario-claro);
+}
+
+.resena {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaciado-2);
+}
+
+.estrellasFijas {
+  font-size: 1.6rem;
+  letter-spacing: 2px;
+}
+
+.comentario {
+  font-style: italic;
+}
+
+.gracias {
+  color: var(--color-texto-suave);
+  font-size: 0.9rem;
+}
+
+.error {
+  color: var(--color-error);
+  font-size: 0.85rem;
+}

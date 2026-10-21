@@ -1,0 +1,205 @@
+From 28e67eebb27c7e8b1856b2a7a7e1a1472dc1f172 Mon Sep 17 00:00:00 2001
+From: ramon328 <ramon@dropout.cl>
+Date: Tue, 20 Oct 2026 15:03:08 -0300
+Subject: [PATCH 2/8] =?UTF-8?q?fix(db):=20cerrar=20huecos=20de=20privacida?=
+ =?UTF-8?q?d=20en=20chat,=20ubicaci=C3=B3n=20y=20novedades?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- abrir_conversacion solo con cuidadores activos o contraparte de reserva, nunca con bloqueo
+- listar_cuidadores devuelve coordenadas aproximadas; la tabla solo la lee su dueño
+- novedades del servicio solo en reservas activas y sin bloqueo; no se reserva con bloqueo
+
+Co-Authored-By: Claude Opus 5.5 (1M context) <noreply@anthropic.com>
+---
+ .../20261020120000_plataforma_safe_paws.sql   | 58 +++++++++++++---
+ tests/db/migraciones.test.ts                  | 67 +++++++++++++++++++
+ 2 files changed, 117 insertions(+), 8 deletions(-)
+
+diff --git a/supabase/migrations/20261020120000_plataforma_safe_paws.sql b/supabase/migrations/20261020120000_plataforma_safe_paws.sql
+index e13eb5f..ace3797 100644
+--- a/supabase/migrations/20261020120000_plataforma_safe_paws.sql
++++ b/supabase/migrations/20261020120000_plataforma_safe_paws.sql
+@@ -272,6 +272,20 @@ as $$
+   );
+ $$;
+ 
++create or replace function public.hay_bloqueo(p_a uuid, p_b uuid)
++returns boolean
++language sql
++stable
++security definer
++set search_path = ''
++as $$
++  select exists (
++    select 1 from public.bloqueos b
++    where (b.bloqueador_id = p_a and b.bloqueado_id = p_b)
++       or (b.bloqueador_id = p_b and b.bloqueado_id = p_a)
++  );
++$$;
++
+ /** Precio en CLP según el servicio y las fechas. Misma regla que src/utils/precios.ts. */
+ create or replace function public.calcular_precio_reserva(
+   p_servicio text,
+@@ -359,6 +373,9 @@ begin
+   if not exists (select 1 from public.mascotas m where m.id = new.mascota_id and m.dueno_id = new.dueno_id) then
+     raise exception 'La mascota no pertenece a quien reserva.' using errcode = 'P0001';
+   end if;
++  if public.hay_bloqueo(new.dueno_id, new.cuidador_id) then
++    raise exception 'No es posible reservar con esta persona.' using errcode = 'P0001';
++  end if;
+ 
+   v_precio := case new.servicio
+     when 'paseo' then v_cuidador.precio_paseo
+@@ -522,8 +539,20 @@ begin
+   if p_otro is null or p_otro = v_uid then
+     raise exception 'Conversación no válida.' using errcode = 'P0001';
+   end if;
+-  if not exists (select 1 from public.perfiles where id = p_otro) then
+-    raise exception 'La persona no existe.' using errcode = 'P0002';
++  -- Solo con cuidadores activos o con quien ya se comparte una reserva,
++  -- y nunca si hay un bloqueo en cualquier sentido.
++  if not (
++    exists (select 1 from public.cuidadores c where c.id = p_otro and c.activo)
++    or exists (
++      select 1 from public.reservas r
++      where (r.dueno_id = v_uid and r.cuidador_id = p_otro)
++         or (r.dueno_id = p_otro and r.cuidador_id = v_uid)
++    )
++  ) then
++    raise exception 'No puedes iniciar una conversación con esta persona.' using errcode = '42501';
++  end if;
++  if public.hay_bloqueo(v_uid, p_otro) then
++    raise exception 'No puedes iniciar una conversación con esta persona.' using errcode = '42501';
+   end if;
+ 
+   v_a := least(v_uid, p_otro);
+@@ -613,7 +642,9 @@ as $$
+   select
+     c.id, p.nombre, p.apellido, p.avatar_url, p.descripcion, c.bio, c.servicios,
+     c.precio_paseo, c.precio_hospedaje, c.precio_guarderia, c.precio_visita,
+-    c.comuna, c.latitud, c.longitud, c.radio_km, c.dias, c.hora_inicio, c.hora_fin,
++    -- Ubicación aproximada (~1 km): la exacta suele ser el domicilio del cuidador.
++    c.comuna, round(c.latitud::numeric, 2)::double precision, round(c.longitud::numeric, 2)::double precision,
++    c.radio_km, c.dias, c.hora_inicio, c.hora_fin,
+     c.verificado, c.calificacion, c.total_resenas
+   from public.cuidadores c
+   join public.perfiles p on p.id = c.id
+@@ -698,11 +729,13 @@ create policy "Recordatorios: dueño de la mascota" on public.recordatorios_salu
+   using (public.es_dueno_mascota(mascota_id))
+   with check (public.es_dueno_mascota(mascota_id));
+ 
+--- Cuidadores: perfil público de lectura; cada uno edita el suyo.
++-- Cuidadores: la tabla (con ubicación exacta) solo la lee su dueño.
++-- El listado público va por listar_cuidadores(), con ubicación aproximada.
+ drop policy if exists "Cuidadores: lectura pública" on public.cuidadores;
+-create policy "Cuidadores: lectura pública" on public.cuidadores
+-  for select to anon, authenticated
+-  using (activo or id = (select auth.uid()));
++drop policy if exists "Cuidadores: leer el propio" on public.cuidadores;
++create policy "Cuidadores: leer el propio" on public.cuidadores
++  for select to authenticated
++  using (id = (select auth.uid()));
+ 
+ drop policy if exists "Cuidadores: crear el propio" on public.cuidadores;
+ create policy "Cuidadores: crear el propio" on public.cuidadores
+@@ -751,7 +784,16 @@ create policy "Actualizaciones: ver como participante" on public.actualizaciones
+ drop policy if exists "Actualizaciones: publicar como participante" on public.actualizaciones_servicio;
+ create policy "Actualizaciones: publicar como participante" on public.actualizaciones_servicio
+   for insert to authenticated
+-  with check (autor_id = (select auth.uid()) and public.es_participante_reserva(reserva_id));
++  with check (
++    autor_id = (select auth.uid())
++    and exists (
++      select 1 from public.reservas r
++      where r.id = reserva_id
++        and (select auth.uid()) in (r.dueno_id, r.cuidador_id)
++        and r.estado in ('aceptada', 'en_curso')
++        and not public.hay_bloqueo(r.dueno_id, r.cuidador_id)
++    )
++  );
+ 
+ -- Conversaciones: solo participantes (se crean con abrir_conversacion).
+ drop policy if exists "Conversaciones: ver como participante" on public.conversaciones;
+diff --git a/tests/db/migraciones.test.ts b/tests/db/migraciones.test.ts
+index 694c04d..29b2c93 100644
+--- a/tests/db/migraciones.test.ts
++++ b/tests/db/migraciones.test.ts
+@@ -418,6 +418,73 @@ describe('reglas de acceso y flujo de negocio', () => {
+     ).rejects.toThrow(/row-level security/)
+   })
+ 
++  it('privacidad: la ubicación exacta del cuidador no es pública', async () => {
++    await filas(db, 'update public.cuidadores set latitud = -33.456789, longitud = -70.612345 where id = $1', [CUIDADOR])
++    const directo = await comoUsuario(db, DUENO, (tx) =>
++      filas(tx, 'select latitud from public.cuidadores where id = $1', [CUIDADOR]),
++    )
++    expect(directo).toEqual([])
++    const [listado] = await comoUsuario(db, null, (tx) =>
++      filas<{ latitud: number; longitud: number }>(
++        tx,
++        'select latitud, longitud from public.listar_cuidadores() where id = $1',
++        [CUIDADOR],
++      ),
++    )
++    expect(listado).toEqual({ latitud: -33.46, longitud: -70.61 })
++    const propio = await comoUsuario(db, CUIDADOR, (tx) =>
++      filas<{ latitud: number }>(tx, 'select latitud from public.cuidadores where id = $1', [CUIDADOR]),
++    )
++    expect(propio).toEqual([{ latitud: -33.456789 }])
++  })
++
++  it('chat: no se puede abrir conversación con cualquiera (solo cuidadores o contraparte de reserva)', async () => {
++    await expect(
++      comoUsuario(db, EXTRANO, (tx) => tx.query('select public.abrir_conversacion($1)', [DUENO])),
++    ).rejects.toThrow(/No puedes iniciar/)
++    // Con un cuidador activo de la semilla sí.
++    await comoUsuario(db, EXTRANO, (tx) => tx.query('select public.abrir_conversacion($1)', [CUIDADOR_SEMILLA]))
++  })
++
++  it('bloqueos: impiden reservar, abrir chat y publicar novedades', async () => {
++    // Parte sin bloqueo: se quita el de la prueba de chat y se vuelve a poner más abajo.
++    await comoUsuario(db, CUIDADOR, (tx) => tx.query('delete from public.bloqueos where bloqueado_id = $1', [DUENO]))
++    const reserva = await crearReserva('paseo', '2026-11-20T15:00:00Z', '2026-11-20T16:00:00Z')
++    await cambiarEstado(CUIDADOR, reserva.id, 'aceptada')
++    // En reservas cerradas no se publican novedades.
++    const cancelada = await crearReserva('paseo', '2026-11-21T15:00:00Z', '2026-11-21T16:00:00Z')
++    await cambiarEstado(DUENO, cancelada.id, 'cancelada')
++    await expect(
++      comoUsuario(db, DUENO, (tx) =>
++        tx.query(`insert into public.actualizaciones_servicio (reserva_id, tipo, texto) values ($1, 'nota', 'x')`, [
++          cancelada.id,
++        ]),
++      ),
++    ).rejects.toThrow(/row-level security/)
++
++    await comoUsuario(db, CUIDADOR, (tx) => tx.query('insert into public.bloqueos (bloqueado_id) values ($1)', [DUENO]))
++    await expect(
++      comoUsuario(db, DUENO, (tx) =>
++        tx.query(`insert into public.actualizaciones_servicio (reserva_id, tipo, texto) values ($1, 'nota', 'x')`, [
++          reserva.id,
++        ]),
++      ),
++    ).rejects.toThrow(/row-level security/)
++    await expect(crearReserva('paseo', '2026-11-22T15:00:00Z', '2026-11-22T16:00:00Z')).rejects.toThrow(
++      /No es posible reservar/,
++    )
++    await expect(
++      comoUsuario(db, DUENO, (tx) => tx.query('select public.abrir_conversacion($1)', [CUIDADOR])),
++    ).rejects.toThrow(/No puedes iniciar/)
++
++    await comoUsuario(db, CUIDADOR, (tx) => tx.query('delete from public.bloqueos where bloqueado_id = $1', [DUENO]))
++    await comoUsuario(db, DUENO, (tx) =>
++      tx.query(`insert into public.actualizaciones_servicio (reserva_id, tipo, texto) values ($1, 'nota', 'ok')`, [
++        reserva.id,
++      ]),
++    )
++  })
++
+   it('storage: cada usuario sube solo a su carpeta', async () => {
+     await comoUsuario(db, DUENO, (tx) =>
+       tx.query(`insert into storage.objects (bucket_id, name) values ('fotos', $1)`, [`${DUENO}/mascotas/luna.jpg`]),
+-- 
+2.54.0 (Apple Git-157)
+

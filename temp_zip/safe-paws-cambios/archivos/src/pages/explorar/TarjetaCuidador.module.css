@@ -1,0 +1,115 @@
+.tarjeta {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: var(--espaciado-3);
+  align-items: start;
+  padding: var(--espaciado-4);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-linea-suave);
+  border-radius: var(--radio-mediano);
+  box-shadow: var(--sombra-suave);
+  color: var(--color-texto);
+  text-decoration: none;
+  transition:
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.tarjeta:hover {
+  border-color: var(--color-bosque-claro);
+  transform: translateY(-1px);
+}
+
+.tarjeta:focus-visible {
+  outline: 3px solid var(--color-naranja);
+  outline-offset: 2px;
+}
+
+.cuerpo {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espaciado-2);
+}
+
+.nombre {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--color-bosque);
+  margin: 0;
+}
+
+.verificado {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--color-bosque-suave);
+  background: var(--color-bosque-fondo);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.meta {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 0.86rem;
+  color: var(--color-texto-suave);
+}
+
+.servicios {
+  list-style: none;
+  margin: 6px 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chip {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-bosque);
+  background: var(--color-beige);
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+
+.precio {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  line-height: 1.2;
+}
+
+.precio strong {
+  font-size: 1.05rem;
+  color: var(--color-naranja-oscuro);
+}
+
+.precio small {
+  font-size: 0.72rem;
+  color: var(--color-texto-suave);
+}
+
+@media (max-width: 479px) {
+  .tarjeta {
+    grid-template-columns: auto 1fr;
+  }
+
+  .precio {
+    grid-column: 2;
+    flex-direction: row;
+    align-items: baseline;
+    gap: 4px;
+  }
+}

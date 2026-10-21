@@ -3,12 +3,22 @@ import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import Button from '@/components/ui/Button'
 import Logo from '@/components/ui/Logo'
+import { esRolCuidador, esRolDueno } from '@/types/perfil'
 import { clases } from '@/utils/clases'
 import estilo from './Navbar.module.css'
 
 export default function Navbar() {
-  const { usuario, cerrarSesion } = useAuth()
+  const { usuario, perfil, cerrarSesion } = useAuth()
   const [menuAbierto, setMenuAbierto] = useState(false)
+
+  const enlaces: Array<{ ruta: string; texto: string }> = [{ ruta: '/explorar', texto: 'Explorar' }]
+  if (usuario) {
+    if (esRolCuidador(perfil?.rol)) enlaces.push({ ruta: '/panel', texto: 'Mi panel' })
+    enlaces.push({ ruta: '/reservas', texto: 'Reservas' })
+    enlaces.push({ ruta: '/mensajes', texto: 'Mensajes' })
+    if (esRolDueno(perfil?.rol)) enlaces.push({ ruta: '/mascotas', texto: 'Mascotas' })
+    enlaces.push({ ruta: '/mi-cuenta', texto: 'Mi cuenta' })
+  }
 
   function cerrarMenu() {
     setMenuAbierto(false)
@@ -42,15 +52,16 @@ export default function Navbar() {
           >
             Inicio
           </NavLink>
-          {usuario && (
+          {enlaces.map((enlace) => (
             <NavLink
-              to="/mi-cuenta"
+              key={enlace.ruta}
+              to={enlace.ruta}
               onClick={cerrarMenu}
               className={({ isActive }) => clases(estilo.enlace, isActive && estilo.enlaceActivo)}
             >
-              Mi cuenta
+              {enlace.texto}
             </NavLink>
-          )}
+          ))}
 
           <div className={estilo.acciones}>
             {usuario ? (
