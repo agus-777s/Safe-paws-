@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+﻿import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Button from '@/components/ui/Button'
 import Logo from '@/components/ui/Logo'
 import { useAuth } from '@/hooks/useAuth'
+import { mensajeError } from '@/utils/errores'
 import { clases } from '@/utils/clases'
 import estilo from './IniciarSesionPage.module.css'
 
@@ -51,10 +52,8 @@ export default function IniciarSesionPage() {
       await iniciarSesion(correo, contrasena)
       navigate('/', { replace: true })
     } catch (e) {
-      // Mostrar error real de Supabase
-      const errorMsg = e instanceof Error ? e.message : String(e)
-      // Rate limit "Demasiados intentos" es manejado por mensajeError
-      setError(errorMsg)
+      // Mostrar error traducido (incluye "Email rate limit exceeded" -> "Demasiados intentos")
+      setError(mensajeError(e))
     } finally {
       setEnviando(false)
     }
@@ -102,7 +101,7 @@ export default function IniciarSesionPage() {
               Correo electrónico
             </label>
             <span className={estilo.estado} aria-hidden="true">
-              {correo.length > 0 && (correoValido ? '✓' : '✕')}
+              {correo.length > 0 && (correoValido ? 'âœ“' : 'âœ•')}
             </span>
           </div>
 
@@ -126,7 +125,7 @@ export default function IniciarSesionPage() {
               onClick={() => setMostrarContrasena((actual) => !actual)}
               aria-label={mostrarContrasena ? 'Ocultar contraseña' : 'Mostrar contraseña'}
             >
-              {mostrarContrasena ? '👁' : '👁‍🗨'}
+              {mostrarContrasena ? 'ðŸ‘' : 'ðŸ‘â€ðŸ—¨'}
             </button>
           </div>
 
@@ -138,7 +137,7 @@ export default function IniciarSesionPage() {
                 setInfo('La recuperación de contraseña aún no está disponible. Escríbenos a hola@safepaws.app.')
               }
             >
-              ¿Recuperar contraseña?
+              Â¿Recuperar contraseña?
             </button>
           </div>
 
@@ -155,7 +154,7 @@ export default function IniciarSesionPage() {
           )}
 
           <Button type="submit" disabled={enviando} tamanio="grande" className={estilo.boton}>
-            {enviando ? 'Ingresando…' : '🐾 Iniciar Sesión'}
+            {enviando ? 'Ingresandoâ€¦' : 'ðŸ¾ Iniciar Sesión'}
           </Button>
         </form>
 

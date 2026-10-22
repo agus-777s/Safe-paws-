@@ -1,0 +1,240 @@
+<!DOCTYPE html><html lang="es" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Safe Paws - Elegir Rol</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#efeded",
+                        "secondary-container": "#fc8a40",
+                        "primary": "#154212",
+                        "on-surface-variant": "#42493e",
+                        "primary-fixed-dim": "#a1d494",
+                        "outline": "#72796e",
+                        "on-tertiary-container": "#c3c4ac",
+                        "error-container": "#ffdad6",
+                        "surface-tint": "#3b6934",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#f2f0f0",
+                        "surface": "#fbf9f8",
+                        "surface-container-high": "#eae8e7",
+                        "primary-fixed": "#bcf0ae",
+                        "secondary": "#9b4500",
+                        "secondary-fixed": "#ffdbc9",
+                        "on-primary-fixed": "#002201",
+                        "surface-container-low": "#f5f3f3",
+                        "inverse-primary": "#a1d494",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#50513f",
+                        "surface-dim": "#dbd9d9",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#23501e",
+                        "surface-bright": "#fbf9f8",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#ffb68d",
+                        "on-secondary-container": "#672c00",
+                        "surface-variant": "#e4e2e2",
+                        "background": "#fbf9f8",
+                        "outline-variant": "#c2c9bb",
+                        "on-surface": "#1b1c1c",
+                        "on-error": "#ffffff",
+                        "on-background": "#1b1c1c",
+                        "on-tertiary": "#ffffff",
+                        "primary-container": "#2d5a27",
+                        "tertiary-fixed": "#e4e4cc",
+                        "on-primary-container": "#9dd090",
+                        "surface-container-highest": "#e4e2e2",
+                        "on-secondary-fixed": "#331200",
+                        "inverse-surface": "#303030",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#763300",
+                        "on-tertiary-fixed-variant": "#474836",
+                        "tertiary": "#393a29",
+                        "tertiary-fixed-dim": "#c8c8b0",
+                        "on-tertiary-fixed": "#1b1d0e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "xl": "32px",
+                        "base": "4px",
+                        "xs": "4px",
+                        "md": "16px",
+                        "margin-mobile": "20px",
+                        "gutter-mobile": "12px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-xl-mobile": ["Montserrat"],
+                        "body-sm": ["Inter"],
+                        "label-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-xl": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "headline-xl-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg": ["24px", { "lineHeight": "32px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .organic-shadow {
+            box-shadow: 0px 4px 20px 0px rgba(45,90,39,0.08);
+        }
+        
+        /* Hide scrollbar for clean UI */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background min-h-screen flex flex-col font-sans antialiased text-on-background selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top App Bar & Navigation Suppressed for Onboarding Flow -->
+<main class="flex-1 flex flex-col px-margin-mobile pt-lg pb-xl max-w-lg mx-auto w-full relative">
+<!-- Progress Bar Section -->
+<div class="w-full flex flex-col gap-sm mb-xl mt-4">
+<div class="flex justify-between items-center px-1">
+<button class="text-on-surface-variant hover:text-primary transition-colors flex items-center justify-center p-2 -ml-2 rounded-full hover:bg-surface-variant/50" type="button" onclick="window.location.href = '{{DATA:SCREEN:SCREEN_74}}'">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<span class="font-label-lg text-label-lg text-outline">Paso 2 de 4</span>
+<div class="w-10"></div> <!-- Spacer for balance -->
+</div>
+<!-- Thick Track Progress Bar -->
+<div class="flex w-full h-[8px] gap-2 rounded-full overflow-hidden">
+<div class="flex-1 bg-primary rounded-full"></div>
+<div class="flex-1 bg-primary rounded-full"></div>
+<div class="flex-1 bg-surface-variant rounded-full"></div>
+<div class="flex-1 bg-surface-variant rounded-full"></div>
+</div>
+</div>
+<!-- Header -->
+<header class="mb-lg">
+<h1 class="font-headline-xl-mobile text-headline-xl-mobile text-on-background mb-xs">Elige tu rol</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Selecciona cómo usarás Safe Paws para personalizar tu experiencia.</p>
+</header>
+<!-- Role Selection Cards -->
+<div class="flex flex-col gap-md flex-1">
+<!-- Card 1: Usuario (Dueño) -->
+<label class="group relative cursor-pointer">
+<input class="peer sr-only" name="role" type="radio" value="usuario">
+<div class="bg-surface-container-lowest rounded-[24px] p-md organic-shadow border-2 border-transparent peer-checked:bg-[#B14D08]/5 transition-all duration-300 flex flex-col h-full overflow-hidden relative active:scale-95 peer-checked:border-secondary">
+<!-- Decorative Graphic Area -->
+<div class="w-full h-32 rounded-xl bg-surface-container mb-4 overflow-hidden relative flex items-center justify-center"><img src="https://lh3.googleusercontent.com/aida/AEtjO1U3pN47zcCOsQd6I6sNifeOollT8Bafkb_XaN5XsmvpFUPHBucW_-ip_rFi0a_Ye5HYpApNXQKJVIweg0Gcq35cN9JCyULeb6QUwC3nukyfRHRPoXcbFKXm5mZ7Rqg5_kD1v5BVJBJbX3wMxaRODO37xJir4TNn23C7ZaUxZ2Pf8nrLGZjCpoSftTHTNDbye19IE-MtqDeRY5tzP0Eh6TKH0EVnHgXMQiq_zb7LISmyZKUlO6cUV5Ou6A" alt="Joyful pet owner hugging their happy dog in a sunlit park" class="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700 ease-out mix-blend-multiply"></div>
+<div class="flex items-start justify-between w-full">
+<div class="flex-1">
+<h2 class="font-headline-md text-headline-md text-on-background mb-xs">Usuario (Dueño)</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Busco cuidadores, paseadores y servicios de confianza para mi mascota.</p>
+</div>
+</div>
+</div>
+</label>
+<!-- Card 2: Cuidador -->
+<label class="group relative cursor-pointer">
+<input class="peer sr-only" name="role" type="radio" value="cuidador">
+<div class="bg-surface-container-lowest rounded-[24px] p-md organic-shadow border-2 border-transparent peer-checked:bg-[#B14D08]/5 transition-all duration-300 flex flex-col h-full overflow-hidden relative active:scale-95 peer-checked:border-secondary">
+<!-- Decorative Graphic Area -->
+<div class="w-full h-32 rounded-xl bg-surface-container mb-4 overflow-hidden relative flex items-center justify-center">
+<img alt="Friendly pet sitter caring for a happy dog in a cozy home environment" class="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700 ease-out mix-blend-multiply" src="https://lh3.googleusercontent.com/aida/AEtjO1XXhXpAYJOcETlj3URVVZFLEE8oOCGsgf5FhEXXzhAF4rklh1WsAImKA9YPgJTZHaCtA5_s6oCUCrrazArF7krWOwTygqvcAgPdfyaVw5L4tUACXHTNt2ze36UBZSOiotb7HqLd6yzqhGWwT8yF-bLZBoaCIiYoB81u_L28xzpjFSpmz7M_2b24wY_o5jT2gIY69smjVEZFTTuils3tYdWvXp_sXkPluyUorEfq2A-ZIqMr3cSmG9VPQAk">
+<!-- Overlay Icons -->
+</div>
+<div class="flex items-start justify-between w-full">
+<div class="flex-1">
+<h2 class="font-headline-md text-headline-md text-on-background mb-xs">Cuidador</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Quiero ofrecer mis servicios de paseo, alojamiento o guardería.</p>
+</div>
+</div>
+</div>
+</label>
+</div>
+<!-- Sticky Bottom Action -->
+<div class="fixed bottom-0 left-0 w-full p-margin-mobile bg-gradient-to-t from-background via-background to-transparent z-10 md:relative md:bg-none md:p-0 md:mt-xl">
+<div class="max-w-lg mx-auto w-full">
+
+<button id="continueBtn" class="w-full bg-primary text-on-primary py-4 rounded-full font-label-lg text-label-lg text-center shadow-lg hover:opacity-90 transition-opacity active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed" onclick="navigate()">Continuar</button></div>
+</div>
+</main>
+<script>
+        const radioInputs = document.querySelectorAll('input[type="radio"][name="role"]');
+        const continueBtn = document.getElementById('continueBtn');
+
+        radioInputs.forEach(input => {
+            input.addEventListener('change', () => {
+                continueBtn.disabled = false;
+            });
+        });
+
+        function navigate() {
+            const role = document.querySelector('input[name="role"]:checked');
+            if (!role) return;
+            if (role.value === 'owner') {
+                window.location.href = '{{DATA:SCREEN:SCREEN_73}}';
+            } else {
+                window.location.href = '{{DATA:SCREEN:SCREEN_70}}';
+            }
+        }
+    </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body></html>

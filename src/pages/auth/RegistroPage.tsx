@@ -34,7 +34,7 @@ const SANTIAGO = { lat: -33.4489, lng: -70.6693 }
 const MAX_MASCOTAS = 3
 const MAX_FOTOS_MASCOTA = 3
 
-/** Reduce una imagen a mÃ¡x 800px y la devuelve como dataURL (para guardar en el perfil). */
+/** Reduce una imagen a máx 800px y la devuelve como dataURL (para guardar en el perfil). */
 function reducirImagen(archivo: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(archivo)
@@ -63,10 +63,10 @@ function reducirImagen(archivo: File): Promise<string> {
 }
 
 function iniciales(nombre: string, apellido: string) {
-  return `${nombre.charAt(0)}${apellido.charAt(0)}`.toUpperCase() || 'ðŸ¾'
+  return `${nombre.charAt(0)}${apellido.charAt(0)}`.toUpperCase() || '👤'
 }
 
-/** Normaliza un texto para bÃºsquedas: sin tildes, minÃºsculas y sin espacios extra. */
+/** Normaliza un texto para búsquedas: sin tildes, mínimas y sin espacios extra. */
 function normalizar(texto: string) {
   return texto.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
 }
@@ -84,7 +84,7 @@ export default function RegistroPage() {
   const [fotoPerfil, setFotoPerfil] = useState<string | null>(null)
   // Paso 2 (Stitch 03 â€” compartido): el rol se mantiene todo el flujo
   const [rol, setRol] = useState<RolUsuario | null>(null)
-  // Paso 3 DUEÃ‘O (Stitch 04)
+  // Paso 3 DUEÑO (Stitch 04)
   const [modoMascotas, setModoMascotas] = useState<ModoMascota>('individual')
   const [mascotas, setMascotas] = useState<DatosMascota[]>([crearMascotaVacia()])
   const [fotoObjetivo, setFotoObjetivo] = useState<string | null>(null)
@@ -96,7 +96,7 @@ export default function RegistroPage() {
   const [zonaEnfocada, setZonaEnfocada] = useState(false)
   const [destinoMapa, setDestinoMapa] = useState<{ lat: number; lng: number } | null>(null)
   const [sugerenciasPrecio, setSugerenciasPrecio] = useState(false)
-  // Paso 4 (Stitch 05 dueÃ±o / 06 cuidador)
+  // Paso 4 (Stitch 05 dueño / 06 cuidador)
   const [correo, setCorreo] = useState('')
   const [contrasena, setContrasena] = useState('')
   const [confirmacion, setConfirmacion] = useState('')
@@ -110,7 +110,7 @@ export default function RegistroPage() {
   const inputFotoPerfil = useRef<HTMLInputElement>(null)
   const inputFotoMascota = useRef<HTMLInputElement>(null)
   const inputVerificacion = useRef<HTMLInputElement>(null)
-  // Evita que la sesiÃ³n reciÃ©n creada saque al usuario antes de ver la confirmaciÃ³n.
+  // Evita que la sesión recién creada saque al usuario antes de ver la confirmación.
   const registrando = useRef(false)
 
   useEffect(() => {
@@ -119,17 +119,15 @@ export default function RegistroPage() {
     }
   }, [sesionCargando, usuario, navigate])
 
-  const esDueno = rol === 'dueno' || rol === 'ambos'
-  const esCuidador = rol === 'cuidador' || rol === 'ambos'
-  const esAmbos = rol === 'ambos'
-  // Perfil dual (PRD): 5 pasos; dueÃ±o o cuidador: 4 pasos.
-  const TOTAL_PASOS = esAmbos ? 5 : 4
+  const esDueno = rol === 'dueno'
+  const esCuidador = rol === 'cuidador'
+  // Perfil dual eliminado: siempre 4 pasos (dueño o cuidador).
+  const TOTAL_PASOS = 4
   type Etapa = 'datos' | 'rol' | 'mascotas' | 'servicios' | 'confirmacion'
   function etapaDe(numero: number): Etapa {
     if (numero === 1) return 'datos'
     if (numero === 2) return 'rol'
     if (numero === TOTAL_PASOS) return 'confirmacion'
-    if (esAmbos) return numero === 3 ? 'mascotas' : 'servicios'
     return esCuidador ? 'servicios' : 'mascotas'
   }
   const etapa = etapaDe(paso)
@@ -137,12 +135,11 @@ export default function RegistroPage() {
   const titulosPaso: Record<number, string> = {
     1: 'Datos Personales',
     2: 'Elige tu rol',
-    3: etapaDe(3) === 'servicios' ? 'Servicios' : 'Detalles de Mascota',
-    4: etapaDe(4) === 'servicios' ? 'Servicios' : 'ConfirmaciÃ³n',
-    5: 'ConfirmaciÃ³n',
+    3: 'Detalles de Mascota',
+    4: 'Confirmación',
   }
 
-  /* ---------- Mascotas (solo DueÃ±o) ---------- */
+  /* ---------- Mascotas (solo Dueño) ---------- */
 
   function actualizarMascota(id: string, cambios: Partial<DatosMascota>) {
     setMascotas((actuales) => actuales.map((m) => (m.id === id ? { ...m, ...cambios } : m)))
@@ -231,12 +228,12 @@ export default function RegistroPage() {
     })
   }
 
-  /* ---------- ValidaciÃ³n y navegaciÃ³n ---------- */
+  /* ---------- Validación y navegación ---------- */
 
   function validarPaso(actual: number): string | null {
     if (actual === 1) {
       if (!nombre.trim() || !apellido.trim() || !telefono.trim()) {
-        return 'Completa tu nombre, apellido y telÃ©fono para continuar.'
+        return 'Completa tu nombre, apellido y teléfono para continuar.'
       }
       return null
     }
@@ -255,14 +252,14 @@ export default function RegistroPage() {
       if (!cuidador.zona.trim()) return 'Indica la zona donde ofreces tus servicios.'
       return null
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) return 'Escribe un correo electrÃ³nico vÃ¡lido.'
-    if (contrasena.length < 6) return 'La contraseÃ±a debe tener al menos 6 caracteres.'
-    if (contrasena !== confirmacion) return 'Las contraseÃ±as no coinciden.'
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) return 'Escribe un correo electrónico válido.'
+    if (contrasena.length < 6) return 'La contraseña debe tener al menos 6 caracteres.'
+    if (contrasena !== confirmacion) return 'Las contraseñas no coinciden.'
     if (!aceptaTerminos) {
-      return 'Debes aceptar los TÃ©rminos del servicio.'
+      return 'Debes aceptar los Términos del servicio.'
     }
     if (esDueno && !aceptaPrivacidad) {
-      return 'Debes aceptar la PolÃ­tica de privacidad.'
+      return 'Debes aceptar la Política de privacidad.'
     }
     if (esCuidador && !aceptaComunicaciones) {
       return 'Debes aceptar recibir comunicaciones y alertas importantes.'
@@ -299,7 +296,7 @@ export default function RegistroPage() {
         confetti({ particleCount: 45, angle: 120, spread: 60, origin: { x: 1, y: 0.7 } })
       }, 300)
     } catch {
-      // El confeti es decorativo: si falla, el registro sigue vÃ¡lido.
+      // El confeti es decorativo: si falla, el registro sigue válido.
     }
   }
 
@@ -328,13 +325,13 @@ export default function RegistroPage() {
               tarifa: (cuidador.precioNoche || cuidador.precioPaseo).trim(),
               zona: cuidador.zona.trim(),
               disponibilidad:
-                `DÃ­as ${cuidador.dias.join(' ') || 'â€”'} Â· ${cuidador.horaInicio}â€“${cuidador.horaFin}`.trim(),
+                `Días ${cuidador.dias.join(' ') || 'â€”'} · ${cuidador.horaInicio}â€“${cuidador.horaFin}`.trim(),
             }
           : null,
         onboardingCompleto: false,
       }
       // Borrador sin fotos en los metadatos de la cuenta: si confirma el correo en otro
-      // dispositivo, el perfil se completa igual al iniciar sesiÃ³n.
+      // dispositivo, el perfil se completa igual al iniciar sesión.
       const borrador = {
         ...datosPerfil,
         avatarUrl: null,
@@ -358,7 +355,7 @@ export default function RegistroPage() {
         guardarPerfilPendiente(perfil)
       }
       setExito(true)
-      if (esCuidador) lanzarConfeti()
+      if (esDueno) lanzarConfeti()
       window.scrollTo({ top: 0 })
     } catch (e) {
       registrando.current = false
@@ -370,7 +367,7 @@ export default function RegistroPage() {
 
   const primeraMascota = mascotas[0]
   const detalleMascota =
-    [primeraMascota?.tipo, primeraMascota?.raza, primeraMascota?.edadAnos ? `${primeraMascota.edadAnos} aÃ±os` : '']
+    [primeraMascota?.tipo, primeraMascota?.raza, primeraMascota?.edadAnos ? `${primeraMascota.edadAnos} años` : '']
       .filter(Boolean)
       .join(' â€¢ ') || 'Completa los datos de tu mascota'
   const zonasSugeridas =
@@ -392,7 +389,7 @@ export default function RegistroPage() {
             type="button"
             className={estilo.atras}
             onClick={retroceder}
-            aria-label={paso === 1 ? 'Volver a iniciar sesiÃ³n' : 'Volver al paso anterior'}
+            aria-label={paso === 1 ? 'Volver a iniciar sesión' : 'Volver al paso anterior'}
           >
             â†
           </button>
@@ -403,7 +400,7 @@ export default function RegistroPage() {
         <BarraProgreso
           pasoActual={paso}
           totalPasos={TOTAL_PASOS}
-          etiqueta={`${titulosPaso[paso]} Â· Paso ${paso}/${TOTAL_PASOS}`}
+          etiqueta={`${titulosPaso[paso]} · Paso ${paso}/${TOTAL_PASOS}`}
         />
 
         {error && (
@@ -456,7 +453,7 @@ export default function RegistroPage() {
             </div>
             <CampoTexto
               id="telefono"
-              etiqueta="TelÃ©fono"
+              etiqueta="Teléfono"
               tipo="text"
               valor={telefono}
               alCambiar={setTelefono}
@@ -466,14 +463,14 @@ export default function RegistroPage() {
             />
             <div className={estilo.campoArea}>
               <label className={estilo.etiquetaArea} htmlFor="descripcion">
-                DescripciÃ³n breve
+                Descripción breve
               </label>
               <textarea
                 id="descripcion"
                 className={estilo.area}
                 rows={3}
                 maxLength={150}
-                placeholder="Ej: Amante de los perros, paseo todos los dÃ­as..."
+                placeholder="Ej: Amante de los perros, paseo todos los días..."
                 value={descripcion}
                 onChange={(evento) => setDescripcion(evento.target.value)}
               />
@@ -483,9 +480,9 @@ export default function RegistroPage() {
         )}
 
         {paso === 2 && (
-          <section aria-label="SelecciÃ³n de rol">
+          <section aria-label="Selección de rol">
             <p className={estilo.tituloSeccion}>Elige tu rol</p>
-            <p className={estilo.subtituloSeccion}>Selecciona cÃ³mo usarÃ¡s Safe Paws para personalizar tu experiencia.</p>
+            <p className={estilo.subtituloSeccion}>Selecciona cómo usarás Safe Paws para personalizar tu experiencia.</p>
             <div className={estilo.roles}>
               {ROLES.map((opcion) => (
                 <label
@@ -523,7 +520,7 @@ export default function RegistroPage() {
           <section className={estilo.tarjeta} aria-label="Registrar mascota">
             <p className={estilo.tituloSeccion}>Registrar Mascota</p>
             <p className={estilo.subtituloSeccion}>
-              Sube fotos de tus compaÃ±eros y cuÃ©ntanos sobre ellos para brindarles el mejor cuidado.
+              Sube fotos de tus compañeros y cuéntanos sobre ellos para brindarles el mejor cuidado.
             </p>
             <div className={estilo.pestanas} role="group" aria-label="Tipo de registro de mascotas">
               {(
@@ -555,7 +552,7 @@ export default function RegistroPage() {
                   )}
                 </div>
                 <p className={estilo.etiquetaBloque}>
-                  {modoMascotas === 'grupo' ? 'Foto representativa (MÃ¡x 3)' : 'Fotos de tu mascota (MÃ¡x 3)'}
+                  {modoMascotas === 'grupo' ? 'Foto representativa (Máx 3)' : 'Fotos de tu mascota (Máx 3)'}
                 </p>
                 <div className={estilo.fotos}>
                   {mascota.fotos.map((foto, i) => (
@@ -567,7 +564,7 @@ export default function RegistroPage() {
                         aria-label={`Quitar foto ${i + 1}`}
                         onClick={() => quitarFotoMascota(mascota.id, i)}
                       >
-                        Ã—
+                        ×
                       </button>
                     </span>
                   ))}
@@ -642,7 +639,7 @@ export default function RegistroPage() {
                 <div className={estilo.rejilla}>
                   <CampoTexto
                     id={`mascota-edad-${mascota.id}`}
-                    etiqueta="Edad (aÃ±os)"
+                    etiqueta="Edad (años)"
                     valor={mascota.edadAnos}
                     alCambiar={(valor) => actualizarMascota(mascota.id, { edadAnos: valor })}
                     placeholder="Ej: 3"
@@ -671,7 +668,7 @@ export default function RegistroPage() {
             />
             {mascotas.length < MAX_MASCOTAS && (
               <button type="button" className={estilo.agregar} onClick={agregarMascota}>
-                + AÃ±adir otra mascota
+                + Añadir otra mascota
               </button>
             )}
           </section>
@@ -681,7 +678,7 @@ export default function RegistroPage() {
           <section className={estilo.tarjeta} aria-label="Configurar servicios">
             <p className={estilo.tituloSeccion}>Configura tus servicios</p>
             <p className={estilo.subtituloSeccion}>
-              Define quÃ© servicios ofreces, tu disponibilidad y tu zona de cobertura para encontrar a los clientes
+              Define qué servicios ofreces, tu disponibilidad y tu zona de cobertura para encontrar a los clientes
               ideales.
             </p>
             <p className={estilo.etiquetaBloque}>Servicios que ofreces</p>
@@ -699,7 +696,7 @@ export default function RegistroPage() {
               ))}
             </div>
             <p className={estilo.etiquetaBloque}>Disponibilidad semanal</p>
-            <div className={estilo.dias} role="group" aria-label="DÃ­as disponibles">
+            <div className={estilo.dias} role="group" aria-label="Días disponibles">
               {DIAS_SEMANA.map((dia) => (
                 <button
                   key={dia}
@@ -769,7 +766,7 @@ export default function RegistroPage() {
                 if (!e.currentTarget.contains(e.relatedTarget as Node)) setZonaEnfocada(false)
               }}
             >
-              <p className={estilo.ayuda}>Toca el mapa o arrastra el pin para marcar tu ubicaciÃ³n real.</p>
+              <p className={estilo.ayuda}>Toca el mapa o arrastra el pin para marcar tu ubicación real.</p>
               <MapaCobertura
                 radioKm={cuidador.radioKm}
                 centroInicial={SANTIAGO}
@@ -836,9 +833,9 @@ export default function RegistroPage() {
                 </div>
               )}
             </div>
-            <p className={estilo.etiquetaBloque}>VerificaciÃ³n de identidad</p>
+            <p className={estilo.etiquetaBloque}>Verificación de identidad</p>
             <p className={estilo.subtituloSeccion}>
-              Sube una foto de tu identificaciÃ³n oficial para generar confianza en la comunidad.
+              Sube una foto de tu identificación oficial para generar confianza en la comunidad.
             </p>
             <button
               type="button"
@@ -847,7 +844,7 @@ export default function RegistroPage() {
             >
               <span aria-hidden="true">ðŸ“„</span>
               {cuidador.verificacionNombre ?? 'Toca para subir documento'}
-              <small>JPG, PNG o PDF (MÃ¡x. 5MB)</small>
+              <small>JPG, PNG o PDF (Máx. 5MB)</small>
             </button>
             <input
               ref={inputVerificacion}
@@ -865,7 +862,7 @@ export default function RegistroPage() {
         )}
 
         {etapa === 'confirmacion' && esDueno && (
-          <section aria-label="ConfirmaciÃ³n de dueÃ±o">
+          <section aria-label="Confirmación de dueño">
             <p className={estilo.tituloSeccion}>Revisa tus datos</p>
             <div className={estilo.resumen}>
               <div className={estilo.resumenEncabezado}>
@@ -883,7 +880,7 @@ export default function RegistroPage() {
               </div>
               <dl className={estilo.resumenLista}>
                 <div className={estilo.resumenFila}>
-                  <dt>DueÃ±o</dt>
+                  <dt>Dueño</dt>
                   <dd>{`${nombre} ${apellido}`.trim() || 'â€”'}</dd>
                 </div>
                 <div className={estilo.resumenFila}>
@@ -891,17 +888,17 @@ export default function RegistroPage() {
                   <dd>{correo || 'â€”'}</dd>
                 </div>
                 <div className={estilo.resumenFila}>
-                  <dt>TelÃ©fono</dt>
+                  <dt>Teléfono</dt>
                   <dd>{telefono || 'â€”'}</dd>
                 </div>
               </dl>
             </div>
             <div className={estilo.tarjeta}>
-              <CampoTexto id="correo" etiqueta="Correo electrÃ³nico" tipo="email" valor={correo} alCambiar={setCorreo} autoComplete="email" requerido />
+              <CampoTexto id="correo" etiqueta="Correo electrónico" tipo="email" valor={correo} alCambiar={setCorreo} autoComplete="email" requerido />
               <div className={estilo.rejilla}>
                 <CampoTexto
                   id="contrasena"
-                  etiqueta="ContraseÃ±a (mÃ­n. 6)"
+                  etiqueta="Contraseña (mín. 6)"
                   tipo="password"
                   valor={contrasena}
                   alCambiar={setContrasena}
@@ -910,7 +907,7 @@ export default function RegistroPage() {
                 />
                 <CampoTexto
                   id="confirmacion"
-                  etiqueta="Confirmar contraseÃ±a"
+                  etiqueta="Confirmar contraseña"
                   tipo="password"
                   valor={confirmacion}
                   alCambiar={setConfirmacion}
@@ -921,13 +918,13 @@ export default function RegistroPage() {
               <label className={estilo.casilla}>
                 <input type="checkbox" checked={aceptaTerminos} onChange={(e) => setAceptaTerminos(e.target.checked)} />
                 <span>
-                  He leÃ­do y acepto los <strong>TÃ©rminos y condiciones</strong> del servicio.
+                  He leído y acepto los <strong>Términos y condiciones</strong> del servicio.
                 </span>
               </label>
               <label className={estilo.casilla}>
                 <input type="checkbox" checked={aceptaPrivacidad} onChange={(e) => setAceptaPrivacidad(e.target.checked)} />
                 <span>
-                  Acepto la <strong>PolÃ­tica de privacidad</strong> y el tratamiento de mis datos.
+                  Acepto la <strong>Política de privacidad</strong> y el tratamiento de mis datos.
                 </span>
               </label>
               {esCuidador && (
@@ -945,7 +942,7 @@ export default function RegistroPage() {
         )}
 
         {etapa === 'confirmacion' && !esDueno && (
-          <section aria-label="ConfirmaciÃ³n de cuidador">
+          <section aria-label="Confirmación de cuidador">
             <p className={estilo.tituloSeccion}>Revisa tus datos</p>
             <div className={estilo.resumen}>
               <div className={estilo.resumenEncabezado}>
@@ -959,15 +956,15 @@ export default function RegistroPage() {
               </div>
               <dl className={estilo.resumenLista}>
                 <div className={estilo.resumenFila}>
-                  <dt>Correo electrÃ³nico</dt>
+                  <dt>Correo electrónico</dt>
                   <dd>{correo || 'â€”'}</dd>
                 </div>
                 <div className={estilo.resumenFila}>
-                  <dt>TelÃ©fono</dt>
+                  <dt>Teléfono</dt>
                   <dd>{telefono || 'â€”'}</dd>
                 </div>
                 <div className={estilo.resumenFila}>
-                  <dt>UbicaciÃ³n</dt>
+                  <dt>Ubicación</dt>
                   <dd>{cuidador.zona || 'â€”'}</dd>
                 </div>
               </dl>
@@ -981,11 +978,11 @@ export default function RegistroPage() {
               </div>
             </div>
             <div className={estilo.tarjeta}>
-              <CampoTexto id="correo" etiqueta="Correo electrÃ³nico" tipo="email" valor={correo} alCambiar={setCorreo} autoComplete="email" requerido />
+              <CampoTexto id="correo" etiqueta="Correo electrónico" tipo="email" valor={correo} alCambiar={setCorreo} autoComplete="email" requerido />
               <div className={estilo.rejilla}>
                 <CampoTexto
                   id="contrasena"
-                  etiqueta="ContraseÃ±a (mÃ­n. 6)"
+                  etiqueta="Contraseña (mín. 6)"
                   tipo="password"
                   valor={contrasena}
                   alCambiar={setContrasena}
@@ -994,7 +991,7 @@ export default function RegistroPage() {
                 />
                 <CampoTexto
                   id="confirmacion"
-                  etiqueta="Confirmar contraseÃ±a"
+                  etiqueta="Confirmar contraseña"
                   tipo="password"
                   valor={confirmacion}
                   alCambiar={setConfirmacion}
@@ -1005,7 +1002,7 @@ export default function RegistroPage() {
               <label className={estilo.casilla}>
                 <input type="checkbox" checked={aceptaTerminos} onChange={(e) => setAceptaTerminos(e.target.checked)} />
                 <span>
-                  Acepto los <strong>TÃ©rminos y Condiciones</strong> de la plataforma.
+                  Acepto los <strong>Términos y condiciones</strong> de la plataforma.
                 </span>
               </label>
               <label className={estilo.casilla}>
@@ -1034,7 +1031,7 @@ export default function RegistroPage() {
               disabled={paso === 2 && !rol}
               onClick={avanzar}
             >
-              {paso === TOTAL_PASOS - 1 ? 'Continuar al Ãºltimo paso â†’' : 'Continuar â†’'}
+              {paso === TOTAL_PASOS - 1 ? 'Continuar al último paso →' : 'Continuar →'}
             </Button>
           ) : (
             <Button
@@ -1048,11 +1045,11 @@ export default function RegistroPage() {
               }
               onClick={() => void finalizar()}
             >
-              {enviando ? 'Creando tu cuentaâ€¦' : 'Finalizar Registro'}
+              {enviando ? 'Creando tu cuenta...' : 'Finalizar Registro'}
             </Button>
           )}
           <p className={estilo.pies}>
-            Â¿Ya tienes cuenta? <Link to="/iniciar-sesion">Inicia sesiÃ³n</Link>
+            ¿Ya tienes cuenta? <Link to="/iniciar-sesion">Inicia sesión</Link>
           </p>
         </div>
       </div>
@@ -1106,16 +1103,16 @@ export default function RegistroPage() {
             <div className={estilo.exitoMedalla} aria-hidden="true">
               ðŸ¾
             </div>
-            <h2 className={estilo.exitoTitulo}>Â¡Bienvenido a Safe Paws!</h2>
+            <h2 className={estilo.exitoTitulo}>¡Bienvenido a Safe Paws!</h2>
             <p className={estilo.exitoTexto}>
-              {esAmbos
-                ? `Tu perfil dual estÃ¡ listo: ya puedes reservar para ${primeraMascota?.nombre || 'tu mascota'} y recibir solicitudes como cuidador.`
-                : esDueno
-                ? `El perfil de ${primeraMascota?.nombre || 'tu mascota'} se ha creado exitosamente. Ya puedes empezar a disfrutar de todos nuestros servicios.`
-                : 'Tu perfil de cuidador ha sido creado con Ã©xito. Â¡Estamos felices de tenerte con nosotros!'}
+              {esDueno
+                ? `Tu perfil está listo: ya puedes reservar para ${primeraMascota?.nombre || 'tu mascota'} y recibir solicitudes como cuidador.`
+                : esCuidador
+                ? `Tu perfil de cuidador ha sido creado con éxito. ¡Estamos felices de tenerte con nosotros!`
+                : `El perfil de ${primeraMascota?.nombre || 'tu mascota'} se ha creado exitosamente. Ya puedes empezar a disfrutar de todos nuestros servicios.`}
             </p>
-            <Button tamanio="grande" className={estilo.boton} enlace={esCuidador ? '/panel' : '/explorar'}>
-              {esCuidador ? 'Â¡Listo! Ir a mi panel â†’' : 'Â¡Listo! Buscar cuidadores â†’'}
+            <Button tamanio="grande" className={estilo.boton} enlace={esCuidador ? '/panel' : '/'}>
+              {esCuidador ? '¡Listo! Ir a mi panel →' : '¡Listo! Ver servicios →'}
             </Button>
           </div>
         </div>
@@ -1123,3 +1120,5 @@ export default function RegistroPage() {
     </div>
   )
 }
+
+

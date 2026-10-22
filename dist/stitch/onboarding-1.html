@@ -1,0 +1,240 @@
+<!DOCTYPE html><html lang="en" style="width: 390px; height: 884px; overflow: hidden; position: relative;"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Safe Paws - Welcome</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-highest": "#e4e2e2",
+                        "tertiary-fixed-dim": "#c8c8b0",
+                        "outline-variant": "#c2c9bb",
+                        "on-primary-container": "#9dd090",
+                        "on-background": "#1b1c1c",
+                        "primary": "#154212",
+                        "surface": "#fbf9f8",
+                        "secondary-fixed-dim": "#ffb68d",
+                        "surface-container-low": "#f5f3f3",
+                        "on-secondary-fixed-variant": "#763300",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f2f0f0",
+                        "tertiary-fixed": "#e4e4cc",
+                        "outline": "#72796e",
+                        "tertiary": "#393a29",
+                        "on-secondary-container": "#672c00",
+                        "primary-fixed-dim": "#a1d494",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#474836",
+                        "surface-dim": "#dbd9d9",
+                        "surface-bright": "#fbf9f8",
+                        "on-primary-fixed": "#002201",
+                        "on-error": "#ffffff",
+                        "on-surface-variant": "#42493e",
+                        "on-secondary-fixed": "#331200",
+                        "secondary": "#9b4500",
+                        "secondary-container": "#fc8a40",
+                        "tertiary-container": "#50513f",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#a1d494",
+                        "on-primary-fixed-variant": "#23501e",
+                        "primary-fixed": "#bcf0ae",
+                        "on-tertiary-fixed": "#1b1d0e",
+                        "surface-tint": "#3b6934",
+                        "primary-container": "#2d5a27",
+                        "surface-variant": "#e4e2e2",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed": "#ffdbc9",
+                        "surface-container": "#efeded",
+                        "inverse-surface": "#303030",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#c3c4ac",
+                        "on-secondary": "#ffffff",
+                        "surface-container-high": "#eae8e7",
+                        "on-surface": "#1b1c1c",
+                        "background": "#fbf9f8"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "2xl": "1.5rem"
+                    },
+                    "spacing": {
+                        "gutter-mobile": "12px",
+                        "xl": "32px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "margin-mobile": "20px",
+                        "lg": "24px",
+                        "base": "4px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-lg": ["Inter"],
+                        "headline-xl": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "headline-xl-mobile": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "body-lg": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .carousel-slide {
+            transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .carousel-slide.active {
+            opacity: 1;
+            pointer-events: auto;
+            position: relative;
+        }
+        .dot {
+            transition: all 0.3s ease;
+        }
+        .dot.active {
+            width: 24px;
+            background-color: theme('colors.primary');
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-[#F5F5DC] text-on-background min-h-screen flex flex-col font-body-md antialiased font-['Inter']"><div class="fixed inset-0 z-0 overflow-hidden"><img alt="Background illustration" class="w-full h-full object-cover opacity-40" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCr4ouIW5XTpe2J89I3J-RMOVpzoXb3sF1m7Wza8g9z_ADWKPpHJuMP-V9c8XEERNYNTk1cottP1FxKcTju4-UNPH2pm9N65xIhTBud_SnaL0vayrCsvPNPliD98_0aFHK_ZI_sORT1R5fS6dsQoBW01BQ96hozWZ5e6T3DbU-L7zALpOxsoubRMDWjzRI9GVzEfZ5uHqKiZ6mJoHGrO2aG4dDA11KUrw2YjV29D_61HFISwLdOaSH3"><div class="absolute inset-0 bg-gradient-to-t from-[#F5F5DC] via-transparent to-[#F5F5DC]/50"></div></div>
+<!-- Top Navigation (Suppressed for Pre-Onboarding per instructions, but kept as structural placeholder if needed for brand logo) -->
+<header class="w-full flex justify-center items-center py-xl px-margin-mobile relative z-10">
+<h1 class="text-headline-xl-mobile font-headline-xl-mobile text-primary tracking-tight font-extrabold" style="font-family: 'Brush Script MT', cursive; font-size: 40px; letter-spacing: 2px;">
+            Safe <span class="material-symbols-outlined align-middle" style="font-size: 32px; font-variation-settings: 'FILL' 1;">pets</span> Paws
+        </h1>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex flex-col items-center justify-center px-margin-mobile relative w-full max-w-md mx-auto h-full pb-32 z-10">
+<div class="relative w-full h-[530px] flex flex-col items-center justify-center" id="carousel-container">
+<!-- Slide 1 -->
+<div class="carousel-slide active text-center" id="slide-1">
+<h2 class="text-headline-md font-headline-md text-primary mb-md">Encuentra cuidadores de confianza</h2>
+<p class="text-body-lg font-body-lg text-on-surface-variant max-w-[280px]">Conecta con personas apasionadas que cuidarán de tu mascota como si fuera suya.</p>
+</div>
+<!-- Slide 2 -->
+<div class="carousel-slide text-center" id="slide-2">
+<div class="w-64 h-64 mb-lg rounded-2xl shadow-[0px_4px_20px_rgba(45,90,39,0.08)] flex items-center justify-center overflow-hidden relative">
+<img class="w-full h-full object-cover opacity-80" data-alt="A stylized, clean UI graphic representing a mobile map interface. The map shows a stylized route with a green tracking pin featuring a paw print. The aesthetic is modern, bright, and reassuring, using soft cream backgrounds and forest green accents to convey safety and real-time tracking capabilities in a trustworthy manner." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCdMlJKdAdvLEjwiYnt7Kj2c2lYWZfNfGEzW86H1q3m1vnQtwA39Oz3iYunDEts7QZ07hSJovvbec8IPfdA-pQS80YbVqcUhhS_UJeYoLyTgO5K_-BKHzoBQCnFIOme4FuCMdpRIgcvdD-ZGd3dU9t2eevJyZjO0PRkvFBrBMbrfaYA_qNtyiYu4rjyN0IluzP1ZAjTx2V9DwmeTF16xJQNB0Ksys5edWXSm8hycBIkLozM3vUNxZyD">
+<div class="absolute bg-white/90 p-4 rounded-full shadow-lg">
+<span class="material-symbols-outlined text-secondary-container" style="font-size: 48px; font-variation-settings: 'FILL' 1;">location_on</span>
+</div>
+</div>
+<h2 class="text-headline-md font-headline-md text-primary mb-md">Seguimiento en tiempo real</h2>
+<p class="text-body-lg font-body-lg text-on-surface-variant max-w-[280px]">Mantente informado en cada momento sobre los paseos y el bienestar de tu mejor amigo.</p>
+</div>
+<!-- Slide 3 -->
+<div class="carousel-slide text-center" id="slide-3">
+<div class="w-64 h-64 mb-lg rounded-full shadow-[0px_4px_20px_rgba(45,90,39,0.12)] flex items-center justify-center border-4 border-primary-container/20">
+<span class="material-symbols-outlined text-primary-container" style="font-size: 100px; font-variation-settings: 'FILL' 1;">shield</span>
+</div>
+<h2 class="text-headline-md font-headline-md text-primary mb-md">Pagos seguros y sin preocupaciones</h2>
+<p class="text-body-lg font-body-lg text-on-surface-variant max-w-[280px]">Transacciones protegidas para que solo te enfoques en el cariño hacia tu mascota.</p>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation / Action Area -->
+<div class="fixed bottom-0 left-0 w-full bg-gradient-to-t from-[#F5F5DC] via-[#F5F5DC] to-transparent pt-xl pb-xl px-margin-mobile flex flex-col items-center z-50">
+<!-- Pagination Dots -->
+<div class="flex space-x-2 mb-xl" id="dots-container">
+<button aria-label="Go to slide 1" class="dot active w-2 h-2 rounded-full bg-outline-variant" onclick="goToSlide(0)"></button>
+<button aria-label="Go to slide 2" class="dot w-2 h-2 rounded-full bg-outline-variant" onclick="goToSlide(1)"></button>
+<button aria-label="Go to slide 3" class="dot w-2 h-2 rounded-full bg-outline-variant" onclick="goToSlide(2)"></button>
+</div>
+<!-- CTA Button -->
+<button class="w-full max-w-sm bg-primary text-on-primary py-4 rounded-xl font-label-lg text-label-lg shadow-[0px_4px_20px_rgba(45,90,39,0.14)] hover:bg-on-primary-fixed-variant transition-colors duration-200 transform hover:scale-[0.98]" id="start-btn">Empezar</button>
+</div>
+<!-- BottomNavBar (Suppressed intentionally as per rules for Linear/Transactional/Onboarding pages) -->
+<script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.carousel-slide');
+        const dots = document.querySelectorAll('.dot');
+        const startBtn = document.getElementById('start-btn');
+
+        function updateCarousel(index) {
+            slides.forEach((slide, i) => {
+                if (i === index) {
+                    slide.classList.add('active');
+                } else {
+                    slide.classList.remove('active');
+                }
+            });
+
+            dots.forEach((dot, i) => {
+                if (i === index) {
+                    dot.classList.add('active');
+                    dot.classList.remove('bg-outline-variant');
+                } else {
+                    dot.classList.remove('active');
+                    dot.classList.add('bg-outline-variant');
+                }
+            });
+
+            // Slight interaction on CTA when reaching end
+            if (index === slides.length - 1) {
+                startBtn.classList.add('animate-pulse');
+                setTimeout(() => startBtn.classList.remove('animate-pulse'), 1000);
+            }
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            updateCarousel(currentSlide);
+        }
+
+        // Swipe support for mobile
+        let touchstartX = 0;
+        let touchendX = 0;
+        
+        const slider = document.getElementById('carousel-container');
+
+        function handleGesture() {
+            if (touchendX < touchstartX - 50) {
+                // Swipe Left
+                if (currentSlide < slides.length - 1) goToSlide(currentSlide + 1);
+            }
+            if (touchendX > touchstartX + 50) {
+                // Swipe Right
+                if (currentSlide > 0) goToSlide(currentSlide - 1);
+            }
+        }
+
+        slider.addEventListener('touchstart', e => {
+            touchstartX = e.changedTouches[0].screenX;
+        });
+
+        slider.addEventListener('touchend', e => {
+            touchendX = e.changedTouches[0].screenX;
+            handleGesture();
+        });
+    </script>
+</body></html>

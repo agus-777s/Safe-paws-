@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+﻿import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { User } from '@supabase/supabase-js'
 import type { DatosRegistro } from '@/types/auth'
@@ -112,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       window.localStorage.removeItem(CLAVE_BIENVENIDA)
     } catch {
-      // Sin almacenamiento disponible: no es crítico.
+      // Sin almacenamiento dispono es crítico�­tico.
     }
   }, [])
 
@@ -141,3 +141,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return <AuthContext.Provider value={valor}>{children}</AuthContext.Provider>
 }
+

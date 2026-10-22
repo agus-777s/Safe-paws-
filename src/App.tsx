@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+﻿import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import RutaProtegida from '@/components/routing/RutaProtegida'
 import PuertaPerfil from '@/components/routing/PuertaPerfil'
 import { AuthProvider } from '@/context/AuthProvider'
@@ -34,3 +34,4 @@ function App() {
 }
 
 export default App
+

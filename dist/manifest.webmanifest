@@ -1,0 +1,32 @@
+{
+  "name": "Safe Paws - Cuidado de mascotas",
+  "short_name": "Safe Paws",
+  "description": "Plataforma de cuidado de mascotas para conectar dueños con cuidadores de confianza.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f6faf8",
+  "theme_color": "#154212",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/icons/icono-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icono-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icono-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

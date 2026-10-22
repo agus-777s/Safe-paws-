@@ -1,0 +1,255 @@
+<!DOCTYPE html><html lang="es" style="width: 390px; height: 884px; overflow: hidden; position: relative;"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Safe Paws - Registro Paso 1</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Montserrat:wght@600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container-highest": "#e4e2e2",
+                        "tertiary-fixed-dim": "#c8c8b0",
+                        "outline-variant": "#c2c9bb",
+                        "on-primary-container": "#9dd090",
+                        "on-background": "#1b1c1c",
+                        "primary": "#154212",
+                        "surface": "#fbf9f8",
+                        "secondary-fixed-dim": "#ffb68d",
+                        "surface-container-low": "#f5f3f3",
+                        "on-secondary-fixed-variant": "#763300",
+                        "error": "#ba1a1a",
+                        "inverse-on-surface": "#f2f0f0",
+                        "tertiary-fixed": "#e4e4cc",
+                        "outline": "#72796e",
+                        "tertiary": "#393a29",
+                        "on-secondary-container": "#672c00",
+                        "primary-fixed-dim": "#a1d494",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#474836",
+                        "surface-dim": "#dbd9d9",
+                        "surface-bright": "#fbf9f8",
+                        "on-primary-fixed": "#002201",
+                        "on-error": "#ffffff",
+                        "on-surface-variant": "#42493e",
+                        "on-secondary-fixed": "#331200",
+                        "secondary": "#9b4500",
+                        "secondary-container": "#fc8a40",
+                        "tertiary-container": "#50513f",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#a1d494",
+                        "on-primary-fixed-variant": "#23501e",
+                        "primary-fixed": "#bcf0ae",
+                        "on-tertiary-fixed": "#1b1d0e",
+                        "surface-tint": "#3b6934",
+                        "primary-container": "#2d5a27",
+                        "surface-variant": "#e4e2e2",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed": "#ffdbc9",
+                        "surface-container": "#efeded",
+                        "inverse-surface": "#303030",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#c3c4ac",
+                        "on-secondary": "#ffffff",
+                        "surface-container-high": "#eae8e7",
+                        "on-surface": "#1b1c1c",
+                        "background": "#fbf9f8"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter-mobile": "12px",
+                        "xl": "32px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "margin-mobile": "20px",
+                        "lg": "24px",
+                        "base": "4px",
+                        "xs": "4px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-lg": ["Inter"],
+                        "headline-xl": ["Montserrat"],
+                        "headline-lg": ["Montserrat"],
+                        "headline-xl-mobile": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-xl-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "700" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #F5F5DC; } /* Level 0 Background */
+        .ambient-shadow { box-shadow: 0px 4px 20px rgba(45, 90, 39, 0.08); }
+        .input-floating-label:focus-within label {
+            transform: translateY(-1.5rem) scale(0.85);
+            color: #154212; /* Primary */
+        }
+        .input-floating-label:focus-within input, .input-floating-label:focus-within textarea {
+            border-color: #154212;
+            border-width: 2px;
+        }
+        .input-filled label {
+             transform: translateY(-1.5rem) scale(0.85);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="font-body-md text-on-surface antialiased min-h-screen flex flex-col items-center relative overflow-hidden">
+<div class="w-full max-w-md flex-grow flex flex-col relative px-margin-mobile pt-lg pb-xl z-10">
+<!-- TopAppBar (Transactional - Hidden/Modified for multi-step) -->
+<header class="flex items-center justify-between w-full py-md">
+<button class="p-sm text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors flex items-center justify-center" onclick="window.location.href='{{DATA:SCREEN:SCREEN_119}}'">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="flex-grow text-center">
+<h1 class="font-headline-md text-headline-md text-primary">Registro</h1>
+</div>
+<div class="w-10"></div> <!-- Spacer for centering -->
+</header>
+<!-- Progress Bar -->
+<div class="w-full mt-sm mb-xl">
+<div class="flex justify-between items-center mb-sm">
+<span class="font-label-lg text-label-lg text-primary">Datos Personales</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Paso 1/4</span>
+</div>
+<div class="w-full bg-[#fdfaf6] rounded-full h-2"> <!-- Light Cream track -->
+<div class="bg-primary h-2 rounded-full" style="width: 25%"></div>
+</div>
+</div>
+<!-- Main Content Form -->
+<main class="flex-grow flex flex-col gap-lg bg-surface p-md rounded-[24px] ambient-shadow">
+<!-- Profile Photo Upload -->
+<div class="flex flex-col items-center justify-center pt-md pb-sm">
+<div class="relative group cursor-pointer">
+<div class="w-24 h-24 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden border-2 border-dashed border-outline-variant"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDq0KtW1JJYThDiAfFrDrVcG3hwMHr6SFhniaEJgW28Dmc5oeWkC3RPaQx7fJVdKRwJHKFlJhis3nXTgFbVEmoicbIyDiK27Nlnjsr7iMZ-JJFXZbvl9OgRz9dEfpfvBHhc_WCr9CWrIqx2hZ6WJO322t2QAT4x8v1-jZvspME--EogY_W3ZE6BAfRL0e_0F1BYKjKRhiYKKOO_PD-km7dd1U8K1FHD_iJzgEoXsp1wh_EyBesy0PzN" alt="Profile placeholder" class="w-full h-full object-cover opacity-40"></div>
+<div class="absolute bottom-0 right-0 bg-secondary-container text-on-secondary-container rounded-full p-1 shadow-md cursor-pointer" id="upload-photo-btn">
+<span class="material-symbols-outlined text-[16px]">add</span>
+</div>
+</div>
+<p class="mt-sm font-label-sm text-label-sm text-on-surface-variant">Sube una foto de perfil</p>
+</div>
+<form class="flex flex-col gap-md">
+<!-- Nombre Input -->
+<div class="relative input-floating-label bg-surface rounded-xl">
+<input class="block w-full px-4 pt-6 pb-2 text-on-surface bg-transparent border-outline-variant rounded-xl appearance-none focus:outline-none focus:ring-0 transition-colors" id="nombre" placeholder=" " required="" type="text">
+<label class="absolute text-outline duration-300 transform -translate-y-3 scale-100 top-4 z-10 origin-[0] left-4" for="nombre">Nombre</label>
+</div>
+<!-- Apellido Input -->
+<div class="relative input-floating-label bg-surface rounded-xl">
+<input class="block w-full px-4 pt-6 pb-2 text-on-surface bg-transparent border-outline-variant rounded-xl appearance-none focus:outline-none focus:ring-0 transition-colors" id="apellido" placeholder=" " required="" type="text">
+<label class="absolute text-outline duration-300 transform -translate-y-3 scale-100 top-4 z-10 origin-[0] left-4" for="apellido">Apellido</label>
+</div>
+<!-- Descripción Breve Textarea -->
+<div class="relative input-floating-label bg-surface rounded-xl">
+<textarea class="block w-full px-4 pt-6 pb-2 text-on-surface bg-transparent border-outline-variant rounded-xl appearance-none focus:outline-none focus:ring-0 transition-colors resize-none" id="descripcion" maxlength="150" placeholder=" " required="" rows="3"></textarea>
+<label class="absolute text-outline duration-300 transform -translate-y-3 scale-100 top-4 z-10 origin-[0] left-4" for="descripcion">Descripción breve</label>
+<div class="flex justify-between px-xs mt-1">
+<p class="font-body-sm text-[12px] text-on-surface-variant italic">Ej: Amante de los perros, paseo todos los días...</p>
+<p class="font-body-sm text-[12px] text-on-surface-variant"><span class="" id="char-count">0</span>/150</p>
+</div>
+</div>
+</form>
+</main>
+<!-- CTA Bottom -->
+<div class="mt-auto pt-lg pb-sm w-full">
+<button class="w-full bg-secondary text-on-secondary font-label-lg text-label-lg py-4 rounded-xl shadow-md hover:bg-opacity-90 transition-all flex items-center justify-center gap-sm" onclick="window.location.href='{{DATA:SCREEN:SCREEN_67}}'">
+                Continuar
+                <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<script>
+        // Floating label logic for pre-filled inputs (though empty here, good practice)
+        document.querySelectorAll('input, textarea').forEach(element => {
+            element.addEventListener('blur', () => {
+                if(element.value.trim() !== '') {
+                    element.parentElement.classList.add('input-filled');
+                } else {
+                    element.parentElement.classList.remove('input-filled');
+                }
+            });
+        });
+
+        // Character counter for textarea
+        const textarea = document.getElementById('descripcion');
+        const charCount = document.getElementById('char-count');
+        
+        textarea.addEventListener('input', function() {
+            charCount.textContent = this.value.length;
+        });
+    </script>
+<div class="fixed inset-0 z-50 flex items-end justify-center bg-black/40 transition-opacity duration-300 opacity-0 pointer-events-none" id="photo-action-sheet">
+<div class="w-full max-w-md bg-surface rounded-t-[24px] p-md flex flex-col gap-md transform translate-y-full transition-transform duration-300">
+<div class="w-12 h-1.5 bg-outline-variant rounded-full mx-auto mb-sm"></div>
+<h3 class="font-headline-md text-center text-on-surface">Subir foto de perfil</h3>
+<div class="flex flex-col gap-sm">
+<button class="flex items-center gap-md p-md hover:bg-surface-container-low rounded-xl transition-colors text-on-surface">
+<span class="material-symbols-outlined">photo_camera</span>
+<span class="font-body-md">Hacer foto</span>
+</button>
+<button class="flex items-center gap-md p-md hover:bg-surface-container-low rounded-xl transition-colors text-on-surface">
+<span class="material-symbols-outlined">image</span>
+<span class="font-body-md">Elegir de la galería</span>
+</button>
+</div>
+<button class="mt-sm p-md text-primary font-label-lg text-center" id="close-action-sheet">Cancelar</button>
+</div>
+</div><script>
+    const actionSheet = document.getElementById('photo-action-sheet');
+    const actionSheetContent = actionSheet.querySelector('div');
+    const openBtn = document.getElementById('upload-photo-btn');
+    const closeBtn = document.getElementById('close-action-sheet');
+
+    const toggleActionSheet = (isOpen) => {
+        if (isOpen) {
+            actionSheet.classList.remove('opacity-0', 'pointer-events-none');
+            actionSheet.classList.add('opacity-100');
+            actionSheetContent.classList.remove('translate-y-full');
+            actionSheetContent.classList.add('translate-y-0');
+        } else {
+            actionSheet.classList.add('opacity-0', 'pointer-events-none');
+            actionSheet.classList.remove('opacity-100');
+            actionSheetContent.classList.add('translate-y-full');
+            actionSheetContent.classList.remove('translate-y-0');
+        }
+    };
+
+    openBtn.addEventListener('click', () => toggleActionSheet(true));
+    closeBtn.addEventListener('click', () => toggleActionSheet(false));
+    actionSheet.addEventListener('click', (e) => {
+        if (e.target === actionSheet) toggleActionSheet(false);
+    });
+</script>
+
+
+
+</body></html>

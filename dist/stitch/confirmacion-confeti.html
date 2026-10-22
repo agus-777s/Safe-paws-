@@ -1,0 +1,202 @@
+<!DOCTYPE html><html lang="es" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Revisa tus datos - Cuidador</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "error-container": "#ffdad6",
+                        "tertiary": "#393a29",
+                        "inverse-surface": "#303030",
+                        "on-secondary-fixed-variant": "#763300",
+                        "outline-variant": "#c2c9bb",
+                        "on-primary-fixed-variant": "#23501e",
+                        "surface-container-highest": "#e4e2e2",
+                        "on-tertiary-fixed-variant": "#474836",
+                        "on-secondary-fixed": "#331200",
+                        "background": "#fbf9f8",
+                        "tertiary-fixed": "#e4e4cc",
+                        "surface-container-high": "#eae8e7",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#672c00",
+                        "secondary-fixed-dim": "#ffb68d",
+                        "on-background": "#1b1c1c",
+                        "primary-fixed": "#bcf0ae",
+                        "surface-container": "#efeded",
+                        "on-primary-container": "#9dd090",
+                        "on-tertiary-fixed": "#1b1d0e",
+                        "surface-bright": "#fbf9f8",
+                        "on-primary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "surface-variant": "#e4e2e2",
+                        "primary": "#154212",
+                        "tertiary-fixed-dim": "#c8c8b0",
+                        "surface": "#fbf9f8",
+                        "on-surface-variant": "#42493e",
+                        "secondary-container": "#fc8a40",
+                        "surface-tint": "#3b6934",
+                        "secondary": "#9b4500",
+                        "inverse-on-surface": "#f2f0f0",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "primary-container": "#2d5a27",
+                        "on-primary-fixed": "#002201",
+                        "secondary-fixed": "#ffdbc9",
+                        "inverse-primary": "#a1d494",
+                        "outline": "#72796e",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface": "#1b1c1c",
+                        "surface-container-low": "#f5f3f3",
+                        "on-error-container": "#93000a",
+                        "surface-dim": "#dbd9d9",
+                        "tertiary-container": "#50513f",
+                        "on-tertiary-container": "#c3c4ac",
+                        "primary-fixed-dim": "#a1d494"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "xs": "4px",
+                        "base": "4px",
+                        "md": "16px",
+                        "sm": "8px",
+                        "gutter-mobile": "12px",
+                        "xl": "32px",
+                        "margin-mobile": "20px"
+                    },
+                    "fontFamily": {
+                        "headline-lg": ["Montserrat"],
+                        "headline-xl-mobile": ["Montserrat"],
+                        "body-sm": ["Inter"],
+                        "headline-xl": ["Montserrat"],
+                        "body-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-lg": ["Inter"],
+                        "headline-md": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "headline-lg": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-xl-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<script class="" src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script></head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md antialiased">
+<!-- TopAppBar -->
+<header class="flex items-center px-margin-mobile h-16 w-full bg-surface text-primary font-headline-md text-headline-md-mobile md:text-headline-md w-full top-0 shadow-[0px_4px_20px_rgba(45,90,39,0.08)] shadow-sm sticky z-10">
+<button aria-label="Volver" class="flex items-center justify-center p-2 rounded-full hover:bg-primary-container/10 transition-colors active:scale-95 duration-200 mr-4" onclick="window.location.href='{{DATA:SCREEN:SCREEN_19}}'">
+<span class="material-symbols-outlined text-primary" data-icon="arrow_back">arrow_back</span>
+</button>
+<span class="font-headline-lg text-primary truncate">Revisa tus datos</span>
+</header>
+<!-- Main Content -->
+<main class="flex-grow px-margin-mobile py-lg max-w-md mx-auto w-full flex flex-col">
+<!-- Progress Bar -->
+<div class="mb-xl">
+<div class="flex justify-between font-label-sm text-label-sm text-on-surface-variant mb-sm">
+<span class="">Paso 4 de 4</span>
+<span class="font-semibold text-primary">Completado</span>
+</div>
+<div class="h-2 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all duration-500 w-full"></div>
+</div>
+</div>
+<div class="flex-grow flex flex-col gap-lg">
+<!-- Summary Card -->
+<div class="bg-surface-container-lowest rounded-[24px] p-md shadow-[0px_4px_20px_rgba(45,90,39,0.08)]">
+<div class="flex flex-col items-center mb-md border-b border-surface-variant pb-md">
+<div class="w-24 h-24 rounded-full overflow-hidden mb-sm border-4 border-surface shadow-sm">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a friendly, smiling man in his 30s. He has short dark hair and a neat beard, wearing a casual forest green t-shirt. The background is a soft, out-of-focus park setting with natural sunlight. The image conveys warmth, trustworthiness, and a love for the outdoors, matching the app's caring and professional pet-care aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLKTvFSreRQaA6mTEg6kivzBNLnHc9wEzScYBVIEJc9P_mUbajeNMEH23W7cVfgaVsaoRyTcorQa3QbxRxd3jFdqstsxItNmBQpYcFs5PRA-A_-5JpYa-I5-NlFsVcByQezdx-9mMG_hFpT9r3rMj2h2IxlvWC1tBk_0fOKazQ65nA75aIQ-OQB-zvcPODjMEa4z41HaQNlISEewab-NaJ7gyB--5jXxsP4Poi3b6rCcvw7z-gPMuF">
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Carlos Mendoza</h2>
+<p class="font-body-sm text-body-sm text-outline">Cuidador de mascotas</p>
+</div>
+<div class="flex flex-col gap-sm">
+<div class="flex items-start gap-md">
+<span class="material-symbols-outlined text-outline mt-1 text-[20px]" data-icon="mail">mail</span>
+<div>
+<p class="font-label-sm text-label-sm text-outline">Correo electrónico</p>
+<p class="font-body-md text-body-md text-on-surface break-all">carlos.mendoza@email.com</p>
+</div>
+</div>
+<div class="flex items-start gap-md">
+<span class="material-symbols-outlined text-outline mt-1 text-[20px]" data-icon="call">call</span>
+<div>
+<p class="font-label-sm text-label-sm text-outline">Teléfono</p>
+<p class="font-body-md text-body-md text-on-surface">+56 9 1234 5678</p>
+</div>
+</div><div class="flex items-start gap-md">
+<span class="material-symbols-outlined text-outline mt-1 text-[20px]" data-icon="location_on">location_on</span>
+<div>
+<p class="font-label-sm text-label-sm text-outline">Ubicación</p>
+<p class="font-body-md text-body-md text-on-surface">Santiago, Providencia</p>
+</div>
+</div>
+</div>
+<div class="mt-md pt-md border-t border-surface-variant">
+<p class="font-label-sm text-label-sm text-outline mb-sm">Servicios ofrecidos</p>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-primary-container/10 text-primary rounded-full font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="directions_walk">directions_walk</span>
+                            Paseo
+                        </span>
+<span class="px-3 py-1 bg-secondary-container/20 text-secondary rounded-full font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="home_work">home_work</span>
+                            Guardería
+                        </span>
+</div>
+</div>
+</div>
+<!-- Terms and Conditions -->
+<div class="flex flex-col gap-sm mt-auto mb-lg">
+<label class="flex items-start gap-sm cursor-pointer group">
+<div class="relative flex items-center mt-1">
+<input class="peer h-5 w-5 rounded border-outline bg-transparent text-primary focus:ring-primary focus:ring-offset-background transition-colors" onchange="const btn = document.querySelector('main button.bg-primary'); const cb2 = document.querySelector('div.flex-col.gap-sm.mt-auto.mb-lg &gt; label:nth-child(2) input'); btn.disabled = !(this.checked &amp;&amp; cb2.checked);" required="" type="checkbox">
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">
+                        Acepto los <a class="text-primary underline hover:text-primary-container transition-colors" href="#">Términos y Condiciones</a> de la plataforma.
+                    </span>
+</label>
+<label class="flex items-start gap-sm cursor-pointer group">
+<div class="relative flex items-center mt-1">
+<input class="peer h-5 w-5 rounded border-outline bg-transparent text-primary focus:ring-primary focus:ring-offset-background transition-colors" onchange="const btn = document.querySelector('main button.bg-primary'); const cb1 = document.querySelector('div.flex-col.gap-sm.mt-auto.mb-lg &gt; label:nth-child(1) input'); btn.disabled = !(this.checked &amp;&amp; cb1.checked);" type="checkbox">
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">
+                        Acepto recibir comunicaciones y alertas importantes.
+                    </span>
+</label>
+</div>
+<!-- Actions -->
+<button class="w-full bg-primary text-on-primary py-md px-lg rounded-xl font-label-lg text-label-lg shadow-md hover:bg-primary-container transition-colors active:scale-95 duration-200 flex justify-center items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100" disabled="" onclick="confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } }); document.getElementById('welcome-modal').classList.remove('hidden');">
+                Finalizar Registro
+                <span class="material-symbols-outlined text-[20px]" data-icon="check_circle">check_circle</span>
+</button>
+</div>
+</main>
+<div class="hidden fixed inset-0 z-50 flex items-center justify-center bg-on-background/40 backdrop-blur-sm px-margin-mobile" id="welcome-modal"><div class="bg-surface rounded-[24px] p-xl max-w-sm w-full text-center shadow-xl flex flex-col items-center gap-md"><div class="w-20 h-20 bg-primary-container/20 rounded-full flex items-center justify-center mb-md"><span class="material-symbols-outlined text-primary text-[48px]">pets</span></div><h2 class="font-headline-xl text-on-surface">¡Bienvenido a Safe Paws!</h2><p class="text-body-md text-on-surface-variant">Tu perfil de cuidador ha sido creado con éxito. ¡Estamos felices de tenerte con nosotros!</p><button class="w-full bg-primary text-on-primary py-md px-lg rounded-xl font-label-lg text-label-lg shadow-md hover:bg-primary-container transition-colors active:scale-95" onclick="window.location.href='{{DATA:SCREEN:SCREEN_115}}'">Listo, ir al inicio</button></div></div>
+
+
+
+</body></html>

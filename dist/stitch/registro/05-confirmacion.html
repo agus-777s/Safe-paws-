@@ -1,0 +1,287 @@
+<!DOCTYPE html><html class="light" lang="es" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Safe Paws - Registro Completo</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#efeded",
+                        "secondary-container": "#fc8a40",
+                        "primary": "#154212",
+                        "on-surface-variant": "#42493e",
+                        "primary-fixed-dim": "#a1d494",
+                        "outline": "#72796e",
+                        "on-tertiary-container": "#c3c4ac",
+                        "error-container": "#ffdad6",
+                        "surface-tint": "#3b6934",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#f2f0f0",
+                        "surface": "#fbf9f8",
+                        "surface-container-high": "#eae8e7",
+                        "primary-fixed": "#bcf0ae",
+                        "secondary": "#9b4500",
+                        "secondary-fixed": "#ffdbc9",
+                        "on-primary-fixed": "#002201",
+                        "surface-container-low": "#f5f3f3",
+                        "inverse-primary": "#a1d494",
+                        "error": "#ba1a1a",
+                        "tertiary-container": "#50513f",
+                        "surface-dim": "#dbd9d9",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#23501e",
+                        "surface-bright": "#fbf9f8",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#ffb68d",
+                        "on-secondary-container": "#672c00",
+                        "surface-variant": "#e4e2e2",
+                        "background": "#fbf9f8",
+                        "outline-variant": "#c2c9bb",
+                        "on-surface": "#1b1c1c",
+                        "on-error": "#ffffff",
+                        "on-background": "#1b1c1c",
+                        "on-tertiary": "#ffffff",
+                        "primary-container": "#2d5a27",
+                        "tertiary-fixed": "#e4e4cc",
+                        "on-primary-container": "#9dd090",
+                        "surface-container-highest": "#e4e2e2",
+                        "on-secondary-fixed": "#331200",
+                        "inverse-surface": "#303030",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-fixed-variant": "#763300",
+                        "on-tertiary-fixed-variant": "#474836",
+                        "tertiary": "#393a29",
+                        "tertiary-fixed-dim": "#c8c8b0",
+                        "on-tertiary-fixed": "#1b1d0e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "xl": "32px",
+                        "base": "4px",
+                        "xs": "4px",
+                        "md": "16px",
+                        "margin-mobile": "20px",
+                        "gutter-mobile": "12px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "headline-xl-mobile": ["Montserrat"],
+                        "body-sm": ["Inter"],
+                        "label-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-xl": ["Montserrat"],
+                        "headline-md": ["Montserrat"],
+                        "label-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Montserrat"]
+                    },
+                    "fontSize": {
+                        "headline-xl-mobile": ["28px", { "lineHeight": "34px", "fontWeight": "700" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "headline-lg": ["24px", { "lineHeight": "32px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .ambient-shadow {
+            box-shadow: 0px 4px 20px 0px rgba(45, 90, 39, 0.08);
+        }
+        
+        .overlay-shadow {
+            box-shadow: 0px 8px 30px 0px rgba(45, 90, 39, 0.12);
+        }
+
+        .success-overlay {
+            backdrop-filter: blur(8px);
+            transition: opacity 0.5s ease;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background min-h-screen flex flex-col items-center relative overflow-x-hidden md:py-xl">
+<!-- TopAppBar (Transactional - simplified) -->
+<header class="w-full top-0 sticky bg-background z-40 flex justify-between items-center px-margin-mobile py-sm md:max-w-md mx-auto">
+<div class="flex items-center gap-2 cursor-pointer" onclick="window.history.back()">
+<button class="material-symbols-outlined text-primary font-bold cursor-pointer active:scale-95 transition-all" onclick="window.location.href = '{{DATA:SCREEN:SCREEN_38}}'">arrow_back</button>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile font-bold text-primary tracking-tight">Safe Paws</h1>
+<div class="w-6"></div> <!-- Spacer for centering -->
+</header>
+<main class="w-full max-w-md px-margin-mobile flex-1 flex flex-col relative z-10 pb-xl">
+<!-- Progress Bar -->
+<div class="w-full mt-lg mb-xl">
+<div class="flex justify-between items-center mb-sm">
+<span class="font-label-sm text-label-sm text-outline">Paso 4 de 4</span>
+<span class="font-label-sm text-label-sm text-primary font-bold">Confirmación</span>
+</div>
+<div class="w-full h-2 bg-surface-variant rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all duration-500 ease-out w-full"></div>
+</div>
+</div>
+<h2 class="font-headline-xl-mobile text-headline-xl-mobile text-on-surface mb-lg">Revisa tus datos</h2>
+<!-- Profile Summary Card -->
+<div class="bg-surface-container-lowest rounded-[24px] p-md ambient-shadow mb-lg border border-surface-variant/50 relative overflow-hidden">
+<!-- Decorative background element -->
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-secondary-container/10 rounded-full blur-2xl"></div>
+<div class="flex items-center gap-md mb-md relative z-10">
+<div class="w-16 h-16 rounded-full bg-surface-variant overflow-hidden border-2 border-surface">
+<img class="w-full h-full object-cover" data-alt="A close-up portrait of a happy, well-groomed Golden Retriever dog looking brightly into the camera. The background is a soft, blurry green park setting. The lighting is bright and warm, characteristic of a sunny afternoon, fitting a professional, modern, and trustworthy pet care app aesthetic." src="https://lh3.googleusercontent.com/aida/AEtjO1V2TEvQyDpfY_yMxJA3d6PnUSvnNg6ff6qCOzuvi0aJLMR3L-bXQ3xhWachUt0so7GoIUPFrVJS51GRRRNuZiduhL1YAAO63KBQoX2F2BrxmP392oM4M6YGbem_tADp7Fzm4SDdd1USUc7A6nZc7A-UoV7G0A806UJn8NWLqXpcS9trgFukr0RgY4VXdi_KsufF0i1-wh2JpqDbWPZ66WECiAcZF4HW7HisfeyKCwEFmboE_AN3gZNMdV0">
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Luna</h3>
+<p class="font-body-sm text-body-sm text-outline">Golden Retriever • 3 años</p>
+</div>
+</div>
+<div class="space-y-sm relative z-10">
+<div class="flex justify-between py-sm border-b border-surface-variant/50">
+<span class="font-body-sm text-body-sm text-outline">Dueño</span>
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Carlos Mendoza</span>
+</div>
+<div class="flex justify-between py-sm border-b border-surface-variant/50">
+<span class="font-body-sm text-body-sm text-outline">Email</span>
+<span class="font-body-sm text-body-sm text-on-surface font-medium truncate max-w-[180px]">carlos.m@example.com</span>
+</div>
+<div class="flex justify-between py-sm border-b border-surface-variant/50">
+<span class="font-body-sm text-body-sm text-outline">Teléfono</span>
+<span class="font-body-sm text-body-sm text-on-surface font-medium">+56 9 8765 4321</span>
+</div>
+<div class="flex justify-between py-sm">
+</div>
+</div>
+</div>
+<!-- Terms & Conditions -->
+<div class="space-y-md mb-xl">
+<label class="flex items-start gap-sm cursor-pointer group">
+<div class="relative flex items-center justify-center mt-1">
+<input class="peer appearance-none w-5 h-5 border-2 border-outline rounded bg-surface-container-lowest checked:bg-primary checked:border-primary transition-colors focus:ring-2 focus:ring-primary/20 focus:ring-offset-1 focus:ring-offset-surface" id="terms" placeholder="on" type="checkbox" value="">
+<span class="material-symbols-outlined absolute text-on-primary text-[16px] pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" style="font-variation-settings: &quot;FILL&quot; 1;">check</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant flex-1 pt-1">
+                    He leído y acepto los <a class="text-primary font-medium underline decoration-primary/30 underline-offset-2" href="#">Términos y condiciones</a> del servicio.
+                </span>
+</label>
+<label class="flex items-start gap-sm cursor-pointer group">
+<div class="relative flex items-center justify-center mt-1">
+<input class="peer appearance-none w-5 h-5 border-2 border-outline rounded bg-surface-container-lowest checked:bg-primary checked:border-primary transition-colors focus:ring-2 focus:ring-primary/20 focus:ring-offset-1 focus:ring-offset-surface" id="privacy" placeholder="on" type="checkbox" value="">
+<span class="material-symbols-outlined absolute text-on-primary text-[16px] pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" style="font-variation-settings: &quot;FILL&quot; 1;">check</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant flex-1 pt-1">
+                    Acepto la <a class="text-primary font-medium underline decoration-primary/30 underline-offset-2" href="#">Política de privacidad</a> y el tratamiento de mis datos.
+                </span>
+</label>
+</div>
+<!-- Spacer to push button to bottom on short screens -->
+<div class="flex-grow"></div>
+<!-- Primary Action -->
+<button class="w-full bg-primary text-on-primary font-label-lg text-label-lg py-md rounded-xl shadow-[0_4px_14px_rgba(21,66,18,0.2)] hover:bg-primary/90 hover:shadow-[0_6px_20px_rgba(21,66,18,0.3)] active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2" disabled="true" id="finishBtn">
+            Finalizar Registro
+            <span class="material-symbols-outlined text-[20px]">how_to_reg</span>
+</button>
+</main>
+<!-- Success Overlay (Hidden initially) -->
+<div class="fixed inset-0 bg-surface/80 success-overlay z-50 flex flex-col items-center justify-center px-margin-mobile opacity-0 pointer-events-none" id="successOverlay">
+<div class="bg-surface-container-lowest p-xl rounded-[32px] overlay-shadow max-w-sm w-full text-center relative z-10 transform scale-95 opacity-0 transition-all duration-500 delay-100" id="successModal">
+<div class="w-20 h-20 bg-primary-container rounded-full flex items-center justify-center mx-auto mb-lg">
+<span class="material-symbols-outlined text-[40px] text-on-primary-container" style="font-variation-settings: &quot;FILL&quot; 1;">pets</span>
+</div>
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface font-bold mb-sm">¡Bienvenido a Safe Paws!</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-xl">
+                El perfil de Luna se ha creado exitosamente. Ya puedes empezar a disfrutar de todos nuestros servicios.
+            </p>
+<button class="w-full bg-secondary-container text-on-secondary-container font-label-lg text-label-lg py-md rounded-xl shadow-[0_4px_14px_rgba(252,138,64,0.2)] hover:bg-secondary-container/90 active:scale-[0.98] transition-all duration-200 flex justify-center items-center gap-2" onclick="window.location.reload()">
+                ¡Listo! Ir al Inicio
+                <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<script>
+        // Form Validation Logic
+        const termsCheckbox = document.getElementById('terms');
+        const privacyCheckbox = document.getElementById('privacy');
+        const finishBtn = document.getElementById('finishBtn');
+
+        function checkFormValidity() {
+            if (termsCheckbox.checked && privacyCheckbox.checked) {
+                finishBtn.removeAttribute('disabled');
+            } else {
+                finishBtn.setAttribute('disabled', 'true');
+            }
+        }
+
+        termsCheckbox.addEventListener('change', checkFormValidity);
+        privacyCheckbox.addEventListener('change', checkFormValidity);
+
+        // Ensure button is disabled on load based on checkbox states
+        checkFormValidity();
+
+        // Success Flow Logic
+        const successOverlay = document.getElementById('successOverlay');
+        const successModal = document.getElementById('successModal');
+
+        function triggerConfetti() {
+            var duration = 3 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 100 };
+            
+            function randomInRange(min, max) {
+              return Math.random() * (max - min) + min;
+            }
+            
+            var interval = setInterval(function() {
+              var timeLeft = animationEnd - Date.now();
+            
+              if (timeLeft <= 0) {
+                return clearInterval(interval);
+              }
+            
+              var particleCount = 50 * (timeLeft / duration);
+              confetti(Object.assign({}, defaults, { particleCount,
+                origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+              }));
+              confetti(Object.assign({}, defaults, { particleCount,
+                origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+              }));
+            }, 250);
+        }
+
+        finishBtn.addEventListener('click', () => {
+            // Show overlay
+            successOverlay.classList.remove('opacity-0', 'pointer-events-none');
+            
+            // Animate modal in
+            setTimeout(() => {
+                successModal.classList.remove('scale-95', 'opacity-0');
+                successModal.classList.add('scale-100', 'opacity-100');
+                if (typeof confetti === 'function') {
+                    triggerConfetti();
+                }
+            }, 50);
+        });
+    </script>
+
+
+</body></html>

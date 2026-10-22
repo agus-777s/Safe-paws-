@@ -1,4 +1,4 @@
-export type RolUsuario = 'dueno' | 'cuidador' | 'ambos'
+export type RolUsuario = 'dueno' | 'cuidador'
 
 // Tipos de mascota según Stitch (pantalla 04: Perro, Gato, Ave, Reptil, Acuáticos, Ganadería)
 export type TipoMascota = 'Perro' | 'Gato' | 'Ave' | 'Reptil' | 'Acuáticos' | 'Ganadería'
@@ -95,22 +95,14 @@ export const ROLES: Array<{
     imagen: '/stitch/registro/rol-cuidador.svg',
     imagenAlt: 'Cuidadora paseando a un perro con correa en un parque',
   },
-  {
-    valor: 'ambos',
-    titulo: 'Perfil dual (Dueño y Cuidador)',
-    descripcion: 'Tengo mascotas y además quiero ofrecer mis servicios a otros dueños.',
-    icono: '🤝',
-    imagen: '/stitch/fondo-onboarding-3.jpg',
-    imagenAlt: 'Persona con su perro, lista para cuidar a otras mascotas',
-  },
 ]
 
 export function esRolDueno(rol: RolUsuario | null | undefined): boolean {
-  return rol === 'dueno' || rol === 'ambos'
+  return rol === 'dueno'
 }
 
 export function esRolCuidador(rol: RolUsuario | null | undefined): boolean {
-  return rol === 'cuidador' || rol === 'ambos'
+  return rol === 'cuidador'
 }
 
 // Servicios según Stitch (pantalla 07: Paseo, Hospedaje, Guardería, Visita a domicilio, Otros)

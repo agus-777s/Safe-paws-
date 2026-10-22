@@ -11,12 +11,8 @@ export default function Navbar() {
   const { usuario, perfil, cerrarSesion } = useAuth()
   const [menuAbierto, setMenuAbierto] = useState(false)
 
-  const enlaces: Array<{ ruta: string; texto: string }> = [{ ruta: '/explorar', texto: 'Explorar' }]
+  const enlaces: Array<{ ruta: string; texto: string }> = []
   if (usuario) {
-    if (esRolCuidador(perfil?.rol)) enlaces.push({ ruta: '/panel', texto: 'Mi panel' })
-    enlaces.push({ ruta: '/reservas', texto: 'Reservas' })
-    enlaces.push({ ruta: '/mensajes', texto: 'Mensajes' })
-    if (esRolDueno(perfil?.rol)) enlaces.push({ ruta: '/mascotas', texto: 'Mascotas' })
     enlaces.push({ ruta: '/mi-cuenta', texto: 'Mi cuenta' })
   }
 
